@@ -179,7 +179,7 @@ function workspace_list() {
     $output .= theme('table', $header, $rows);
   }
   else {
-    $output = t('Your workspace is currently empty.');
+    $output .= t('Your workspace is currently empty.');
   }
 
 
