@@ -137,10 +137,6 @@ msgstr ""
 msgid "Add content"
 msgstr ""
 
-#: d:\ccoro\modules\workspace.module:282
-msgid "content_type"
-msgstr ""
-
 #: d:\ccoro\modules\workspace.module:294;297
 msgid "Please enter a numeric value."
 msgstr ""
