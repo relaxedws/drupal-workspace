@@ -7,6 +7,6 @@ Drupal: 4.5
 ********************************************************************
 TO-DO:
 
-- include comments the user has posted along with reply status
+- Allow user to manage content as well as view it
 - Sharing tab so users can designate who else has access to their 
   content
