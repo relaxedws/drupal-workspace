@@ -114,12 +114,12 @@ function workspace_list() {
 
   // build the node listing
   $header = array(
-    array('data' => t('type'), 'field' => 'type'),
-    array('data' => t('title'), 'field' => 'title'),
-    array('data' => t('owner'), 'field' => 'user'),
-    array('data' => t('published'), 'field' => 'status'),
-    array('data' => t('modified'), 'field' => 'changed'),
-    t('operations')
+    array('data' => t('Type'), 'field' => 'type'),
+    array('data' => t('Title'), 'field' => 'title'),
+    array('data' => t('Owner'), 'field' => 'user'),
+    array('data' => t('Published'), 'field' => 'status'),
+    array('data' => t('Modified'), 'field' => 'changed', 'sort' => 'asc'),
+    array('data' => t('Operations'), 'colspan' => 2)
   );
 
    $result = pager_query("SELECT nid, type, title, uid, status, changed FROM {node} WHERE uid = $user->uid" . tablesort_sql($header), $maxnodes);
@@ -127,7 +127,7 @@ function workspace_list() {
   $yes = t('yes');
   $no = t('no');
   while ($row = db_fetch_object($result)) {
-    $rows[] = array($row->type, l($row->title, "node/$row->nid"), $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), l(t(edit), "node/edit/$row->nid"). ' / '. l(t('delete'), "node/delete/$row->nid"));
+    $rows[] = array(node_invoke($row->type, 'node_name'), l($row->title, "node/$row->nid"), $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), l(t(edit), "node/edit/$row->nid"), l(t('delete'), "node/delete/$row->nid"));
   }
 
   if ($rows) {
