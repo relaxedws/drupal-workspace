@@ -279,7 +279,7 @@ function workspace_addform() {
     }
   }
 
-  $section = form_select(t('Add content'), t('content_type'), '', $options, $description);
+  $section = form_select(t('Add content'), 'content_type', '', $options, $description);
   $submit = form_submit(t('Add new item'));
   
   // place submit button to the right of selectbox, not below it
