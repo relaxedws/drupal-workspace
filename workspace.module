@@ -1,5 +1,6 @@
 <?php
 // $Id$
+
 /********************************************************************
 * Drupal Hooks :: General Overview
 ********************************************************************/
@@ -28,16 +29,32 @@ function workspace_menu($may_cache) {
   $items = array();
 
   $access = user_access('access content') && ($user->uid > 0);
+  
   if ($may_cache) {
-    $items[] = array('path' => 'workspace', 'title' => t('my workspace'),
-      'callback' => 'workspace_admin', 'access' => $access);
+    $items[] = array(
+      'path' => 'workspace', 
+      'title' => t('my workspace'),
+      'callback' => 'workspace_admin', 
+      'access' => $access);
 
-    $items[] = array('path' => 'workspace/list', 'title' => t('list'),
-      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
+    $items[] = array(
+      'path' => 'workspace/list', 
+      'title' => t('list'),
+      'type' => MENU_DEFAULT_LOCAL_TASK, 
+      'weight' => -10);
 
-    $items[] = array('path' => 'workspace/configure', 'title' => t('configure'),
-      'callback' => 'workspace_configure', 'type' => MENU_LOCAL_TASK);
+    $items[] = array(
+      'path' => 'workspace/configure', 
+      'title' => t('configure'),
+      'callback' => 'workspace_configure', 
+      'access' => user_access('administer own workspace'),
+      'type' => MENU_LOCAL_TASK);
 
+    $items[] = array(
+      'path' => 'workspace/delete', 
+      'title' => t('delete'),
+      'callback' => 'workspace_delete', 
+      'type' => MENU_CALLBACK);
     //$items[] = array('path' => 'workspace/sharing', 'title' => t('sharing'), 'type' => MENU_LOCAL_TASK);
   }
 
@@ -48,7 +65,7 @@ function workspace_menu($may_cache) {
 * Implementation of hook_perm().
 */
 function workspace_perm() {
-  return array('administer workspace');
+  return array('administer own workspace');
 }
 
 /********************************************************************
@@ -67,18 +84,23 @@ function workspace_admin() {
   $output = '';
 
   // if no content type is specified, go to create content page
-  if ($type == t('Select...')) {$type = '';}
+  if ($type == t('Select...')) {
+    $type = '';
+  }
 
   switch ($op) {
     case t('Add new item'):
       drupal_goto("node/add/$type");
+      break;
 
     default:
+      
       $output = workspace_list();
   }
-
-  $title = t('workspace : %username', array('%username' => $user->name));
-  print theme('page', $output, $title);
+ 
+  $title = t('workspace') . ' : ' . $user->name;
+  drupal_set_title($title);
+  print theme('page', $output);
 }
 
 function workspace_configure() {
@@ -110,10 +132,10 @@ function workspace_list() {
   global $user;
   $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
   $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
-  if (!is_int($maxnodes)) {$maxnodes = 50;}
-  if (!is_int($maxfilenames)) {$maxfilenames = 50;}
+  if (!is_numeric($maxnodes)) {$maxnodes = 50;}
+  if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
 
-  $comments_enabled = function_exists('comment_help');
+  $comments_enabled = module_exist('comment');
   
   $output = workspace_addform();
   
@@ -125,7 +147,6 @@ function workspace_list() {
     $sql = "SELECT n.nid, n.type, 0 AS cid, n.title, n.status, n.changed, s.comment_count, 1 AS node FROM {node} n LEFT OUTER JOIN {node_comment_statistics} s on n.nid = s.nid WHERE n.uid = $user->uid ";
 
     $count_query = "SELECT COUNT(DISTINCT n.nid) FROM {node} n WHERE n.uid = $user->uid";
-  
   }
  
    // build the combined node/comment listing
@@ -135,7 +156,7 @@ function workspace_list() {
     array('data' => t('Owner'), 'field' => 'user'),
     array('data' => t('Published'), 'field' => 'status'),
     array('data' => t('Modified'), 'field' => 'changed', 'sort' => 'asc'),
-    array('data' => t('Replies'), 'field' => 'replies'),
+    $comments_enabled ? array('data' => t('Replies'), 'field' => 'replies') : array('data' => ''),
     array('data' => t('Operations'), 'colspan' => 2)
   );
 
@@ -144,15 +165,21 @@ function workspace_list() {
   $yes = t('yes');
   $no = t('no');
     
-  while ($row = db_fetch_object($result)) {
-    
+  while ($row = db_fetch_object($result)) {    
     // it's a node
     if ($row->node == 1) {
-      $rows[] = array(node_invoke($row->type, 'node_name'), l($row->title, "node/$row->nid"), $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), array('data' => $row->comment_count ? $row->comment_count : 0, 'align' => 'right'), l(t(edit), "node/$row->nid/edit"), l(t('delete'), "node/$row->nid/delete"));
-    
+      $rows[] = array(
+        node_invoke($row->type, 'node_name'), 
+        l($row->title, "node/$row->nid"), 
+        $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), 
+        $comments_enabled ? array('data' => $row->comment_count ? $row->comment_count : 0, 'align' => 'right') : array('data' => ''), 
+        l(t(edit), 
+        "node/$row->nid/edit"), 
+        l(t('delete'), 
+        "workspace/delete/$row->nid")
+        );   
     }
     else {
-
       // it's a comment
       $num_replies = comment_num_replies($row->cid);
       $comment->cid = $row->cid;
@@ -162,15 +189,17 @@ function workspace_list() {
       $com_links = comment_links($comment, 0);
       $link = l(t('edit'), "comment/edit/$comment->cid");
       $edit_link = in_array($link, $com_links) ? $link : '';
+      
       if (!$edit_link) {
-    	$admin_edit_link = l(t('edit'), "admin/comment/edit/$comment->cid");
-    	$edit_link = in_array($admin_edit_link, $com_links) ? $admin_edit_link : '';
+    	  $admin_edit_link = l(t('edit'), "admin/comment/edit/$comment->cid");
+    	  $edit_link = in_array($admin_edit_link, $com_links) ? $admin_edit_link : '';
       }
+      
       $link = l(t('delete'), "admin/comment/$comment->cid/delete");
       $delete_link = in_array($link, $com_links) ? $link : '';
     
       $rows[] = array(t('comment'), l($row->title, "node/$row->nid#comment-$row->cid"), $user->name, $row->status ? $no : $yes, format_date($row->changed, 'small'), array('data' => $num_replies, 'align' => 'right'), $edit_link, $delete_link);
-        }
+    }
   }
 
   if ($rows) {
@@ -183,8 +212,6 @@ function workspace_list() {
   else {
     $output .= t('Your workspace is currently empty.');
   }
-
-
 
   // build the attachment listing
   $rows = array();
@@ -218,6 +245,7 @@ function workspace_list() {
 */
 function workspace_configure_form() {
   global $user;
+  
   $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
   $output .= form_textfield(t('Number of items'), 'maxnodes', $maxnodes, '4', '5', t('Maximum number of items to display in your workspace.'));
   $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
@@ -225,6 +253,16 @@ function workspace_configure_form() {
   $output .= form_submit(t('Save configuration'));
   return form($output);
 }
+
+/**
+ * The deletion menu callback
+ */
+function workspace_delete() {
+  $edit = isset($_POST['edit']) ? $_POST['edit'] : array();
+  $nid = intval(arg(2));
+  $edit['nid'] = $nid;
+  print theme('page', node_delete($edit)); 
+} 
 
 /********************************************************************
 * Module Functions :: Private
@@ -241,14 +279,28 @@ function workspace_addform() {
     }
   }
 
-  $section = form_select(t('add content'), t('content_type'), '', $options, $description);
+  $section = form_select(t('Add content'), t('content_type'), '', $options, $description);
   $submit = form_submit(t('Add new item'));
-  $output = str_replace('</select>', '</select><br />' . $submit, $section);
+  
+  // place submit button to the right of selectbox, not below it
+  $output = str_replace('</select>', '</select>&nbsp;' . $submit, $section);
   return form($output);
 }
 
 function workspace_validate($edit) {
-  return true;
+  $errors = array();
+
+  if (!is_numeric($edit['maxnodes'])) {
+    $errors['maxnodes'] = t('Please enter a numeric value.');
+  }
+  if (!is_numeric($edit['maxfilenames'])) {
+    $errors['maxnodes'] = t('Please enter a numeric value.');
+  }
+  foreach ($errors as $name => $message) {
+    form_set_error($name, $message);
+  }
+
+  return count($errors) == 0;
 }
 
 /********************************************************************
