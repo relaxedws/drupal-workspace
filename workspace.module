@@ -113,6 +113,8 @@ function workspace_configure() {
     case t('Save configuration'):
     if (workspace_validate($edit)) {
       workspace_save($edit);
+      drupal_set_message(t('Your workspace settings were saved.'));
+      drupal_goto('workspace');
     }
   }
   $output = workspace_configure_form($edit);
@@ -252,9 +254,9 @@ function workspace_list() {
   // build the attachment listing
   $rows = array();
   $header = array(
-    array('data' => t('Type'), 'field' => 'filemime'),
-    array('data' => t('Filename'), 'field' => 'filename'),
-    array('data' => t('Size'), 'field' => 'filesize')
+    array('data' => t('Type'), 'field' => 'f.filemime'),
+    array('data' => t('Filename'), 'field' => 'f.filename'),
+    array('data' => t('Size'), 'field' => 'f.filesize')
   );
 
   $result = pager_query("SELECT n.nid, f.filemime, f.filename, f.filesize FROM {files} f, {node} n WHERE n.uid = $user->uid AND n.nid = f.nid" . tablesort_sql($header), $maxfilenames, 2);
@@ -265,7 +267,7 @@ function workspace_list() {
 
   if ($rows) {
     $output .= '<h3>' . t('Files') . '</h3>';
-    $pager = theme('pager', NULL, $maxfilenames, 1, tablesort_pager());
+    $pager = theme('pager', NULL, $maxfilenames, 2, tablesort_pager());
     if (!empty($pager)) {
       $rows[] = array(array('data' => $pager, 'colspan' => 3));
     }
