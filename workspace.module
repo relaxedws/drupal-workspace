@@ -132,8 +132,8 @@ function workspace_list() {
   global $user;
   $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
   $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
-  if (!is_int($maxnodes)) {$maxnodes = 50;}
-  if (!is_int($maxfilenames)) {$maxfilenames = 50;}
+  if (!is_numeric($maxnodes)) {$maxnodes = 50;}
+  if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
 
   $comments_enabled = module_exist('comment');
   
