@@ -109,7 +109,9 @@ function workspace_configure() {
 function workspace_list() {
   global $user;
   $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
-  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
+  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
+  $maxcomments = $user->workspaces ? $user->workspaces['default']['maxcomments'] : 50;
+  print $maxcomments;
   $output = workspace_addform();
 
   // build the node listing
@@ -141,12 +143,36 @@ function workspace_list() {
     $output = t('Your workspace is currently empty.');
   }
 
+  // build the comment listing
+  $rows = array();
+  $header = array(
+    array('data' => t('Subject'), 'field' => 'subject'),
+    array('data' => t('Posted'), 'field' => 'timestamp', 'sort' => 'asc'),
+    array('data' => t('Replies'), 'field' => 'replies')
+  );
+
+  $result = pager_query("SELECT cid, pid, nid, subject, timestamp FROM {comments} WHERE uid = $user->uid" . tablesort_sql($header), $maxcomments);
+
+  while ($row = db_fetch_object($result)) {
+        $rows[] = array(l($row->subject, "node/$row->nid#comment-$row->cid"), format_date($row->timestamp, 'small'), array('data' => comment_num_replies($row->cid), 'align' => 'right'));
+  }
+
+  if ($rows) {
+    $output .= '<h3>' . t('Comments') . '</h3>';
+    $pager = theme('pager', NULL, $maxfilenames, 0, tablesort_pager());
+    if (!empty($pager)) {
+      $rows[] = array(array('data' => $pager, 'colspan' => 3));
+    }
+
+    $output .= theme('table', $header, $rows);
+  }
+
   // build the attachment listing
   $rows = array();
   $header = array(
-    array('data' => t('type'), 'field' => 'filemime'),
-    array('data' => t('filename'), 'field' => 'filename'),
-    array('data' => t('size'), 'field' => 'size')
+    array('data' => t('Type'), 'field' => 'filemime'),
+    array('data' => t('Filename'), 'field' => 'filename'),
+    array('data' => t('Size'), 'field' => 'size')
   );
 
   $result = pager_query("SELECT n.nid, f.filemime, f.filename, f.filesize FROM {files} f, {node} n WHERE n.uid = $user->uid AND n.nid = f.nid" . tablesort_sql($header), $maxfilenames);
@@ -177,6 +203,8 @@ function workspace_configure_form() {
   $output .= form_textfield(t('Number of items'), 'maxnodes', $maxnodes, '4', '5', t('Maximum number of items to display in your workspace.'));
   $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
   $output .= form_textfield(t('Number of files'), 'maxfilenames', $maxfilenames, '4', '5', t('Maximum number of filenames to display in your workspace.'));
+  $maxcomments = $user->workspaces ? $user->workspaces['default']['maxcomments'] : 50;
+  $output .= form_textfield(t('Number of comments'), 'maxcomments', $maxcomments, '4', '5', t('Maximum number of comments to display in your workspace.'));
   $output .= form_submit(t('Save configuration'));
   return form($output);
 }
@@ -220,6 +248,7 @@ function workspace_save($edit) {
   }
   $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
   $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
+  $user->workspaces['default']['maxcomments'] = $edit['maxcomments'];
   return user_save($user, array('workspaces' => $user->workspaces));
 }
 ?>
