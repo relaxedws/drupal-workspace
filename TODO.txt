@@ -1,0 +1,12 @@
+********************************************************************
+                     D R U P A L    M O D U L E
+********************************************************************
+Name: Workspace Module
+Author: John VanDyk <jvandyk at iastate dot edu>
+Drupal: 4.5
+********************************************************************
+TO-DO:
+
+- include comments the user has posted along with reply status
+- Sharing tab so users can designate who else has access to their 
+  content

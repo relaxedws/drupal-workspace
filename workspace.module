@@ -1,0 +1,225 @@
+<?php
+// $Id$
+/********************************************************************
+* Drupal Hooks :: General Overview
+********************************************************************/
+
+/**
+* Implementation of hook_help().
+*/
+function workspace_help($section) {
+  $output = "";
+
+  switch ($section) {
+    case 'admin/modules#description':
+    $output .= 'For individual users to manage their workspace';
+    break;
+  }
+
+  return t($output);
+}
+
+/**
+* Implementation of hook_menu().
+*/
+function workspace_menu($may_cache) {
+
+  global $user;
+  $items = array();
+
+  $access = user_access('access content') && ($user->uid > 0);
+  if ($may_cache) {
+    $items[] = array('path' => 'workspace', 'title' => t('my workspace'),
+      'callback' => 'workspace_admin', 'access' => $access);
+
+    $items[] = array('path' => 'workspace/list', 'title' => t('list'),
+      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
+
+    $items[] = array('path' => 'workspace/configure', 'title' => t('configure'),
+      'callback' => 'workspace_configure', 'type' => MENU_LOCAL_TASK);
+
+    //$items[] = array('path' => 'workspace/sharing', 'title' => t('sharing'), 'type' => MENU_LOCAL_TASK);
+  }
+
+   return $items;
+}
+
+/**
+* Implementation of hook_perm().
+*/
+//function workspace_perm() {
+//  return array('administer workspace');
+//}
+
+/********************************************************************
+* Drupal Hooks :: Core Hooks
+********************************************************************/
+
+/********************************************************************
+* Module Functions :: Controllers
+********************************************************************/
+
+function workspace_admin() {
+  global $user;
+  $op     = $_POST['op'];
+  $edit   = $_POST['edit'];
+  $type   = $edit['content_type'];
+  $output = '';
+
+  // if no content type is specified, go to create content page
+  if ($type == t('Select...')) {$type = '';}
+
+  switch ($op) {
+    case t('Add new item'):
+      drupal_goto("node/add/$type");
+
+    default:
+      $output = workspace_list();
+  }
+
+  $title = t('workspace : %username', array('%username' => $user->name));
+  print theme('page', $output, $title);
+}
+
+function workspace_configure() {
+  global $user;
+  $op     = $_POST['op'];
+  $edit   = $_POST['edit'];
+  $output = '';
+
+  switch ($op) {
+    case t('Save configuration'):
+    if (workspace_validate($edit)) {
+      workspace_save($edit);
+    }
+  }
+  $output = workspace_configure_form($edit);
+
+  $title = t('workspace : %username', array('%username' => $user->name));
+  print theme('page', $output, $title);
+}
+
+/********************************************************************
+* Module Functions :: Views
+********************************************************************/
+
+/**
+* The default admin interface is a list of content.
+*/
+function workspace_list() {
+  global $user;
+  $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
+  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
+  $output = workspace_addform();
+
+  // build the node listing
+  $header = array(
+    array('data' => t('type'), 'field' => 'type'),
+    array('data' => t('title'), 'field' => 'title'),
+    array('data' => t('owner'), 'field' => 'user'),
+    array('data' => t('published'), 'field' => 'status'),
+    array('data' => t('modified'), 'field' => 'changed'),
+    t('operations')
+  );
+
+   $result = pager_query("SELECT nid, type, title, uid, status, changed FROM {node} WHERE uid = $user->uid" . tablesort_sql($header), $maxnodes);
+
+  $yes = t('yes');
+  $no = t('no');
+  while ($row = db_fetch_object($result)) {
+    $rows[] = array($row->type, l($row->title, "node/$row->nid"), $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), l(t(edit), "node/edit/$row->nid"). ' / '. l(t('delete'), "node/delete/$row->nid"));
+  }
+
+  if ($rows) {
+    $pager = theme('pager', NULL, $maxnodes, 0, tablesort_pager());
+    if (!empty($pager)) {
+      $rows[] = array(array('data' => $pager, 'colspan' => 5));
+    }
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output = t('Your workspace is currently empty.');
+  }
+
+  // build the attachment listing
+  $rows = array();
+  $header = array(
+    array('data' => t('type'), 'field' => 'filemime'),
+    array('data' => t('filename'), 'field' => 'filename'),
+    array('data' => t('size'), 'field' => 'size')
+  );
+
+  $result = pager_query("SELECT n.nid, f.filemime, f.filename, f.filesize FROM {files} f, {node} n WHERE n.uid = $user->uid AND n.nid = f.nid" . tablesort_sql($header), $maxfilenames);
+
+  while ($row = db_fetch_object($result)) {
+        $rows[] = array($row->filemime, l($row->filename, "node/$row->nid"), format_size($row->filesize));
+  }
+
+  if ($rows) {
+    $output .= '<h3>' . t('Files') . '</h3>';
+    $pager = theme('pager', NULL, $maxfilenames, 0, tablesort_pager());
+    if (!empty($pager)) {
+      $rows[] = array(array('data' => $pager, 'colspan' => 3));
+    }
+
+    $output .= theme('table', $header, $rows);
+  }
+
+  return $output;
+}
+
+/**
+* The configuration page.
+*/
+function workspace_configure_form() {
+  global $user;
+  $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
+  $output .= form_textfield(t('Number of items'), 'maxnodes', $maxnodes, '4', '5', t('Maximum number of items to display in your workspace.'));
+  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
+  $output .= form_textfield(t('Number of files'), 'maxfilenames', $maxfilenames, '4', '5', t('Maximum number of filenames to display in your workspace.'));
+  $output .= form_submit(t('Save configuration'));
+  return form($output);
+}
+
+/********************************************************************
+* Module Functions :: Private
+********************************************************************/
+
+function workspace_addform() {
+  $description = t('Choose what kind of content you would like to add.');
+  $select = t('Select...');
+  $options = array($select => $select);
+  foreach (node_list() as $type) {
+    if (node_access('create', $type)) {
+      $options[$type] = $type;
+    }
+  }
+
+  $section = form_select(t('add content'), t('content_type'), '', $options, $description);
+  $submit = form_submit(t('Add new item'));
+  $output = str_replace('</select>', '</select>' . $submit, $section);
+  return form($output);
+}
+
+function workspace_validate($edit) {
+  return true;
+}
+
+/********************************************************************
+* Module Functions :: Loaders
+********************************************************************/
+
+/********************************************************************
+* Module Functions :: Setters
+********************************************************************/
+
+function workspace_save($edit) {
+  global $user;
+  if (!$user->workspaces) {
+    $user->workspaces = array();
+  }
+  $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
+  $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
+  return user_save($user, array('workspaces' => $user->workspaces));
+}
+?>
