@@ -136,17 +136,34 @@ function workspace_list() {
   if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
 
   $comments_enabled = module_exist('comment');
+  $nodeperm_role_enabled = module_exist('nodeperm_role');
   
   $output = workspace_addform();
   
-  $sql = "SELECT n.nid, n.type, 0 AS cid, n.title, n.status, n.changed, s.comment_count, 1 AS node FROM {node} n LEFT OUTER JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE n.uid = $user->uid UNION SELECT c.nid AS cnid, '' AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 FROM {comments} AS c WHERE c.uid = $user->uid";
+  $node_select = array('n.nid', 'n.uid', 'n.type', '0 AS cid', 'n.title', 'n.status', 'n.changed', 's.comment_count', '1 AS node');
+  $node_from = array('{node} n');
+  $node_join = array('LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid');
+  $node_where = array('n.uid = '. db_escape_string($user->uid));
 
-  $count_query = "SELECT COUNT(DISTINCT c.cid) + COUNT(DISTINCT n.nid) FROM {node} n, {comments} c WHERE n.uid = $user->uid and c.uid = $user->uid";
+  if ($nodeperm_role_enabled) {
+    $node_select[] = 'na.grant_update';
+    $node_select[] = 'na.grant_delete';
+    $node_join[] = 'LEFT JOIN node_access na ON n.nid = na.nid';
+    $node_where[] = 'OR (na.realm = "nodeperm_role" AND na.grant_view = 1 AND na.gid IN('. db_escape_string(implode(',', array_flip($user->roles))) .'))';
+  }
 
-  if (!$comments_enabled) {
-    $sql = "SELECT n.nid, n.type, 0 AS cid, n.title, n.status, n.changed, s.comment_count, 1 AS node FROM {node} n LEFT OUTER JOIN {node_comment_statistics} s on n.nid = s.nid WHERE n.uid = $user->uid ";
+  $sql = 'SELECT '. implode(', ', $node_select) .' FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' WHERE '. implode(' ', $node_where);
+  $count_sql = 'SELECT COUNT(n.nid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' WHERE '. implode(' ', $node_where);
 
-    $count_query = "SELECT COUNT(DISTINCT n.nid) FROM {node} n WHERE n.uid = $user->uid";
+  if ($comments_enabled) {
+    $select = '';
+    if ($nodeperm_role_enabled) {
+      // need to add placeholders for columns to avoid misaligning our union clause
+      $select = ", '' as grant_update, '' as grant_delete";
+    }
+    $comment_sql = 'SELECT c.nid AS cnid, c.uid, "" AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 '. $select .' FROM {node} n, {comments} AS c LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE c.uid = '. db_escape_string($user->uid);
+    $sql .= ' UNION '. $comment_sql;
+    $count_sql = 'SELECT COUNT(n.nid) + COUNT(c.cid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
   }
  
    // build the combined node/comment listing
@@ -160,7 +177,7 @@ function workspace_list() {
     array('data' => t('Operations'), 'colspan' => 2)
   );
 
-  $result = pager_query($sql . tablesort_sql($header), $maxnodes, 1, $count_query);
+  $result = pager_query($sql . tablesort_sql($header), $maxnodes, 0, $count_sql);
 
   $yes = t('yes');
   $no = t('no');
@@ -168,15 +185,34 @@ function workspace_list() {
   while ($row = db_fetch_object($result)) {    
     // it's a node
     if ($row->node == 1) {
+      // Edit and delete permissions are set by the nodetype's access hook.
+      // If no access hook is found, node-level permissions are then used. 
+      // This approach is part of Drupal's core design.
+      $can_edit = FALSE;
+      $can_delete = FALSE;
+      
+      //Check the nodetype's access hook.
+      $function = $row->type. '_access';
+      if (function_exists($function)) {
+        $can_edit = $function('update', $row) ? TRUE : FALSE;
+        $can_delete = $function('delete', $row) ? TRUE : FALSE;
+      }
+      elseif ($nodeperm_role_enabled) {
+        $can_edit = $row->grant_update ? TRUE : FALSE;
+        $can_delete = $row->grant_delete ? TRUE : FALSE;
+      }
+
+      // the name of the owner of this node
+      $name = ($user->uid == $row->uid) ? $user->name : db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $row->uid));
       $rows[] = array(
         node_invoke($row->type, 'node_name'), 
         l($row->title, "node/$row->nid"), 
-        $user->name, $row->status ? $yes : $no, format_date($row->changed, 'small'), 
+        $name, 
+        $row->status ? $yes : $no, 
+        format_date($row->changed, 'small'),
         $comments_enabled ? array('data' => $row->comment_count ? $row->comment_count : 0, 'align' => 'right') : array('data' => ''), 
-        l(t(edit), 
-        "node/$row->nid/edit"), 
-        l(t('delete'), 
-        "workspace/delete/$row->nid")
+        $can_edit ? l(t('edit'), "node/$row->nid/edit") : '',
+        $can_delete ? l(t('delete'), "workspace/delete/$row->nid") : ''
         );   
     }
     else {
@@ -302,10 +338,6 @@ function workspace_validate($edit) {
 
   return count($errors) == 0;
 }
-
-/********************************************************************
-* Module Functions :: Loaders
-********************************************************************/
 
 /********************************************************************
 * Module Functions :: Setters

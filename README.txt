@@ -3,7 +3,7 @@
 ********************************************************************
 Name: Workspace Module
 Author: John VanDyk <jvandyk at iastate dot edu>
-Drupal: 4.5
+Drupal: cvs
 ********************************************************************
 DESCRIPTION:
 
@@ -11,7 +11,7 @@ This is a module designed for users to have a central place to
 view and manage their content.
 
 Thanks to Matt Westgate for his hand-holding during the creation
-of this module.
+of this, my first Drupal module.
 
 ********************************************************************
 INSTALLATION:
@@ -28,6 +28,15 @@ INSTALLATION:
    
 3. Under administer > access control you may wish to give
    users the ability to configure their own workspace.
+
+********************************************************************
+SYNERGISTIC MODULES:
+
+The nodeperm_role module (http://drupal.org/project/nodeperm_role)
+allows nodes to be edited by users in a given role. 
+When the nodeperm_role module is enabled, the workspace module
+shows not only nodes you own but also nodes that you may edit
+because of the role that has been assigned to your user.
 
 ********************************************************************
 NOTES:

@@ -3,10 +3,9 @@
 ********************************************************************
 Name: Workspace Module
 Author: John VanDyk <jvandyk at iastate dot edu>
-Drupal: 4.5
+Drupal: cvs
 ********************************************************************
 TO-DO:
 
-- Allow user to manage content as well as view it
 - Sharing tab so users can designate who else has access to their 
   content
