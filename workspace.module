@@ -114,8 +114,7 @@ function workspace_list() {
   if (!is_int($maxfilenames)) {$maxfilenames = 50;}
   
   $output = workspace_addform();
-  
-  $sql = "SELECT n.nid, n.type, n.title, n.status, n.changed, s.comment_count, 1 AS node FROM {node} n, {node_comment_statistics} s WHERE n.uid = $user->uid AND n.nid = s.nid UNION SELECT c.nid AS cnid, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 FROM {comments} AS c WHERE c.uid = $user->uid";
+  $sql = "SELECT n.nid, n.type, 0 AS cid, n.title, n.status, n.changed, s.comment_count, 1 AS node FROM node n, node_comment_statistics s WHERE n.uid = $user->uid AND n.nid = s.nid UNION SELECT c.nid AS cnid, '' AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 FROM comments AS c WHERE c.uid = $user->uid";
   $count_query = "SELECT COUNT(DISTINCT c.cid) + COUNT(DISTINCT n.nid) FROM {node} n, {comments} c WHERE n.uid = $user->uid and c.uid = $user->uid";
  
    // build the combined node/comment listing
