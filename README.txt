@@ -27,3 +27,31 @@ INSTALLATION:
    system.
 
 ********************************************************************
+KEEPING UP TO DATE:
+
+If you wish to keep up to date with the latest developments of this
+module using CVS, here is a recipe:
+
+To check the latest version out of CVS for the first time, login 
+by running the command:
+
+cvs -d:pserver:anonymous@cvs.drupal.org:/cvs/drupal login
+
+Enter anonymous as the password. Now you are logged in.
+
+To check out the latest workspace module, run the command:
+
+cvs -d:pserver:anonymous@cvs.drupal.org:/cvs/drupal checkout contributions/modules/workspace
+
+This will create a directory called contributions containing 
+a directory called modules that contains the workspace directory. 
+Move the workspace directory to the modules directory of your 
+Drupal installation.
+
+Once you have a copy of the workspace module in your Drupal 
+installation, use the following (much easier) command to keep 
+your copy of workspace.module up to date:
+
+cd /path/to/drupal/modules/workspace
+cvs update -dP
+
