@@ -27,3 +27,11 @@ INSTALLATION:
    system.
 
 ********************************************************************
+NOTES:
+
+The workspace module is not compatible with MySQL 3 because it uses
+a UNION clause, which is supported by MySQL 4 and higher only. The
+UNION clauses is necessary to unify nodes and comments (which are
+not nodes).
+
+********************************************************************
