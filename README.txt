@@ -25,6 +25,9 @@ INSTALLATION:
 
    When enabled, a "my workspace" menu should appear in the menu 
    system.
+   
+3. Under administer > users > permissions you may wish to give
+   users the ability to configure their own workspace.
 
 ********************************************************************
 KEEPING UP TO DATE:
