@@ -26,8 +26,23 @@ INSTALLATION:
    When enabled, a "my workspace" menu should appear in the menu 
    system.
    
-3. Under administer > users > permissions you may wish to give
+3. Under administer > access control you may wish to give
    users the ability to configure their own workspace.
+
+********************************************************************
+NOTES:
+
+The workspace module is not compatible with MySQL 3 because it uses
+a UNION clause, which is supported by MySQL 4 and higher only. The
+UNION clause is necessary to unify nodes and comments (which are
+not nodes).
+
+There is a workaround for MySQL 3's lack of a UNION clause:
+
+http://www.google.com/search?&q=union+%22mysql+3%22
+
+but I have no intentions of implementing this myself because I use
+MySQL 4.
 
 ********************************************************************
 KEEPING UP TO DATE:
