@@ -254,7 +254,7 @@ function workspace_list() {
   $header = array(
     array('data' => t('Type'), 'field' => 'filemime'),
     array('data' => t('Filename'), 'field' => 'filename'),
-    array('data' => t('Size'), 'field' => 'size')
+    array('data' => t('Size'), 'field' => 'filesize')
   );
 
   $result = pager_query("SELECT n.nid, f.filemime, f.filename, f.filesize FROM {files} f, {node} n WHERE n.uid = $user->uid AND n.nid = f.nid" . tablesort_sql($header), $maxfilenames, 2);
