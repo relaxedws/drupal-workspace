@@ -175,7 +175,7 @@ function workspace_list() {
     array('data' => t('Owner'), 'field' => 'user'),
     array('data' => t('Published'), 'field' => 'status'),
     array('data' => t('Modified'), 'field' => 'changed', 'sort' => 'asc'),
-    $comments_enabled ? array('data' => t('Replies'), 'field' => 'replies') : array('data' => ''),
+    $comments_enabled ? array('data' => t('Replies'), 'field' => 'comment_count') : array('data' => ''),
     array('data' => t('Operations'), 'colspan' => 2)
   );
 
