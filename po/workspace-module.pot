@@ -1,155 +1,153 @@
-Content-type: text/html
-X-Powered-By: PHP/4.3.9
-
-# LANGUAGE translation of PROJECT
+# LANGUAGE translation of Drupal (workspace.module)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: workspace.module,v 1.16.2.2 2005/07/02 04:01:17 jvandyk
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: V 1.00\n"
-"POT-Creation-Date: 2005-07-25 18:17+0200\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2005-08-14 17:22+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
-"Last-Translator: MATTEO <m.ferrari@tiscali.it>\n"
-"Language-Team:  MATTEO <m.ferrari@tiscali.it>\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:36
+#: workspace.module:14
+msgid "For individual users to manage their workspace"
+msgstr ""
+
+#: workspace.module:32
 msgid "my workspace"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:42
+#: workspace.module:38
 msgid "list"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:48
+#: workspace.module:44
 msgid "configure"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:55;217;236
+#: workspace.module:51;213;232
 msgid "delete"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:87;312
+#: workspace.module:83;308
 msgid "Select..."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:92;321
+#: workspace.module:88;317
 msgid "Add new item"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:101;0
+#: workspace.module:97;0
 msgid "workspace"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:113;291
+#: workspace.module:109;287
 msgid "Save configuration"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:116
+#: workspace.module:112
 msgid "Your workspace settings were saved."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:122
+#: workspace.module:118
 msgid "workspace : %username"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:173;257
+#: workspace.module:169;253
 msgid "Type"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:174
+#: workspace.module:170
 msgid "Title"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:175
+#: workspace.module:171
 msgid "Owner"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:176
+#: workspace.module:172
 msgid "Published"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:177
+#: workspace.module:173
 msgid "Modified"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:178
+#: workspace.module:174
 msgid "Replies"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:179
+#: workspace.module:175
 msgid "Operations"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:184
+#: workspace.module:180
 msgid "yes"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:185
+#: workspace.module:181
 msgid "no"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:216;228;232
+#: workspace.module:212;224;228
 msgid "edit"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:239
+#: workspace.module:235
 msgid "comment"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:251
+#: workspace.module:247
 msgid "Your workspace is currently empty."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:258
+#: workspace.module:254
 msgid "Filename"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:259
+#: workspace.module:255
 msgid "Size"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:269
+#: workspace.module:265
 msgid "Files"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:288
+#: workspace.module:284
 msgid "Number of items"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:288
+#: workspace.module:284
 msgid "Maximum number of items to display in your workspace."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:290
+#: workspace.module:286
 msgid "Number of files"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:290
+#: workspace.module:286
 msgid "Maximum number of filenames to display in your workspace."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:311
+#: workspace.module:307
 msgid "Choose what kind of content you would like to add."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:320
+#: workspace.module:316
 msgid "Add content"
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:332;335
+#: workspace.module:328;331
 msgid "Please enter a numeric value."
 msgstr ""
 
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:68
+#: workspace.module:64
 msgid "administer own workspace"
-msgstr ""
-
-#: d:\drupal-contributions-4-6\modules\workspace\workspace.module:68
-msgid "For individual users to manage their workspace"
 msgstr ""
 
