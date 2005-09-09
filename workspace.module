@@ -139,6 +139,7 @@ function workspace_list() {
 
   $comments_enabled = module_exist('comment');
   $nodeperm_role_enabled = module_exist('nodeperm_role');
+  $flexinode_enabled = module_exist('flexinode');
   
   $output = workspace_addform();
   
@@ -195,6 +196,10 @@ function workspace_list() {
       
       //Check the nodetype's access hook.
       $function = $row->type. '_access';
+      if ($flexinode_enabled && strstr($function, 'flexinode-')) {
+        $function = 'flexinode_access'; 
+      }
+ 
       if (function_exists($function)) {
         $can_edit = $function('update', $row) ? TRUE : FALSE;
         $can_delete = $function('delete', $row) ? TRUE : FALSE;
