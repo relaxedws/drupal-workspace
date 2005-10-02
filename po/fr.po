@@ -1,5 +1,5 @@
-// $Id
-// by Ludovic Dias
+# $Id
+# by Ludovic Dias
 msgid ""
 msgstr ""
 "Project-Id-Version: Drupal Module Workspace v4.6.0 French Translation\n"
