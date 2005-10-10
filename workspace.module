@@ -93,14 +93,13 @@ function workspace_admin() {
       drupal_goto("node/add/$type");
       break;
 
-    default:
-      
+    default:     
       $output = workspace_list();
   }
  
   $title = t('workspace') . ' : ' . $user->name;
   drupal_set_title($title);
-  print theme('page', $output);
+  return $output;
 }
 
 function workspace_configure() {
@@ -118,9 +117,8 @@ function workspace_configure() {
     }
   }
   $output = workspace_configure_form($edit);
-
-  $title = t('workspace : %username', array('%username' => $user->name));
-  print theme('page', $output, $title);
+  drupal_set_title(t('workspace : %username', array('%username' => $user->name)));
+  return $output;
 }
 
 /********************************************************************
@@ -140,7 +138,6 @@ function workspace_list() {
   $comments_enabled = module_exist('comment');
   $nodeperm_role_enabled = module_exist('nodeperm_role');
   $flexinode_enabled = module_exist('flexinode');
-  
   $output = workspace_addform();
   
   $node_select = array('n.nid', 'n.uid', 'n.type', '0 AS cid', 'n.title', 'n.status', 'n.changed', 's.comment_count', '1 AS node');
@@ -316,7 +313,7 @@ function workspace_addform() {
   $description = t('Choose what kind of content you would like to add.');
   $select = t('Select...');
   $options = array($select => $select);
-  foreach (node_list() as $type) {
+  foreach (node_get_types() as $type) {
     if (node_access('create', $type, $user->uid)) {
       $options[$type] = node_invoke($type, 'node_name');
     }
