@@ -1,10 +1,6 @@
 <?php
 // $Id$
 
-/********************************************************************
-* Drupal Hooks :: General Overview
-********************************************************************/
-
 /**
 * Implementation of hook_help().
 */
@@ -69,56 +65,78 @@ function workspace_perm() {
 }
 
 /********************************************************************
-* Drupal Hooks :: Core Hooks
-********************************************************************/
-
-/********************************************************************
 * Module Functions :: Controllers
 ********************************************************************/
 
 function workspace_admin() {
   global $user;
-  $op     = $_POST['op'];
-  $edit   = $_POST['edit'];
-  $type   = $edit['content_type'];
-  $output = '';
-
-  // if no content type is specified, go to create content page
-  if ($type == t('Select...')) {
-    $type = '';
+  if (isset($_POST['edit']['content_type'])) {
+    $node_type = $_POST['edit']['content_type'];
+    if ($node_type == t('Select...')) {
+      drupal_goto('node/add');
+    }
+    
+    foreach (node_get_types() as $type => $name) {
+      if (node_access('create', $type, $user->uid)) {
+        $options[$type] = $name;
+      }
+      if (isset($options[$node_type])) {
+        drupal_goto('node/add/' . $node_type);
+      }
+    }
   }
 
-  switch ($op) {
-    case t('Add new item'):
-      drupal_goto("node/add/$type");
-      break;
-
-    default:     
-      $output = workspace_list();
-  }
- 
   $title = t('workspace') . ' : ' . $user->name;
   drupal_set_title($title);
+  $output = workspace_list();
   return $output;
 }
 
+/**
+* The configuration page.
+*/
 function workspace_configure() {
   global $user;
-  $op     = $_POST['op'];
-  $edit   = $_POST['edit'];
-  $output = '';
-
-  switch ($op) {
-    case t('Save configuration'):
-    if (workspace_validate($edit)) {
-      workspace_save($edit);
-      drupal_set_message(t('Your workspace settings were saved.'));
-      drupal_goto('workspace');
-    }
-  }
-  $output = workspace_configure_form($edit);
+  $form = array();
+  $form['maxnodes'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of items'),
+    '#description' => t('Maximum number of items to display in your workspace.'),
+    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50,
+    '#size' => 4
+  );
+  $form['maxfilenames'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of files'),
+    '#description' => t('Maximum number of filenames to display in your workspace.'),
+    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxfilesnames'] : 50,
+    '#size' => 4
+  );
+  $form['submit'] = array(
+    '#type' => 'submit'
+  );
+  $output = drupal_get_form('workspace_configure', $form);
   drupal_set_title(t('workspace : %username', array('%username' => $user->name)));
   return $output;
+}
+
+function workspace_configure_validate($form_id, $edit) {
+  if (!is_numeric($edit['maxnodes'])) {
+    form_set_error('maxnodes', t('Please enter a numeric value.'));
+  }
+  if (!is_numeric($edit['maxfiles']) && !form_get_errors()) {
+    form_set_error('maxfiles', t('Please enter a numeric value.'));   
+  }
+}
+
+function workspace_configure_submit($form_id, $edit) {
+  global $user;
+  if (!isset($user->workspaces)) {
+    $user->workspaces = array();
+  }
+  $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
+  $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
+  return user_save($user, array('workspaces' => $user->workspaces));
 }
 
 /********************************************************************
@@ -209,7 +227,7 @@ function workspace_list() {
       // the name of the owner of this node
       $name = ($user->uid == $row->uid) ? $user->name : db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $row->uid));
       $rows[] = array(
-        node_invoke($row->type, 'node_name'), 
+        node_get_name($row->type), 
         l($row->title, "node/$row->nid"), 
         $name, 
         $row->status ? $yes : $no, 
@@ -281,27 +299,13 @@ function workspace_list() {
 }
 
 /**
-* The configuration page.
-*/
-function workspace_configure_form() {
-  global $user;
-  
-  $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
-  $output .= form_textfield(t('Number of items'), 'maxnodes', $maxnodes, '4', '5', t('Maximum number of items to display in your workspace.'));
-  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
-  $output .= form_textfield(t('Number of files'), 'maxfilenames', $maxfilenames, '4', '5', t('Maximum number of filenames to display in your workspace.'));
-  $output .= form_submit(t('Save configuration'));
-  return form($output);
-}
-
-/**
  * The deletion menu callback
  */
 function workspace_delete() {
-  $edit = isset($_POST['edit']) ? $_POST['edit'] : array();
   $nid = intval(arg(2));
-  $edit['nid'] = $nid;
-  print theme('page', node_delete($edit)); 
+  if (is_numeric($nid)) {
+    drupal_goto('node/' . $nid . '/delete');
+  }
 } 
 
 /********************************************************************
@@ -313,47 +317,25 @@ function workspace_addform() {
   $description = t('Choose what kind of content you would like to add.');
   $select = t('Select...');
   $options = array($select => $select);
-  foreach (node_get_types() as $type) {
+  foreach (node_get_types() as $type => $name) {
     if (node_access('create', $type, $user->uid)) {
-      $options[$type] = node_invoke($type, 'node_name');
+      $options[$type] = $name;
     }
   }
-
-  $section = form_select(t('Add content'), 'content_type', '', $options, $description);
-  $submit = form_submit(t('Add new item'));
+  $form = array();
+  $form['content_type'] = array(
+    '#type' => 'select',
+    '#title' => 'Add content',
+    '#options' => $options,
+    '#description' => $description
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add new item'
+  );
   
-  // place submit button to the right of selectbox, not below it
-  $output = str_replace('</select>', '</select>&nbsp;' . $submit, $section);
-  return form($output);
+  $submit = form_render($form['submit']);
+  $output = drupal_get_form('workspace_addform', $form);
+  $output = str_replace('</select>', '</select>&nbsp;' . $submit, $output);
+  return $output;
 }
-
-function workspace_validate($edit) {
-  $errors = array();
-
-  if (!is_numeric($edit['maxnodes'])) {
-    $errors['maxnodes'] = t('Please enter a numeric value.');
-  }
-  if (!is_numeric($edit['maxfilenames'])) {
-    $errors['maxnodes'] = t('Please enter a numeric value.');
-  }
-  foreach ($errors as $name => $message) {
-    form_set_error($name, $message);
-  }
-
-  return count($errors) == 0;
-}
-
-/********************************************************************
-* Module Functions :: Setters
-********************************************************************/
-
-function workspace_save($edit) {
-  global $user;
-  if (!$user->workspaces) {
-    $user->workspaces = array();
-  }
-  $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
-  $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
-  return user_save($user, array('workspaces' => $user->workspaces));
-}
-?>
