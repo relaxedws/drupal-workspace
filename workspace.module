@@ -113,7 +113,8 @@ function workspace_configure() {
     '#size' => 4
   );
   $form['submit'] = array(
-    '#type' => 'submit'
+    '#type' => 'submit',
+    '#value' => t('Save configuration')
   );
   $output = drupal_get_form('workspace_configure', $form);
   drupal_set_title(t('workspace : %username', array('%username' => $user->name)));
