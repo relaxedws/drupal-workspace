@@ -326,13 +326,13 @@ function workspace_addform() {
   $form = array();
   $form['content_type'] = array(
     '#type' => 'select',
-    '#title' => 'Add content',
+    '#title' => t('Add content'),
     '#options' => $options,
     '#description' => $description
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Add new item'
+    '#value' => t('Add new item')
   );
   
   $submit = form_render($form['submit']);
