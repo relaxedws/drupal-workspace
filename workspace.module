@@ -319,7 +319,7 @@ function workspace_addform() {
   $select = t('Select...');
   $options = array($select => $select);
   foreach (node_get_types() as $type => $name) {
-    if (node_access('create', $type, $user->uid)) {
+    if (module_invoke(node_get_base($type), 'access', 'create', $type)) {
       $options[$type] = $name;
     }
   }
