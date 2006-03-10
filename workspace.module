@@ -160,7 +160,8 @@ function workspace_list() {
       // need to add placeholders for columns to avoid misaligning our union clause
       $select = ", '' as grant_update, '' as grant_delete";
     }
-    $comment_sql = 'SELECT c.nid AS cnid, c.uid, "" AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 '. $select .' FROM {node} n, {comments} AS c LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE c.uid = '. db_escape_string($user->uid);
+    $comment_sql = 'SELECT c.nid AS cnid, c.uid, "" AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 '. $select .' FROM {comments} AS c, {node} n LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE c.uid = '. db_escape_string($user->uid);
+
     $sql .= ' UNION '. $comment_sql;
     $count_sql = 'SELECT COUNT(n.nid) + COUNT(c.cid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
   }
