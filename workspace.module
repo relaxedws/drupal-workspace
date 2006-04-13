@@ -262,7 +262,7 @@ function workspace_list() {
   }
 
   if ($rows) {
-    $pager = theme('pager', NULL, $maxnodes, 0, tablesort_pager());
+    $pager = theme('pager', NULL, $maxnodes, 0);
     if (!empty($pager)) {
       $rows[] = array(array('data' => $pager, 'colspan' => 8));
     }
@@ -288,7 +288,7 @@ function workspace_list() {
 
   if ($rows) {
     $output .= '<h3>' . t('Files') . '</h3>';
-    $pager = theme('pager', NULL, $maxfilenames, 2, tablesort_pager());
+    $pager = theme('pager', NULL, $maxfilenames, 2);
     if (!empty($pager)) {
       $rows[] = array(array('data' => $pager, 'colspan' => 3));
     }
