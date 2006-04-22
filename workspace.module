@@ -109,7 +109,7 @@ function workspace_configure() {
     '#type' => 'textfield',
     '#title' => t('Number of files'),
     '#description' => t('Maximum number of filenames to display in your workspace.'),
-    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxfilesnames'] : 50,
+    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50,
     '#size' => 4
   );
   $form['submit'] = array(
@@ -125,8 +125,8 @@ function workspace_configure_validate($form_id, $edit) {
   if (!is_numeric($edit['maxnodes'])) {
     form_set_error('maxnodes', t('Please enter a numeric value.'));
   }
-  if (!is_numeric($edit['maxfiles']) && !form_get_errors()) {
-    form_set_error('maxfiles', t('Please enter a numeric value.'));   
+  if (!is_numeric($edit['maxfilenames']) && !form_get_errors()) {
+    form_set_error('maxfilenames', t('Please enter a numeric value.'));   
   }
 }
 
