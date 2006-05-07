@@ -137,7 +137,9 @@ function workspace_configure_submit($form_id, $edit) {
   }
   $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
   $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
-  return user_save($user, array('workspaces' => $user->workspaces));
+  user_save($user, array('workspaces' => $user->workspaces));
+  drupal_set_message(t('The workspace configuration has been saved.'));
+  return 'workspace';
 }
 
 /********************************************************************
@@ -149,15 +151,15 @@ function workspace_configure_submit($form_id, $edit) {
 */
 function workspace_list() {
   global $user;
-  $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
-  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
+  $maxnodes = isset($user->workspaces) ? $user->workspaces['default']['maxnodes'] : 50;
+  $maxfilenames = isset($user->workspaces) ? $user->workspaces['default']['maxfilenames'] : 50;
   if (!is_numeric($maxnodes)) {$maxnodes = 50;}
   if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
 
   $comments_enabled = module_exist('comment');
   $nodeperm_role_enabled = module_exist('nodeperm_role');
   $flexinode_enabled = module_exist('flexinode');
-  $output = workspace_addform();
+  $output = _workspace_addform();
   
   $node_select = array('n.nid', 'n.uid', 'n.type', '0 AS cid', 'n.title', 'n.status', 'n.changed', 's.comment_count', '1 AS node');
   $node_from = array('{node} n');
@@ -182,7 +184,7 @@ function workspace_list() {
     }
     $comment_sql = 'SELECT c.nid AS cnid, c.uid, "" AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 '. $select .' FROM {comments} AS c, {node} n LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE c.uid = '. db_escape_string($user->uid);
     $sql .= ' UNION '. $comment_sql;
-    $count_sql = 'SELECT COUNT(n.nid) + COUNT(c.cid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
+    $count_sql = 'SELECT COUNT(DISTINCT(n.nid)) + COUNT(DISTINCT(c.cid)) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
   }
  
    // build the combined node/comment listing
@@ -195,9 +197,7 @@ function workspace_list() {
     $comments_enabled ? array('data' => t('Replies'), 'field' => 'comment_count') : array('data' => ''),
     array('data' => t('Operations'), 'colspan' => 2)
   );
-
   $result = pager_query($sql . tablesort_sql($header), $maxnodes, 0, $count_sql);
-
   $yes = t('yes');
   $no = t('no');
     
@@ -313,7 +313,7 @@ function workspace_delete() {
 * Module Functions :: Private
 ********************************************************************/
 
-function workspace_addform() {
+function _workspace_addform() {
   global $user;
   $description = t('Choose what kind of content you would like to add.');
   $select = t('Select...');
