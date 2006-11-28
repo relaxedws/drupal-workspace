@@ -157,6 +157,7 @@ function workspace_list() {
   $comments_enabled = module_exist('comment');
   $nodeperm_role_enabled = module_exist('nodeperm_role');
   $flexinode_enabled = module_exist('flexinode');
+  $cck_enabled = module_exist('content');
   $output = workspace_addform();
   
   $node_select = array('n.nid', 'n.uid', 'n.type', '0 AS cid', 'n.title', 'n.status', 'n.changed', 's.comment_count', '1 AS node');
@@ -214,6 +215,9 @@ function workspace_list() {
       $function = $row->type. '_access';
       if ($flexinode_enabled && strstr($function, 'flexinode-')) {
         $function = 'flexinode_access'; 
+      }
+      elseif ($cck_enabled && strstr($function, 'content_')) {
+        $function = 'content_access';
       }
  
       if (function_exists($function)) {
