@@ -16,18 +16,18 @@ of this, my first Drupal module.
 ********************************************************************
 INSTALLATION:
 
-1. Place the entire workspace directory into your Drupal modules/
-   directory.
+1. Place the entire workspace directory into the sites/all/modules
+   directory of your Drupal installation.
 
 2. Enable the workspace module by navigating to:
 
-     administer > modules
+     Administer > Site building > Modules
 
-   When enabled, a "my workspace" menu should appear in the menu 
+   When enabled, a "My workspace" menu should appear in the menu 
    system.
    
-3. Under administer > access control you may wish to give
-   users the ability to configure their own workspace.
+3. Under Administer > User management > Access control you may wish
+   to give users the ability to configure their own workspace.
 
 ********************************************************************
 SYNERGISTIC MODULES:

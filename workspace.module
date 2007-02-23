@@ -25,31 +25,31 @@ function workspace_menu($may_cache) {
   $items = array();
 
   $access = user_access('access content') && ($user->uid > 0);
-  
+
   if ($may_cache) {
     $items[] = array(
-      'path' => 'workspace', 
-      'title' => t('my workspace'),
-      'callback' => 'workspace_admin', 
+      'path' => 'workspace',
+      'title' => t('My workspace'),
+      'callback' => 'workspace_admin',
       'access' => $access);
 
     $items[] = array(
-      'path' => 'workspace/list', 
-      'title' => t('list'),
-      'type' => MENU_DEFAULT_LOCAL_TASK, 
+      'path' => 'workspace/list',
+      'title' => t('List'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10);
 
     $items[] = array(
-      'path' => 'workspace/configure', 
-      'title' => t('configure'),
-      'callback' => 'workspace_configure', 
+      'path' => 'workspace/configure',
+      'title' => t('Configure'),
+      'callback' => 'workspace_configure',
       'access' => user_access('administer own workspace'),
       'type' => MENU_LOCAL_TASK);
 
     $items[] = array(
-      'path' => 'workspace/delete', 
-      'title' => t('delete'),
-      'callback' => 'workspace_delete', 
+      'path' => 'workspace/delete',
+      'title' => t('Delete'),
+      'callback' => 'workspace_delete',
       'type' => MENU_CALLBACK);
     //$items[] = array('path' => 'workspace/sharing', 'title' => t('sharing'), 'type' => MENU_LOCAL_TASK);
   }
@@ -70,15 +70,16 @@ function workspace_perm() {
 
 function workspace_admin() {
   global $user;
-  if (isset($_POST['edit']['content_type'])) {
-    $node_type = $_POST['edit']['content_type'];
+  // This is bad form but still secure since we're just doing a drupal_goto().
+  if (isset($_POST['content_type'])) {
+    $node_type = $_POST['content_type'];
     if ($node_type == t('Select...')) {
       drupal_goto('node/add');
     }
-    
-    foreach (node_get_types() as $type => $name) {
+
+    foreach (node_get_types() as $type => $typeobject) {
       if (node_access('create', $type, $user->uid)) {
-        $options[$type] = $name;
+        $options[$type] = $typeobject->name;
       }
       if (isset($options[$node_type])) {
         drupal_goto('node/add/' . $node_type);
@@ -95,7 +96,7 @@ function workspace_admin() {
 /**
 * The configuration page.
 */
-function workspace_configure() {
+function workspace_configure_form() {
   global $user;
   $form = array();
   $form['maxnodes'] = array(
@@ -116,21 +117,25 @@ function workspace_configure() {
     '#type' => 'submit',
     '#value' => t('Save configuration')
   );
-  $output = drupal_get_form('workspace_configure', $form);
+  return $form;
+}
+
+function workspace_configure() {
+  $output = drupal_get_form('workspace_configure_form');
   drupal_set_title(t('workspace : %username', array('%username' => $user->name)));
   return $output;
 }
 
-function workspace_configure_validate($form_id, $edit) {
+function workspace_configure_form_validate($form_id, $edit) {
   if (!is_numeric($edit['maxnodes'])) {
     form_set_error('maxnodes', t('Please enter a numeric value.'));
   }
   if (!is_numeric($edit['maxfiles']) && !form_get_errors()) {
-    form_set_error('maxfiles', t('Please enter a numeric value.'));   
+    form_set_error('maxfiles', t('Please enter a numeric value.'));
   }
 }
 
-function workspace_configure_submit($form_id, $edit) {
+function workspace_configure_form_submit($form_id, $edit) {
   global $user;
   if (!isset($user->workspaces)) {
     $user->workspaces = array();
@@ -154,12 +159,12 @@ function workspace_list() {
   if (!is_numeric($maxnodes)) {$maxnodes = 50;}
   if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
 
-  $comments_enabled = module_exist('comment');
-  $nodeperm_role_enabled = module_exist('nodeperm_role');
-  $flexinode_enabled = module_exist('flexinode');
-  $cck_enabled = module_exist('content');
-  $output = workspace_addform();
-  
+  $comments_enabled = module_exists('comment');
+  $nodeperm_role_enabled = module_exists('nodeperm_role');
+  $flexinode_enabled = module_exists('flexinode');
+  $cck_enabled = module_exists('content');
+  $output = _workspace_addform();
+
   $node_select = array('n.nid', 'n.uid', 'n.type', '0 AS cid', 'n.title', 'n.status', 'n.changed', 's.comment_count', '1 AS node');
   $node_from = array('{node} n');
   $node_join = array('LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid');
@@ -185,7 +190,7 @@ function workspace_list() {
     $sql .= ' UNION '. $comment_sql;
     $count_sql = 'SELECT COUNT(n.nid) + COUNT(c.cid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
   }
- 
+
    // build the combined node/comment listing
   $header = array(
     array('data' => t('Type'), 'field' => 'type'),
@@ -201,25 +206,27 @@ function workspace_list() {
 
   $yes = t('yes');
   $no = t('no');
-    
-  while ($row = db_fetch_object($result)) {    
+
+  while ($row = db_fetch_object($result)) {
     // it's a node
     if ($row->node == 1) {
       // Edit and delete permissions are set by the nodetype's access hook.
-      // If no access hook is found, node-level permissions are then used. 
+      // If no access hook is found, node-level permissions are then used.
       // This approach is part of Drupal's core design.
       $can_edit = FALSE;
       $can_delete = FALSE;
-      
+
       //Check the nodetype's access hook.
       $function = $row->type. '_access';
       if ($flexinode_enabled && strstr($function, 'flexinode-')) {
-        $function = 'flexinode_access'; 
+        $function = 'flexinode_access';
       }
       elseif ($cck_enabled && strstr($function, 'content_')) {
         $function = 'content_access';
+      } else {
+        $function = 'node_access';
       }
- 
+
       if (function_exists($function)) {
         $can_edit = $function('update', $row) ? TRUE : FALSE;
         $can_delete = $function('delete', $row) ? TRUE : FALSE;
@@ -232,35 +239,30 @@ function workspace_list() {
       // the name of the owner of this node
       $name = ($user->uid == $row->uid) ? $user->name : db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $row->uid));
       $rows[] = array(
-        node_get_name($row->type), 
-        l($row->title, "node/$row->nid"), 
-        $name, 
-        $row->status ? $yes : $no, 
+        node_get_types('name', $row->type),
+        l($row->title, "node/$row->nid"),
+        $name,
+        $row->status ? $yes : $no,
         format_date($row->changed, 'small'),
-        $comments_enabled ? array('data' => $row->comment_count ? $row->comment_count : 0, 'align' => 'right') : array('data' => ''), 
+        $comments_enabled ? array('data' => $row->comment_count ? $row->comment_count : 0, 'align' => 'right') : array('data' => ''),
         $can_edit ? l(t('edit'), "node/$row->nid/edit") : '',
         $can_delete ? l(t('delete'), "workspace/delete/$row->nid") : ''
-        );   
+        );
     }
     else {
       // it's a comment
       $num_replies = comment_num_replies($row->cid);
       $comment->cid = $row->cid;
       $comment->nid = $row->nid;
-    
+
       // delegate access permission checks and link generation to comments.module
       $com_links = comment_links($comment, 0);
       $link = l(t('edit'), "comment/edit/$comment->cid");
-      $edit_link = in_array($link, $com_links) ? $link : '';
-      
-      if (!$edit_link) {
-    	  $admin_edit_link = l(t('edit'), "admin/comment/edit/$comment->cid");
-    	  $edit_link = in_array($admin_edit_link, $com_links) ? $admin_edit_link : '';
-      }
-      
-      $link = l(t('delete'), "admin/comment/$comment->cid/delete");
-      $delete_link = in_array($link, $com_links) ? $link : '';
-    
+      $edit_link = $com_links['comment_edit'] ? $link : '';
+
+      $link = l(t('delete'), "comment/delete/$comment->cid");
+      $delete_link = $com_links['comment_delete'] ? $link : '';
+
       $rows[] = array(t('comment'), l($row->title, "node/$row->nid#comment-$row->cid"), $user->name, $row->status ? $no : $yes, format_date($row->changed, 'small'), array('data' => $num_replies, 'align' => 'right'), $edit_link, $delete_link);
     }
   }
@@ -304,27 +306,27 @@ function workspace_list() {
 }
 
 /**
- * The deletion menu callback
- */
+* The deletion menu callback
+*/
 function workspace_delete() {
   $nid = intval(arg(2));
   if (is_numeric($nid)) {
     drupal_goto('node/' . $nid . '/delete');
   }
-} 
+}
 
 /********************************************************************
 * Module Functions :: Private
 ********************************************************************/
 
-function workspace_addform() {
+function workspace_form() {
   global $user;
-  $description = t('Choose what kind of content you would like to add.');
+  $description = t('Choose what kind of content you would like to add.') . ' [' . l(t('help'), 'node/add') . ']';
   $select = t('Select...');
   $options = array($select => $select);
-  foreach (node_get_types() as $type => $name) {
-    if (module_invoke(node_get_base($type), 'access', 'create', $type)) {
-      $options[$type] = $name;
+  foreach (node_get_types() as $type => $typeobject) {
+    if (module_invoke(node_get_types('module', $type), 'access', 'create', $type)) {
+      $options[$type] = $typeobject->name;
     }
   }
   $form = array();
@@ -338,9 +340,14 @@ function workspace_addform() {
     '#type' => 'submit',
     '#value' => t('Add new item')
   );
-  
-  $submit = form_render($form['submit']);
-  $output = drupal_get_form('workspace_addform', $form);
+  return $form;
+}
+
+function _workspace_addform() {
+  $output = drupal_get_form('workspace_form');
+  $form = workspace_form();
+  $submit = drupal_render($form['submit']);
+  $output = preg_replace("/<input.*type=\"submit\".*>/U", '', $output);
   $output = str_replace('</select>', '</select>&nbsp;' . $submit, $output);
   return $output;
 }
