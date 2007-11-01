@@ -2,25 +2,24 @@
 // $Id$
 
 /**
+ * @file
+ * Presents a user-centric view of content.
+ */
+
+/**
 * Implementation of hook_help().
 */
 function workspace_help($section) {
-  $output = "";
-
   switch ($section) {
     case 'admin/modules#description':
-    $output .= 'For individual users to manage their workspace';
-    break;
+      return t('For individual users to manage their workspace');
   }
-
-  return t($output);
 }
 
 /**
 * Implementation of hook_menu().
 */
 function workspace_menu($may_cache) {
-
   global $user;
   $items = array();
 
@@ -87,7 +86,7 @@ function workspace_admin() {
     }
   }
 
-  $title = t('workspace') . ' : ' . $user->name;
+  $title = t('Workspace') . ' : ' . $user->name;
   drupal_set_title($title);
   $output = workspace_list();
   return $output;
@@ -110,7 +109,7 @@ function workspace_configure_form() {
     '#type' => 'textfield',
     '#title' => t('Number of files'),
     '#description' => t('Maximum number of filenames to display in your workspace.'),
-    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxfilesnames'] : 50,
+    '#default_value' => $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50,
     '#size' => 4
   );
   $form['submit'] = array(
@@ -122,7 +121,7 @@ function workspace_configure_form() {
 
 function workspace_configure() {
   $output = drupal_get_form('workspace_configure_form');
-  drupal_set_title(t('workspace : %username', array('%username' => $user->name)));
+  drupal_set_title(t('Workspace : %username', array('%username' => $user->name)));
   return $output;
 }
 
@@ -130,19 +129,22 @@ function workspace_configure_form_validate($form_id, $edit) {
   if (!is_numeric($edit['maxnodes'])) {
     form_set_error('maxnodes', t('Please enter a numeric value.'));
   }
-  if (!is_numeric($edit['maxfiles']) && !form_get_errors()) {
-    form_set_error('maxfiles', t('Please enter a numeric value.'));
+  if (!is_numeric($edit['maxfilenames']) && !form_get_errors()) {
+    form_set_error('maxfilenames', t('Please enter a numeric value.'));
   }
 }
 
 function workspace_configure_form_submit($form_id, $edit) {
   global $user;
+  $user = user_load(array('uid' => $user->uid));
   if (!isset($user->workspaces)) {
     $user->workspaces = array();
   }
-  $user->workspaces['default']['maxnodes'] = $edit['maxnodes'];
-  $user->workspaces['default']['maxfilenames'] = $edit['maxfilenames'];
-  return user_save($user, array('workspaces' => $user->workspaces));
+  $user->workspaces['default']['maxnodes'] = (int) $edit['maxnodes'];
+  $user->workspaces['default']['maxfilenames'] = (int) $edit['maxfilenames'];
+  user_save($user, array('workspaces' => $user->workspaces));
+  drupal_set_message(t('Your workspace preferences have been saved.'));
+  return 'workspace';
 }
 
 /********************************************************************
@@ -156,8 +158,12 @@ function workspace_list() {
   global $user;
   $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
   $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
-  if (!is_numeric($maxnodes)) {$maxnodes = 50;}
-  if (!is_numeric($maxfilenames)) {$maxfilenames = 50;}
+  if (!is_numeric($maxnodes)) {
+    $maxnodes = 50;
+  }
+  if (!is_numeric($maxfilenames)) {
+    $maxfilenames = 50;
+  }
 
   $comments_enabled = module_exists('comment');
   $nodeperm_role_enabled = module_exists('nodeperm_role');
@@ -183,15 +189,15 @@ function workspace_list() {
   if ($comments_enabled) {
     $select = '';
     if ($nodeperm_role_enabled) {
-      // need to add placeholders for columns to avoid misaligning our union clause
-      $select = ", '' as grant_update, '' as grant_delete";
+      // Need to add placeholders for columns to avoid misaligning our union clause.
+      $select = ", '' AS grant_update, '' AS grant_delete";
     }
     $comment_sql = 'SELECT c.nid AS cnid, c.uid, "" AS type, c.cid, c.subject, c.status, c.timestamp, c.pid, 0 '. $select .' FROM {comments} AS c, {node} n LEFT JOIN {node_comment_statistics} s ON n.nid = s.nid WHERE c.uid = '. db_escape_string($user->uid);
     $sql .= ' UNION '. $comment_sql;
     $count_sql = 'SELECT COUNT(n.nid) + COUNT(c.cid) FROM '. implode(', ', $node_from) .' '. implode(' ', $node_join) .' LEFT JOIN {comments} AS c ON c.uid = '. db_escape_string($user->uid). ' WHERE '. implode(' ', $node_where);
   }
 
-   // build the combined node/comment listing
+   // Build the combined node/comment listing.
   $header = array(
     array('data' => t('Type'), 'field' => 'type'),
     array('data' => t('Title'), 'field' => 'title'),
@@ -208,15 +214,15 @@ function workspace_list() {
   $no = t('no');
 
   while ($row = db_fetch_object($result)) {
-    // it's a node
+    // It's a node.
     if ($row->node == 1) {
-      // Edit and delete permissions are set by the nodetype's access hook.
+      // Edit and delete permissions are set by the node type's access hook.
       // If no access hook is found, node-level permissions are then used.
       // This approach is part of Drupal's core design.
       $can_edit = FALSE;
       $can_delete = FALSE;
 
-      //Check the nodetype's access hook.
+      //Check the node type's access hook.
       $function = $row->type. '_access';
       if ($flexinode_enabled && strstr($function, 'flexinode-')) {
         $function = 'flexinode_access';
@@ -236,7 +242,7 @@ function workspace_list() {
         $can_delete = $row->grant_delete ? TRUE : FALSE;
       }
 
-      // the name of the owner of this node
+      // The name of the owner of this node.
       $name = ($user->uid == $row->uid) ? $user->name : db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $row->uid));
       $rows[] = array(
         node_get_types('name', $row->type),
@@ -250,12 +256,12 @@ function workspace_list() {
         );
     }
     else {
-      // it's a comment
+      // It's a comment.
       $num_replies = comment_num_replies($row->cid);
       $comment->cid = $row->cid;
       $comment->nid = $row->nid;
 
-      // delegate access permission checks and link generation to comments.module
+      // Delegate access permission checks and link generation to comments.module.
       $com_links = comment_links($comment, 0);
       $link = l(t('edit'), "comment/edit/$comment->cid");
       $edit_link = $com_links['comment_edit'] ? $link : '';
@@ -278,7 +284,7 @@ function workspace_list() {
     $output .= t('Your workspace is currently empty.');
   }
 
-  // build the attachment listing
+  // Build the attachment listing.
   $rows = array();
   $header = array(
     array('data' => t('Type'), 'field' => 'f.filemime'),
@@ -306,7 +312,7 @@ function workspace_list() {
 }
 
 /**
-* The deletion menu callback
+* The deletion menu callback.
 */
 function workspace_delete() {
   $nid = intval(arg(2));
