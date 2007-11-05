@@ -269,7 +269,7 @@ function workspace_list() {
       $link = l(t('delete'), "comment/delete/$comment->cid");
       $delete_link = $com_links['comment_delete'] ? $link : '';
 
-      $rows[] = array(t('comment'), l($row->title, "node/$row->nid#comment-$row->cid"), $user->name, $row->status ? $no : $yes, format_date($row->changed, 'small'), array('data' => $num_replies, 'align' => 'right'), $edit_link, $delete_link);
+      $rows[] = array(t('comment'), l($row->title, "node/$row->nid", array(), NULL, "comment-$row->cid", FALSE, TRUE), $user->name, $row->status ? $no : $yes, format_date($row->changed, 'small'), array('data' => $num_replies, 'align' => 'right'), $edit_link, $delete_link);
     }
   }
 
