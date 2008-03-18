@@ -3,7 +3,7 @@
 ********************************************************************
 Name: Workspace Module
 Author: John VanDyk <jvandyk at iastate dot edu>
-Drupal: cvs
+Drupal: 4.7
 ********************************************************************
 DESCRIPTION:
 
