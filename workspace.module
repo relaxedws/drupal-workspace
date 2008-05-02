@@ -9,8 +9,8 @@
 /**
 * Implementation of hook_help().
 */
-function workspace_help($section) {
-  switch ($section) {
+function workspace_help($path) {
+  switch ($path) {
     case 'admin/modules#description':
       return t('For individual users to manage their workspace');
   }
@@ -19,41 +19,40 @@ function workspace_help($section) {
 /**
 * Implementation of hook_menu().
 */
-function workspace_menu($may_cache) {
+function workspace_menu() {
+  $items['workspace'] = array(
+    'title' => 'My workspace',
+    'page callback' => 'workspace_admin',
+    'access callback' => 'workspace_access',
+    'weight' => -10,
+  );
+  $items['workspace/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => 'workspace_access',
+  );
+  $items['workspace/configure'] = array(
+    'title' => 'Configure',
+    'page callback' => 'workspace_configure',
+    'access callback' => 'workspace_access',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['workspace/delete'] = array(
+    'title' => t('Delete'),
+    'page callback' => 'workspace_delete',
+    'access callback' => 'workspace_access',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Menu access callback.
+ */
+function workspace_access() {
   global $user;
-  $items = array();
-
-  $access = user_access('access content') && ($user->uid > 0);
-
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'workspace',
-      'title' => t('My workspace'),
-      'callback' => 'workspace_admin',
-      'access' => $access);
-
-    $items[] = array(
-      'path' => 'workspace/list',
-      'title' => t('List'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -10);
-
-    $items[] = array(
-      'path' => 'workspace/configure',
-      'title' => t('Configure'),
-      'callback' => 'workspace_configure',
-      'access' => user_access('administer own workspace'),
-      'type' => MENU_LOCAL_TASK);
-
-    $items[] = array(
-      'path' => 'workspace/delete',
-      'title' => t('Delete'),
-      'callback' => 'workspace_delete',
-      'type' => MENU_CALLBACK);
-    //$items[] = array('path' => 'workspace/sharing', 'title' => t('sharing'), 'type' => MENU_LOCAL_TASK);
-  }
-
-   return $items;
+  return user_access('access content') && ($user->uid > 0);
 }
 
 /**
@@ -63,10 +62,9 @@ function workspace_perm() {
   return array('administer own workspace');
 }
 
-/********************************************************************
-* Module Functions :: Controllers
-********************************************************************/
-
+/**
+ * Menu callback. Build workspace page.
+ */
 function workspace_admin() {
   global $user;
   // This is bad form but still secure since we're just doing a drupal_goto().
@@ -93,11 +91,19 @@ function workspace_admin() {
 }
 
 /**
-* The configuration page.
-*/
+ * Menu callback. The configuration page.
+ */
+function workspace_configure() {
+  $output = drupal_get_form('workspace_configure_form');
+  drupal_set_title(t('Workspace : %username', array('%username' => $user->name)));
+  return $output;
+}
+
+/**
+ * Form definition for configuration form.
+ */
 function workspace_configure_form() {
   global $user;
-  $form = array();
   $form['maxnodes'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of items'),
@@ -119,32 +125,26 @@ function workspace_configure_form() {
   return $form;
 }
 
-function workspace_configure() {
-  $output = drupal_get_form('workspace_configure_form');
-  drupal_set_title(t('Workspace : %username', array('%username' => $user->name)));
-  return $output;
-}
-
-function workspace_configure_form_validate($form_id, $edit) {
-  if (!is_numeric($edit['maxnodes'])) {
+function workspace_configure_form_validate($form, $form_state) {
+  if (!is_numeric($form_state['values']['maxnodes'])) {
     form_set_error('maxnodes', t('Please enter a numeric value.'));
   }
-  if (!is_numeric($edit['maxfilenames']) && !form_get_errors()) {
+  if (!is_numeric($form_state['values']['maxfilenames']) && !form_get_errors()) {
     form_set_error('maxfilenames', t('Please enter a numeric value.'));
   }
 }
 
-function workspace_configure_form_submit($form_id, $edit) {
+function workspace_configure_form_submit($form, &$form_state) {
   global $user;
   $user = user_load(array('uid' => $user->uid));
   if (!isset($user->workspaces)) {
     $user->workspaces = array();
   }
-  $user->workspaces['default']['maxnodes'] = (int) $edit['maxnodes'];
-  $user->workspaces['default']['maxfilenames'] = (int) $edit['maxfilenames'];
+  $user->workspaces['default']['maxnodes'] = (int) $form_state['values']['maxnodes'];
+  $user->workspaces['default']['maxfilenames'] = (int) $form_state['values']['maxfilenames'];
   user_save($user, array('workspaces' => $user->workspaces));
   drupal_set_message(t('Your workspace preferences have been saved.'));
-  return 'workspace';
+  $form_state['redirect'] = 'workspace';
 }
 
 /********************************************************************
@@ -156,8 +156,8 @@ function workspace_configure_form_submit($form_id, $edit) {
 */
 function workspace_list() {
   global $user;
-  $maxnodes = $user->workspaces ? $user->workspaces['default']['maxnodes'] : 50;
-  $maxfilenames = $user->workspaces ? $user->workspaces['default']['maxfilenames'] : 50;
+  $maxnodes = isset($user->workspaces) ? $user->workspaces['default']['maxnodes'] : 50;
+  $maxfilenames = isset($user->workspaces) ? $user->workspaces['default']['maxfilenames'] : 50;
   if (!is_numeric($maxnodes)) {
     $maxnodes = 50;
   }

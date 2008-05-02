@@ -1,4 +1,4 @@
 ; $Id$
 name = Workspace
 description = Allows users to list/manage their own content.
-
+core = 6.x
