@@ -86,7 +86,7 @@ function workspace_menu() {
   // but since workspace_delete() simply redirects to
   // node/*/delete deletion permissions will be applied there.
   $items['workspace/delete'] = array(
-    'title' => t('Delete'),
+    'title' => 'Delete',
     'page callback' => 'workspace_delete',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,

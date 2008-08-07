@@ -1,0 +1,201 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  workspace.module,v 1.34 2008/07/24 20:45:11 jvandyk
+#  workspace.info,v 1.3 2008/05/02 21:55:04 jvandyk
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-08-06 21:44-0500\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: workspace.module:24
+msgid "The workspace module provides a list of content for each user."
+msgstr ""
+
+#: workspace.module:25
+msgid "When enabled, each user will have a 'My workspace' link in the Navigation menu."
+msgstr ""
+
+#: workspace.module:133;207;259;372
+msgid "Workspace: @name"
+msgstr ""
+
+#: workspace.module:144
+msgid "Number of items"
+msgstr ""
+
+#: workspace.module:145
+msgid "Maximum number of items to display in your workspace."
+msgstr ""
+
+#: workspace.module:151
+msgid "Number of files"
+msgstr ""
+
+#: workspace.module:152
+msgid "Maximum number of filenames to display in your workspace."
+msgstr ""
+
+#: workspace.module:162
+msgid "Save configuration"
+msgstr ""
+
+#: workspace.module:174;177
+msgid "Please enter a numeric value."
+msgstr ""
+
+#: workspace.module:195
+msgid "The workspace preferences have been saved."
+msgstr ""
+
+#: workspace.module:232;378
+msgid "Type"
+msgstr ""
+
+#: workspace.module:233;270
+msgid "Title"
+msgstr ""
+
+#: workspace.module:234
+msgid "Owner"
+msgstr ""
+
+#: workspace.module:235;271
+msgid "Published"
+msgstr ""
+
+#: workspace.module:236;272;379
+msgid "Modified"
+msgstr ""
+
+#: workspace.module:237;273
+msgid "Replies"
+msgstr ""
+
+#: workspace.module:238;274;381
+msgid "Operations"
+msgstr ""
+
+#: workspace.module:291
+msgid "yes"
+msgstr ""
+
+#: workspace.module:292
+msgid "no"
+msgstr ""
+
+#: workspace.module:334;346
+msgid "edit"
+msgstr ""
+
+#: workspace.module:335;349
+msgid "delete"
+msgstr ""
+
+#: workspace.module:374
+msgid "download"
+msgstr ""
+
+#: workspace.module:377
+msgid "Filename"
+msgstr ""
+
+#: workspace.module:380
+msgid "Size"
+msgstr ""
+
+#: workspace.module:426
+msgid "Your workspace is currently empty."
+msgstr ""
+
+#: workspace.module:446
+msgid "Choose what kind of content you would like to add."
+msgstr ""
+
+#: workspace.module:446
+msgid "Help?"
+msgstr ""
+
+#: workspace.module:447;483
+msgid "Select..."
+msgstr ""
+
+#: workspace.module:468
+msgid "Add new item"
+msgstr ""
+
+#: workspace.module:517
+msgid "Name of link to user's workspace"
+msgstr ""
+
+#: workspace.module:518
+msgid "This will be used to display the link to a user's workspace on his or her profile page. The %username token will be replaced by the username of the user whose profile is being shown."
+msgstr ""
+
+#: workspace.module:542
+msgid "View recent content"
+msgstr ""
+
+#: workspace.module:546;43
+msgid "Content"
+msgstr ""
+
+#: workspace.module:126
+msgid "administer own workspace"
+msgstr ""
+
+#: workspace.module:126
+msgid "administer workspaces"
+msgstr ""
+
+#: workspace.module:126
+msgid "view all workspaces"
+msgstr ""
+
+#: workspace.module:35
+msgid "My workspace"
+msgstr ""
+
+#: workspace.module:52
+msgid "Comments"
+msgstr ""
+
+#: workspace.module:61
+msgid "Attachments"
+msgstr ""
+
+#: workspace.module:70
+msgid "Configure"
+msgstr ""
+
+#: workspace.module:79 workspace.info:0
+msgid "Workspace"
+msgstr ""
+
+#: workspace.module:80
+msgid "Customize workspace behavior."
+msgstr ""
+
+#: workspace.module:89
+msgid "Delete"
+msgstr ""
+
+#: workspace.module:0
+msgid "workspace"
+msgstr ""
+
+#: workspace.info:0
+msgid "Allows users to list/manage their own content."
+msgstr ""
+
