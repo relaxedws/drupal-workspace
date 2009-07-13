@@ -3,14 +3,14 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  workspace.module,v 1.34 2008/07/24 20:45:11 jvandyk
-#  workspace.info,v 1.3 2008/05/02 21:55:04 jvandyk
+#  workspace.module: n/a
+#  workspace.info: n/a
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2008-08-06 21:44-0500\n"
+"POT-Creation-Date: 2009-07-13 18:59+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -27,139 +27,143 @@ msgstr ""
 msgid "When enabled, each user will have a 'My workspace' link in the Navigation menu."
 msgstr ""
 
-#: workspace.module:133;207;259;372
+#: workspace.module:144;218;271;386
 msgid "Workspace: @name"
 msgstr ""
 
-#: workspace.module:144
+#: workspace.module:155
 msgid "Number of items"
 msgstr ""
 
-#: workspace.module:145
+#: workspace.module:156
 msgid "Maximum number of items to display in your workspace."
 msgstr ""
 
-#: workspace.module:151
+#: workspace.module:162
 msgid "Number of files"
 msgstr ""
 
-#: workspace.module:152
+#: workspace.module:163
 msgid "Maximum number of filenames to display in your workspace."
 msgstr ""
 
-#: workspace.module:162
+#: workspace.module:173
 msgid "Save configuration"
 msgstr ""
 
-#: workspace.module:174;177
+#: workspace.module:185;188
 msgid "Please enter a numeric value."
 msgstr ""
 
-#: workspace.module:195
+#: workspace.module:206
 msgid "The workspace preferences have been saved."
 msgstr ""
 
-#: workspace.module:232;378
+#: workspace.module:243;392
 msgid "Type"
 msgstr ""
 
-#: workspace.module:233;270
+#: workspace.module:244;282
 msgid "Title"
 msgstr ""
 
-#: workspace.module:234
+#: workspace.module:245
 msgid "Owner"
 msgstr ""
 
-#: workspace.module:235;271
+#: workspace.module:246;283
 msgid "Published"
 msgstr ""
 
-#: workspace.module:236;272;379
+#: workspace.module:247;284;393
 msgid "Modified"
 msgstr ""
 
-#: workspace.module:237;273
+#: workspace.module:248;285
 msgid "Replies"
 msgstr ""
 
-#: workspace.module:238;274;381
+#: workspace.module:249;286;395
 msgid "Operations"
 msgstr ""
 
-#: workspace.module:291
+#: workspace.module:304
 msgid "yes"
 msgstr ""
 
-#: workspace.module:292
+#: workspace.module:305
 msgid "no"
 msgstr ""
 
-#: workspace.module:334;346
+#: workspace.module:347;359
 msgid "edit"
 msgstr ""
 
-#: workspace.module:335;349
+#: workspace.module:348;362
 msgid "delete"
 msgstr ""
 
-#: workspace.module:374
+#: workspace.module:388
 msgid "download"
 msgstr ""
 
-#: workspace.module:377
+#: workspace.module:391
 msgid "Filename"
 msgstr ""
 
-#: workspace.module:380
+#: workspace.module:394
 msgid "Size"
 msgstr ""
 
-#: workspace.module:426
+#: workspace.module:440
 msgid "Your workspace is currently empty."
 msgstr ""
 
-#: workspace.module:446
+#: workspace.module:460
 msgid "Choose what kind of content you would like to add."
 msgstr ""
 
-#: workspace.module:446
+#: workspace.module:460
 msgid "Help?"
 msgstr ""
 
-#: workspace.module:447;483
+#: workspace.module:461;497
 msgid "Select..."
 msgstr ""
 
-#: workspace.module:468
+#: workspace.module:482
 msgid "Add new item"
 msgstr ""
 
-#: workspace.module:517
+#: workspace.module:536
 msgid "Name of link to user's workspace"
 msgstr ""
 
-#: workspace.module:518
+#: workspace.module:537
 msgid "This will be used to display the link to a user's workspace on his or her profile page. The %username token will be replaced by the username of the user whose profile is being shown."
 msgstr ""
 
-#: workspace.module:542
+#: workspace.module:554
 msgid "View recent content"
 msgstr ""
 
-#: workspace.module:546;43
+#: workspace.module:558;43
 msgid "Content"
 msgstr ""
 
-#: workspace.module:126
+#: workspace.module:137
+msgid "access workspace"
+msgstr ""
+
+#: workspace.module:137
 msgid "administer own workspace"
 msgstr ""
 
-#: workspace.module:126
+#: workspace.module:137
 msgid "administer workspaces"
 msgstr ""
 
-#: workspace.module:126
+#: workspace.module:137
 msgid "view all workspaces"
 msgstr ""
 
@@ -197,5 +201,9 @@ msgstr ""
 
 #: workspace.info:0
 msgid "Allows users to list/manage their own content."
+msgstr ""
+
+#: workspace.info:0
+msgid "Workflow"
 msgstr ""
 
