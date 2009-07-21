@@ -164,6 +164,15 @@ function workspace_configure_form($form_state, $account) {
     '#default_value' => $account->workspaces ? $account->workspaces['default']['maxfilenames'] : 50,
     '#size' => 4
   );
+  if ( module_exists('comment') ) {
+    $form['maxcomments'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Number of comments'),
+      '#description' => t('Maximum number of comments to display in your workspace.'),
+      '#default_value' => $account->workspaces['default']['maxcomments'] ? $account->workspaces['default']['maxcomments'] : 50,
+      '#size' => 4
+    );
+  }
   $form['uid'] = array(
     '#type' => 'value',
     '#value' => $account->uid,
@@ -186,6 +195,11 @@ function workspace_configure_form_validate($form, $form_state) {
   }
   if (!is_numeric($form_state['values']['maxfilenames']) && !form_get_errors()) {
     form_set_error('maxfilenames', t('Please enter a numeric value.'));
+  }
+  if ( module_exists('comment') ) {
+    if (!is_numeric($form_state['values']['maxcomments']) && !form_get_errors()) {
+      form_set_error('maxfilenames', t('Please enter a numeric value.'));
+    }
   }
 }
 
@@ -521,7 +535,7 @@ function workspace_settings() {
   // The anonymous user does not have a profile.
   unset($roles[DRUPAL_ANONYMOUS_RID]);
   $form['info'] = array(
-    '#value' => "Select each role for which you want the link to a user's workspace to show up in their user profile."
+    '#value' => t("Select each role for which you want the link to a user's workspace to show up in their user profile."),
   );
   foreach ($roles as $rid => $name) {
     $identifier = 'workspace_user_profile_'. $rid;
@@ -535,7 +549,7 @@ function workspace_settings() {
     '#type' => 'textfield',
     '#title' => t("Name of link to user's workspace"),
     '#description' => t("This will be used to display the link to a user's workspace on his or her profile page. The %username token will be replaced by the username of the user whose profile is being shown."),
-    '#default_value' => variable_get('workspace_user_profile_link', 'View recent content created by %username'),
+    '#default_value' => variable_get('workspace_user_profile_link', t('View recent content created by %username')),
   );
 
   return system_settings_form($form);
