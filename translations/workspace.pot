@@ -3,14 +3,14 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  workspace.module: n/a
-#  workspace.info: n/a
+#  workspace.module,v 1.36 2009/07/13 17:17:17 frankralf
+#  workspace.info,v 1.4 2009/07/13 17:17:17 frankralf
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-07-13 18:59+0200\n"
+"POT-Creation-Date: 2009-07-21 19:52+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -27,7 +27,7 @@ msgstr ""
 msgid "When enabled, each user will have a 'My workspace' link in the Navigation menu."
 msgstr ""
 
-#: workspace.module:144;218;271;386
+#: workspace.module:144;232;285;400
 msgid "Workspace: @name"
 msgstr ""
 
@@ -47,107 +47,123 @@ msgstr ""
 msgid "Maximum number of filenames to display in your workspace."
 msgstr ""
 
-#: workspace.module:173
+#: workspace.module:170
+msgid "Number of comments"
+msgstr ""
+
+#: workspace.module:171
+msgid "Maximum number of comments to display in your workspace."
+msgstr ""
+
+#: workspace.module:182
 msgid "Save configuration"
 msgstr ""
 
-#: workspace.module:185;188
+#: workspace.module:194;197;201
 msgid "Please enter a numeric value."
 msgstr ""
 
-#: workspace.module:206
+#: workspace.module:220
 msgid "The workspace preferences have been saved."
 msgstr ""
 
-#: workspace.module:243;392
+#: workspace.module:257;406
 msgid "Type"
 msgstr ""
 
-#: workspace.module:244;282
+#: workspace.module:258;296
 msgid "Title"
 msgstr ""
 
-#: workspace.module:245
+#: workspace.module:259
 msgid "Owner"
 msgstr ""
 
-#: workspace.module:246;283
+#: workspace.module:260;297
 msgid "Published"
 msgstr ""
 
-#: workspace.module:247;284;393
+#: workspace.module:261;298;407
 msgid "Modified"
 msgstr ""
 
-#: workspace.module:248;285
+#: workspace.module:262;299
 msgid "Replies"
 msgstr ""
 
-#: workspace.module:249;286;395
+#: workspace.module:263;300;409
 msgid "Operations"
 msgstr ""
 
-#: workspace.module:304
+#: workspace.module:318
 msgid "yes"
 msgstr ""
 
-#: workspace.module:305
+#: workspace.module:319
 msgid "no"
 msgstr ""
 
-#: workspace.module:347;359
+#: workspace.module:361;373
 msgid "edit"
 msgstr ""
 
-#: workspace.module:348;362
+#: workspace.module:362;376
 msgid "delete"
 msgstr ""
 
-#: workspace.module:388
+#: workspace.module:402
 msgid "download"
 msgstr ""
 
-#: workspace.module:391
+#: workspace.module:405
 msgid "Filename"
 msgstr ""
 
-#: workspace.module:394
+#: workspace.module:408
 msgid "Size"
 msgstr ""
 
-#: workspace.module:440
+#: workspace.module:454
 msgid "Your workspace is currently empty."
 msgstr ""
 
-#: workspace.module:460
+#: workspace.module:474
 msgid "Choose what kind of content you would like to add."
 msgstr ""
 
-#: workspace.module:460
+#: workspace.module:474
 msgid "Help?"
 msgstr ""
 
-#: workspace.module:461;497
+#: workspace.module:475;511
 msgid "Select..."
 msgstr ""
 
-#: workspace.module:482
+#: workspace.module:496
 msgid "Add new item"
 msgstr ""
 
-#: workspace.module:536
+#: workspace.module:538
+msgid "Select each role for which you want the link to a user's workspace to show up in their user profile."
+msgstr ""
+
+#: workspace.module:550
 msgid "Name of link to user's workspace"
 msgstr ""
 
-#: workspace.module:537
+#: workspace.module:551
 msgid "This will be used to display the link to a user's workspace on his or her profile page. The %username token will be replaced by the username of the user whose profile is being shown."
 msgstr ""
 
-#: workspace.module:554
+#: workspace.module:552
+msgid "View recent content created by %username"
+msgstr ""
+
+#: workspace.module:568
 msgid "View recent content"
 msgstr ""
 
-#: workspace.module:558;43
+#: workspace.module:572;43
 msgid "Content"
 msgstr ""
 
