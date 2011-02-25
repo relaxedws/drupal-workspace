@@ -1,5 +1,4 @@
 # Translation of de.po to German.
-# $Id$
 # Sascha Tönnies <babel@sascha-toennies.de>, 2005.
 # Uwe Hermann <uwe@hermann-uwe.de>, 2005.
 #
