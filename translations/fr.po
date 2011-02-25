@@ -1,4 +1,3 @@
-# $Id$
 # by Ludovic Dias
 msgid ""
 msgstr ""
