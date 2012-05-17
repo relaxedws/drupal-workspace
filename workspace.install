@@ -1,18 +1,18 @@
 <?php
-
 /**
  * @file
- * Uninstalls the variables from Workspace module.
+ * workspace install, update and uninstall functions.
+ *
  */
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function workspace_uninstall() {
   variable_del('workspace_user_profile_link');
   $roles = user_roles();
   foreach ($roles as $rid => $name) {
-    variable_del('workspace_user_profile_'. $rid);
+    variable_del('workspace_user_profile_' . $rid);
   }
 
   // Currently uninstalling leaves per-user workspace data

@@ -2,7 +2,7 @@
                      D R U P A L    M O D U L E
 ********************************************************************
 Name: Workspace Module
-Author: John VanDyk <jvandyk at iastate dot edu>
+Original Author: John VanDyk <jvandyk at iastate dot edu>
 Drupal: 6
 ********************************************************************
 DESCRIPTION:
@@ -25,6 +25,6 @@ INSTALLATION:
 
    When enabled, a "My workspace" menu should appear in the menu 
    system.
-   
+
 3. Under Administer > User management > Permissions you may wish
    to give users the ability to configure their own workspace.
