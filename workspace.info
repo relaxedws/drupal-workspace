@@ -1,3 +1,6 @@
-name = Workspace
-description = Allows users to list/manage their own content.
+name = "Workspace"
+description = "Allows users to list/manage their own content."
+package = "Workflow"
+project = "workspace"
 core = 6.x
+version = "6.x-1.x-dev"

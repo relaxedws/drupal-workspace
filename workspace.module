@@ -99,8 +99,15 @@ function workspace_menu() {
  */
 function workspace_access($account, $module_enabled = TRUE) {
   global $user;
-  return user_access('access content')     // If you may not see content, you may not see workspaces.
-    && (user_access('view all workspaces') // Must either have permission to see all workspaces
+  // Let admin see $account
+  if ($user->uid == 1 && $account->uid > 1) {
+    return user_access('access content', $account)
+      && user_access('access workspace', $account)
+      &&  $module_enabled;
+  }
+  return user_access('access content', $user)     // If you may not see content, you may not see workspaces.
+    && user_access('access workspace', $user)     // Allowed to see own workspace
+    && (user_access('view all workspaces', $user) // Must either have permission to see all workspaces
         || (($user->uid == $account->uid)  // or must be your workspace
         && ($user->uid != 0)))             // and you must not be an anonymous user
     && $module_enabled;                    // If, e.g., comment module is disabled, remove comment local task.
@@ -111,6 +118,10 @@ function workspace_access($account, $module_enabled = TRUE) {
  */
 function workspace_configure_access($account) {
   global $user;
+  if ($user->uid == 1 && $account->uid > 1) {
+    return user_access('administer workspaces', $account)
+      || user_access('administer own workspace', $account);
+  }
   return ($user->uid != 0)                          // May not be anonymous user.
     && user_access('administer workspaces')         // Must either have permission to administer all workspaces
     || ($user->uid == $account->uid                 // Or if this is your workspace
@@ -122,7 +133,7 @@ function workspace_configure_access($account) {
  * Implementation of hook_perm().
  */
 function workspace_perm() {
-  return array('administer own workspace', 'administer workspaces', 'view all workspaces');
+  return array('access workspace', 'administer own workspace', 'administer workspaces', 'view all workspaces');
 }
 
 /**
@@ -152,6 +163,15 @@ function workspace_configure_form($form_state, $account) {
     '#default_value' => $account->workspaces ? $account->workspaces['default']['maxfilenames'] : 50,
     '#size' => 4
   );
+  if ( module_exists('comment') ) {
+    $form['maxcomments'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Number of comments'),
+      '#description' => t('Maximum number of comments to display in your workspace.'),
+      '#default_value' => $account->workspaces['default']['maxcomments'] ? $account->workspaces['default']['maxcomments'] : 50,
+      '#size' => 4
+    );
+  }
   $form['uid'] = array(
     '#type' => 'value',
     '#value' => $account->uid,
@@ -174,6 +194,11 @@ function workspace_configure_form_validate($form, $form_state) {
   }
   if (!is_numeric($form_state['values']['maxfilenames']) && !form_get_errors()) {
     form_set_error('maxfilenames', t('Please enter a numeric value.'));
+  }
+  if ( module_exists('comment') ) {
+    if (!is_numeric($form_state['values']['maxcomments']) && !form_get_errors()) {
+      form_set_error('maxfilenames', t('Please enter a numeric value.'));
+    }
   }
 }
 
@@ -236,15 +261,16 @@ function workspace_list_content($account) {
     $comments_enabled ? array('data' => t('Replies'), 'field' => 'comment_count') : array('data' => ''),
     array('data' => t('Operations'), 'colspan' => 2)
   );
+  $cols = 8;
   $result = pager_query(db_rewrite_sql($sql . tablesort_sql($header)), $max, 0, db_rewrite_sql($count_sql), $account->uid);
   $rows = workspace_build_rows($result, $account);
   $output = '';
   // Only add the content add form if the user is viewing his/her own workspace.
-  if ($user->uid == $account->uid) {
+  if ($user->uid == 1 || user_access('view all workspaces') || $user->uid == $account->uid) {
     $output = drupal_get_form('workspace_add_form');
   }
 
-  $output .= theme_workspace_list($header, $rows, $max);
+  $output .= theme_workspace_list($header, $rows, $max, $cols);
   return $output;
 }
 
@@ -272,9 +298,10 @@ function workspace_list_comments($account) {
     array('data' => t('Replies'), 'field' => 'comment_count'),
     array('data' => t('Operations'), 'colspan' => 2)
   );
+  $cols = 6;
   $result = pager_query($sql . tablesort_sql($header), $max, 0, $count_sql, $account->uid);
   $rows = workspace_build_rows($result, $account);
-  return theme_workspace_list($header, $rows, $max);
+  return theme_workspace_list($header, $rows, $max, $cols);
 }
 
 /**
@@ -368,6 +395,7 @@ function workspace_build_rows($result, $account) {
  *   User object representing user whose workspace is being listed.
  */
 function workspace_list_files($account) {
+  global $user;
   drupal_set_title(t('Workspace: @name', array('@name' => $account->name)));
   $max = isset($user->workspaces) ? $user->workspaces['default']['maxfilenames'] : 50;
   $download = t('download');
@@ -379,7 +407,7 @@ function workspace_list_files($account) {
     array('data' => t('Size'), 'field' => 'f.filesize'),
     array('data' => t('Operations')),
   );
-
+  $cols = 6;
   $sql = "SELECT u.nid, f.filemime, f.filename, f.filesize, f.timestamp, f.filepath
           FROM {files} f
           LEFT JOIN {upload} u ON f.fid = u.fid
@@ -396,7 +424,7 @@ function workspace_list_files($account) {
     );
   }
 
-  return theme('workspace_list', $header, $rows, $max);
+  return theme('workspace_list', $header, $rows, $max, $cols);
 }
 
 /**
@@ -405,7 +433,7 @@ function workspace_list_files($account) {
 function workspace_theme() {
   return array(
     'workspace_list' => array(
-      'arguments' => array('header' => array(), 'rows' => array(), $max = 50),
+      'arguments' => array('header' => array(), 'rows' => array(), $max = 50, $cols = 8),
     ),
   );
 }
@@ -413,13 +441,13 @@ function workspace_theme() {
 /**
  * Theme the list of content. Turn the results into a table.
  */
-function theme_workspace_list($header, $rows, $max) {
+function theme_workspace_list($header, $rows, $max, $cols) {
   if ($rows) {
-    $pager = theme('pager', NULL, $max, 2);
+    $pager = theme('pager', NULL, $max);
     if (!empty($pager)) {
-      $rows[] = array(array('data' => $pager, 'colspan' => 3));
+      $rows[] = array(array('data' => $pager, 'colspan' => $cols));
     }
-    $output .= theme('table', $header, $rows);
+    $output = theme('table', $header, $rows);
   }
   else {
     $output = t('Your workspace is currently empty.');
@@ -433,7 +461,7 @@ function theme_workspace_list($header, $rows, $max) {
 function workspace_delete() {
   $nid = intval(arg(2));
   if (is_numeric($nid)) {
-    drupal_goto('node/' . $nid . '/delete');
+    drupal_goto('node/'. $nid .'/delete');
   }
 }
 
@@ -488,7 +516,12 @@ function workspace_add_form_submit($form, $form_state) {
       $options[$type] = $object->name;
     }
     if (isset($options[$node_type])) {
-      drupal_goto('node/add/' . $node_type);
+      /* Start hack */
+      if (stristr($node_type, "_") > -1) {
+        $node_type = str_replace("_", "-", $node_type);
+      }
+      /* End hack */
+      drupal_goto('node/add/'. $node_type);
     }
   }
 }
@@ -501,7 +534,7 @@ function workspace_settings() {
   // The anonymous user does not have a profile.
   unset($roles[DRUPAL_ANONYMOUS_RID]);
   $form['info'] = array(
-    '#value' => "Select each role for which you want the link to a user's workspace to show up in their user profile."
+    '#value' => t("Select each role for which you want the link to a user's workspace to show up in their user profile."),
   );
   foreach ($roles as $rid => $name) {
     $identifier = 'workspace_user_profile_'. $rid;
@@ -515,7 +548,7 @@ function workspace_settings() {
     '#type' => 'textfield',
     '#title' => t("Name of link to user's workspace"),
     '#description' => t("This will be used to display the link to a user's workspace on his or her profile page. The %username token will be replaced by the username of the user whose profile is being shown."),
-    '#default_value' => variable_get('workspace_user_profile_link', 'View recent content created by %username'),
+    '#default_value' => variable_get('workspace_user_profile_link', t('View recent content created by %username')),
   );
 
   return system_settings_form($form);
@@ -528,22 +561,19 @@ function workspace_settings() {
  */
 function workspace_user($op, &$edit, &$account) {
   global $user;
-  if ($op == 'view' && user_access('view all workspaces')) {
-    $allowed = FALSE;
-    foreach ($user->roles as $rid => $name) {
-      if (variable_get('workspace_user_profile_'. $rid, 0)) {
-        $allowed = TRUE;
-        break;
-      }
-    }
-    if ($allowed) {
+  if ($op == 'view') {
+    if (workspace_access($account)) {
       $variables['%username'] = $account->name;
       $link_title = variable_get('workspace_user_profile_link', t('View recent content'));
-
-      $account->content['summary']['workspace'] = array(
-        '#type' => 'user_profile_item',
+      $link = l(strtr($link_title, $variables), 'workspace/'. $account->uid);
+      $account->content['workspace'] = array(
+        '#type' => 'user_profile_category',
         '#title' => variable_get('workspace_user_profile_title', t('Content')),
-        '#value' => l(strtr($link_title, $variables), 'workspace/'. $account->uid),
+        'link' => array(
+          '#value' => $link,
+          '#type' => 'user_profile_item',
+        ),
+        '#weight' => -10,
       );
     }
   }
