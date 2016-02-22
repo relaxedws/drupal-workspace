@@ -1,0 +1,6 @@
+name: workspace
+type: module
+description: The workspace module
+core: 8.x
+dependencies:
+  - multiversion

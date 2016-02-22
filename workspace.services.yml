@@ -1,0 +1,4 @@
+services:
+  plugin.manager.replicator:
+    class: Drupal\workspace\Plugin\ReplicatorManager
+    parent: default_plugin_manager

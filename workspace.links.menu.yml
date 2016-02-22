@@ -1,0 +1,12 @@
+# Replication menu items definition
+entity.replication.collection:
+  title: 'Replication list'
+  route_name: entity.replication.collection
+  description: 'List Replication entities'
+
+replication.admin.structure.settings:
+  title: Replication settings
+  description: 'Configure Replication entities'
+  route_name: replication.settings
+  parent: system.admin_structure
+
