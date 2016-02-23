@@ -14,7 +14,6 @@ class ReplicationActionForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity = $this->getEntity($form_state);
-    $this->getPlugin($entity);
 
     $form['#weight'] = 9999;
     $form['replication_id'] = [
@@ -40,10 +39,12 @@ class ReplicationActionForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $entity = $this->getEntity($form_state);
-    $response = $this->getPlugin($entity)
-      ->setSource($entity->get('source')->entity)
-      ->setTarget($entity->get('target')->entity)
-      ->push();
+    $source = \Drupal::service('workspace.pointer')->get($entity->get('source')->value);
+    $target = \Drupal::service('workspace.pointer')->get($entity->get('target')->value);
+    \Drupal::service('replicator.manager')
+      ->setSource($source)
+      ->setTarget($target)
+      ->replicate();
     if (!isset($response['error'])) {
       $entity->set('replicated', REQUEST_TIME)->save();
       drupal_set_message('Successful deployment.');
@@ -62,15 +63,4 @@ class ReplicationActionForm extends FormBase {
     throw new \Exception;
   }
 
-  protected function getPlugin(ReplicationInterface $entity) {
-    try {
-      return \Drupal::service('plugin.manager.replicator')
-        ->createInstance($entity->get('replicator')->value);
-    }
-    catch(\Exception $e) {
-      watchdog_exception('workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
-      return;
-    }
-  }
 }

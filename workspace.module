@@ -1,0 +1,13 @@
+<?php
+
+use Drupal\workspace\Pointer;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert()
+ *
+ * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+ */
+function workspace_workspace_insert(\Drupal\multiversion\Entity\WorkspaceInterface $workspace) {
+  $pointer = new Pointer('workspace:' . $workspace->id(), $workspace->label(), ['workspace' => $workspace->id()]);
+  \Drupal::service('workspace.pointer')->add($pointer);
+}

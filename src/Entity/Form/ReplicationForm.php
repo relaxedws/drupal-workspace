@@ -20,17 +20,7 @@ class ReplicationForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $replicators = \Drupal::service('plugin.manager.replicator')->getDefinitions();
-    if (empty($replicators)) {
-      drupal_set_message('There are no replicator plugins defined.', 'warning');
-      return;
-    }
-
     $form = parent::buildForm($form, $form_state);
-
-    if (count($replicators) == 1) {
-      $form['replicator']['#attributes']['style'] = 'display: none;';
-    }
 
     if ($this->getDefaultSource()) {
       $form['source']['widget']['#default_value'] = $this->getDefaultSource();

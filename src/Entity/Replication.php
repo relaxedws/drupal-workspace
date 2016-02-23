@@ -150,12 +150,14 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['source'] = BaseFieldDefinition::create('entity_reference')
+    $pointers = self::getPointerAllowedValues();
+    $fields['source'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Source'))
       ->setDescription(t('The source endpoint.'))
       ->setRequired(TRUE)
-      ->setSetting('target_type', 'workspace')
-      ->setSetting('handler', 'default')
+      ->setSettings([
+        'allowed_values' => $pointers
+      ])
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -2,
@@ -167,12 +169,13 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['target'] = BaseFieldDefinition::create('entity_reference')
+    $fields['target'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Target'))
       ->setDescription(t('The target endpoint.'))
       ->setRequired(TRUE)
-      ->setSetting('target_type', 'workspace')
-      ->setSetting('handler', 'default')
+      ->setSettings([
+        'allowed_values' => $pointers
+      ])
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -1,
@@ -180,26 +183,6 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDisplayOptions('form', array(
         'type' => 'options_select',
         'weight' => -1,
-      ))
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
-
-    $replicators = self::getReplicatorAllowedValues();
-    $fields['replicator'] = BaseFieldDefinition::create('list_string')
-      ->setLabel(t('Replicator'))
-      ->setDescription(t('The replicator plugin.'))
-      ->setRequired(TRUE)
-      ->setSettings(array(
-        'allowed_values' => $replicators
-      ))
-      ->setDefaultValue(reset($replicators))
-      ->setDisplayOptions('view', array(
-        'label' => 'above',
-        'weight' => 0,
-      ))
-      ->setDisplayOptions('form', array(
-        'type' => 'options_select',
-        'weight' => 0,
       ))
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
@@ -231,13 +214,13 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
     return array(\Drupal::currentUser()->id());
   }
 
-  protected static function getReplicatorAllowedValues() {
-    $replicators = \Drupal::service('plugin.manager.replicator')->getDefinitions();
-    $replicator_allowed_values = [];
-    foreach($replicators as $replicator) {
-      $replicator_allowed_values[$replicator['id']] = $replicator['label'];
+  protected static function getPointerAllowedValues() {
+    $pointers = \Drupal::service('workspace.pointer')->getMultiple();
+    $pointer_allowed_values = [];
+    foreach ($pointers as $key => $value) {
+      $pointer_allowed_values[$key] = $value->label();
     }
-    return $replicator_allowed_values;
+    return $pointer_allowed_values;
   }
 
 }

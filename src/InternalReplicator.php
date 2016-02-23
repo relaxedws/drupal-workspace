@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\workspace\Plugin\Replicator;
+namespace Drupal\workspace;
 
-use Drupal\workspace\Plugin\ReplicatorBase;
+use Drupal\multiversion\Entity\Workspace;
 
 /**
  * @Replicator(
@@ -15,9 +15,18 @@ class InternalReplicator extends ReplicatorBase {
   /**
    * {@inheritdoc}
    */
-  public function push() {
+  public function applies() {
+    return true;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function replicate() {
     // Set active workspace to source.
-    \Drupal::service('workspace.manager')->setActiveWorkspace($this->source);
+    $source_workspace = Workspace::load($this->source->data()['workspace']);
+    $target_workspace = Workspace::load($this->target->data()['workspace']);
+    \Drupal::service('workspace.manager')->setActiveWorkspace($source_workspace);
     // Get multiversion supported content entities.
     $entity_types = \Drupal::service('multiversion.manager')->getSupportedEntityTypes();
     // Load all entities.
@@ -25,9 +34,7 @@ class InternalReplicator extends ReplicatorBase {
       $entities = \Drupal::service('entity_type.manager')->getStorage($entity_type->id())->loadMultiple();
       foreach ($entities as $entity) {
         // Add target workspace id to the workspace field.
-        $id = $this->target->id();
-        $entity->workspace = $this->target;
-        $workspace = $entity->workspace;
+        $entity->workspace = $target_workspace;
         $entity->save();
       }
     }

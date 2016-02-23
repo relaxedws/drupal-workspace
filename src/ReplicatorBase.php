@@ -5,16 +5,12 @@
  * Contains \Drupal\workspace\Plugin\ReplicatorBase.
  */
 
-namespace Drupal\workspace\Plugin;
-
-use Drupal\Component\Plugin\PluginBase;
-use Drupal\multiversion\Entity\WorkspaceInterface;
-use Psr\Http\Message\UriInterface;
+namespace Drupal\workspace;
 
 /**
- * Base class for Replicator plugins.
+ * Base class for Replicators.
  */
-abstract class ReplicatorBase extends PluginBase implements ReplicatorInterface {
+abstract class ReplicatorBase implements ReplicatorInterface {
 
   /**
    * @var
@@ -31,7 +27,7 @@ abstract class ReplicatorBase extends PluginBase implements ReplicatorInterface 
   /**
    * @inheritDoc
    */
-  public function setSource(WorkspaceInterface $source) {
+  public function setSource(Pointer $source) {
     $this->source = $source;
     return $this;
   }
@@ -39,7 +35,7 @@ abstract class ReplicatorBase extends PluginBase implements ReplicatorInterface 
   /**
    * @inheritDoc
    */
-  public function setTarget(WorkspaceInterface $target) {
+  public function setTarget(Pointer $target) {
     $this->target = $target;
     return $this;
   }

@@ -1,4 +1,12 @@
 services:
-  plugin.manager.replicator:
-    class: Drupal\workspace\Plugin\ReplicatorManager
-    parent: default_plugin_manager
+  replicator.manager:
+    class: Drupal\workspace\ReplicatorManager
+    tags:
+      - { name: service_collector, tag: workspace_replicator, call: addReplicator}
+  internal.replicator:
+    class: Drupal\workspace\InternalReplicator
+    tags:
+      - {name: workspace_replicator, priority: 10}
+  workspace.pointer:
+    class: Drupal\workspace\WorkspacePointer
+    arguments: ['@keyvalue']
