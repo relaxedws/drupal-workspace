@@ -2,29 +2,50 @@
 
 namespace Drupal\workspace;
 
-class Pointer {
+class Pointer implements PointerInterface{
 
+  /**
+   * @var string
+   */
   protected $id;
 
+  /**
+   * @var string
+   */
   protected $label;
 
+  /**
+   * @var array
+   */
   protected $data = [];
 
-  function __construct($id, $label, array $data = []) {
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($id, $label, array $data = []) {
     $this->id = $id;
     $this->label = $label;
     $this->data = $data;
   }
 
-  function id() {
+  /**
+   * {@inheritdoc}
+   */
+  public function id() {
     return (string) $this->id;
   }
 
-  function label() {
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
     return (string) $this->label;
   }
 
-  function data() {
+  /**
+   * {@inheritdoc}
+   */
+  public function data() {
     return (array) $this->data;
   }
 }

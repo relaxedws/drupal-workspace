@@ -1,0 +1,18 @@
+<?php
+
+use Drupal\multiversion\Entity\Workspace;
+use Drupal\workspace\Pointer;
+
+/**
+ * Implementation of hook_install().
+ */
+function workspace_install() {
+  foreach (Workspace::loadMultiple() as $workspace) {
+    $pointer = new Pointer(
+      'workspace:' . $workspace->id(),
+      $workspace->label(),
+      ['workspace' => $workspace->id()]
+    );
+    \Drupal::service('workspace.pointer')->add($pointer);
+  }
+}

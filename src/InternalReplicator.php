@@ -3,6 +3,7 @@
 namespace Drupal\workspace;
 
 use Drupal\multiversion\Entity\Workspace;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 
 /**
  * @Replicator(
@@ -10,22 +11,29 @@ use Drupal\multiversion\Entity\Workspace;
  *   label = "Internal Replicator"
  * )
  */
-class InternalReplicator extends ReplicatorBase {
+class InternalReplicator implements ReplicatorInterface{
 
   /**
    * {@inheritdoc}
    */
-  public function applies() {
-    return true;
+  public function applies(PointerInterface $source, PointerInterface $target) {
+    if (isset($source->data()['workspace']) && isset($target->data()['workspace'])) {
+      $source_workspace = Workspace::load($source->data()['workspace']);
+      $target_workspace = Workspace::load($target->data()['workspace']);
+      if (($source_workspace instanceof WorkspaceInterface) && ($target_workspace instanceof WorkspaceInterface)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function replicate() {
+  public function replicate(PointerInterface $source, PointerInterface $target) {
     // Set active workspace to source.
-    $source_workspace = Workspace::load($this->source->data()['workspace']);
-    $target_workspace = Workspace::load($this->target->data()['workspace']);
+    $source_workspace = Workspace::load($source->data()['workspace']);
+    $target_workspace = Workspace::load($target->data()['workspace']);
     \Drupal::service('workspace.manager')->setActiveWorkspace($source_workspace);
     // Get multiversion supported content entities.
     $entity_types = \Drupal::service('multiversion.manager')->getSupportedEntityTypes();

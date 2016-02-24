@@ -10,14 +10,14 @@ namespace Drupal\workspace;
 /**
  * Provides the Replicator manager.
  */
-class ReplicatorManager extends ReplicatorBase {
+class ReplicatorManager implements ReplicatorInterface{
 
   protected $replicators = [];
 
   /**
    * {@inheritdoc}
    */
-  public function applies() {
+  public function applies(PointerInterface $source, PointerInterface $target) {
     return TRUE;
   }
 
@@ -33,13 +33,10 @@ class ReplicatorManager extends ReplicatorBase {
   /**
    * {@inheritdoc}
    */
-  public function replicate() {
+  public function replicate(PointerInterface $source, PointerInterface $target) {
     foreach ($this->replicators as $replicator) {
-      if ($replicator->applies()) {
-        $replicator
-          ->setSource($this->source)
-          ->setTarget($this->target)
-          ->replicate();
+      if ($replicator->applies($source, $target)) {
+        $replicator->replicate($source, $target);
       }
     }
   }

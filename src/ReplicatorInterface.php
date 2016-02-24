@@ -13,39 +13,17 @@ namespace Drupal\workspace;
 interface ReplicatorInterface {
 
   /**
-   * @return boolean
+   * @param \Drupal\workspace\PointerInterface $source
+   * @param \Drupal\workspace\PointerInterface $target
+   * @return bool
    */
-  public function applies();
+  public function applies(PointerInterface $source, PointerInterface $target);
 
   /**
-   * Parses the URI for use by the push method.
-   *
-   * @param \Drupal\workspace\Pointer $source
-   * @return \Drupal\workspace\ReplicatorInterface
-   */
-  public function setSource(Pointer $source);
-
-  /**
-   * Parses the URI to use by the push method
-   *
-   * @param \Drupal\workspace\Pointer $target
-   * @return \Drupal\workspace\ReplicatorInterface
-   */
-  public function setTarget(Pointer $target);
-
-  /**
-   * @return mixed
-   */
-  public function getSource();
-
-  /**
-   * @return mixed
-   */
-  public function getTarget();
-
-  /**
+   * @param \Drupal\workspace\PointerInterface $source
+   * @param \Drupal\workspace\PointerInterface $target
    * @return array
    */
-  public function replicate();
+  public function replicate(PointerInterface $source, PointerInterface $target);
 
 }
