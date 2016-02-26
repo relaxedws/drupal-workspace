@@ -36,8 +36,9 @@ class ReplicatorManager implements ReplicatorInterface{
   public function replicate(PointerInterface $source, PointerInterface $target) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
-        $replicator->replicate($source, $target);
+        return $replicator->replicate($source, $target);
       }
     }
+    return ['error' => t('No valid replicators.')];
   }
 }

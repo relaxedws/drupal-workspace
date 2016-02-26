@@ -8,5 +8,5 @@ replication.admin.structure.settings:
   title: Replication settings
   description: 'Configure Replication entities'
   route_name: replication.settings
-  parent: system.admin_structure
+  parent: system.admin_config_services
 

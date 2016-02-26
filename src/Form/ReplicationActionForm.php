@@ -41,7 +41,7 @@ class ReplicationActionForm extends FormBase {
     $entity = $this->getEntity($form_state);
     $source = \Drupal::service('workspace.pointer')->get($entity->get('source')->value);
     $target = \Drupal::service('workspace.pointer')->get($entity->get('target')->value);
-    \Drupal::service('replicator.manager')->replicate($source, $target);
+    $response = \Drupal::service('replicator.manager')->replicate($source, $target);
     if (!isset($response['error'])) {
       $entity->set('replicated', REQUEST_TIME)->save();
       drupal_set_message('Successful deployment.');
