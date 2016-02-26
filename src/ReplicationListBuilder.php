@@ -46,8 +46,8 @@ class ReplicationListBuilder extends EntityListBuilder {
       'entity.replication.canonical',
       ['replication' => $entity->id()]
     );
-    $row['source'] = $entity->get('source')->entity->label();
-    $row['target'] = $entity->get('target')->entity->label();
+    $row['source'] = $entity->get('source')->value;
+    $row['target'] = $entity->get('target')->value;
     $row['changed'] = $formatter->format($entity->getChangedTime());
     $row['created'] = $formatter->format($entity->getCreatedTime());
     return $row;
