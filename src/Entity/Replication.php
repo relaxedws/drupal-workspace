@@ -158,7 +158,7 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDescription(t('The source endpoint.'))
       ->setRequired(TRUE)
       ->setSettings([
-        'allowed_values_function' => '\Drupal\workspace\Entity\Replication::getPointerAllowedValues'
+        'allowed_values_function' => 'workspace_pointer_allowed_values'
       ])
       ->setDisplayOptions('view', array(
         'label' => 'above',
@@ -176,7 +176,7 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDescription(t('The target endpoint.'))
       ->setRequired(TRUE)
       ->setSettings([
-        'allowed_values_funtion' => '\Drupal\workspace\Entity\Replication::getPointerAllowedValues'
+        'allowed_values_function' => 'workspace_pointer_allowed_values'
       ])
       ->setDisplayOptions('view', array(
         'label' => 'above',

@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\workspace\Pointer;
 
 /**
@@ -10,4 +12,8 @@ use Drupal\workspace\Pointer;
 function workspace_workspace_insert(\Drupal\multiversion\Entity\WorkspaceInterface $workspace) {
   $pointer = new Pointer('workspace:' . $workspace->id(), $workspace->label(), ['workspace' => $workspace->id()]);
   \Drupal::service('workspace.pointer')->add($pointer);
+}
+
+function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
+  return \Drupal\workspace\Entity\Replication::getPointerAllowedValues($definition, $entity, $cacheable);
 }
