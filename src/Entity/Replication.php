@@ -153,7 +153,6 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $pointers = self::getPointerAllowedValues();
     $fields['source'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Source'))
       ->setDescription(t('The source endpoint.'))
