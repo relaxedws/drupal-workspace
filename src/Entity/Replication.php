@@ -46,7 +46,8 @@ use Drupal\user\UserInterface;
  *     "delete-form" = "/admin/replication/{replication}/delete"
  *   },
  *   field_ui_base_route = "replication.settings",
- *   local = TRUE
+ *   local = TRUE,
+ *   multiversion = FALSE
  * )
  */
 class Replication extends ContentEntityBase implements ReplicationInterface {
