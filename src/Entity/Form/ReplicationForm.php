@@ -22,6 +22,9 @@ class ReplicationForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
+    $form['source']['widget']['#options']  += $this->getPointerAllowedValues();
+    $form['target']['widget']['#options']  += $this->getPointerAllowedValues();
+
     if ($this->getDefaultSource()) {
       $form['source']['widget']['#default_value'] = $this->getDefaultSource();
     }
@@ -53,6 +56,15 @@ class ReplicationForm extends ContentEntityForm {
         ]));
     }
     $form_state->setRedirect('entity.replication.canonical', ['replication' => $entity->id()]);
+  }
+
+  protected function getPointerAllowedValues() {
+    $pointers = \Drupal::service('workspace.pointer')->getMultiple();
+    $pointer_allowed_values = [];
+    foreach ($pointers as $key => $value) {
+      $pointer_allowed_values[$key] = $value->label();
+    }
+    return $pointer_allowed_values;
   }
 
   protected function getDefaultSource() {

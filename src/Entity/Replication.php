@@ -151,14 +151,10 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $pointers = self::getPointerAllowedValues();
     $fields['source'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Source'))
       ->setDescription(t('The source endpoint.'))
       ->setRequired(TRUE)
-      ->setSettings([
-        'allowed_values' => $pointers
-      ])
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -2,
@@ -174,9 +170,6 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
       ->setLabel(t('Target'))
       ->setDescription(t('The target endpoint.'))
       ->setRequired(TRUE)
-      ->setSettings([
-        'allowed_values' => $pointers
-      ])
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -1,
@@ -215,13 +208,6 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
     return array(\Drupal::currentUser()->id());
   }
 
-  protected static function getPointerAllowedValues() {
-    $pointers = \Drupal::service('workspace.pointer')->getMultiple();
-    $pointer_allowed_values = [];
-    foreach ($pointers as $key => $value) {
-      $pointer_allowed_values[$key] = $value->label();
-    }
-    return $pointer_allowed_values;
-  }
+
 
 }
