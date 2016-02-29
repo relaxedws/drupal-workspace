@@ -7,10 +7,12 @@
 
 namespace Drupal\workspace\Entity;
 
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -215,7 +217,8 @@ class Replication extends ContentEntityBase implements ReplicationInterface {
     return array(\Drupal::currentUser()->id());
   }
 
-  public static function getPointerAllowedValues() {
+  public static function getPointerAllowedValues(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
+    $cacheable = FALSE;
     $pointers = \Drupal::service('workspace.pointer')->getMultiple();
     $pointer_allowed_values = [];
     foreach ($pointers as $key => $value) {
