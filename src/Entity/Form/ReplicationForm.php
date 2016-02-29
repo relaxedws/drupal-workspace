@@ -68,30 +68,16 @@ class ReplicationForm extends ContentEntityForm {
   }
 
   protected function getDefaultSource() {
-    //$workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
-    //$machine_name = $workspace->getMachineName();
-    //$endpoints = Endpoint::loadMultiple();
-    //foreach ($endpoints as $endpoint) {
-    //  $pluginid = $endpoint->getPlugin()->getPluginId();
-    //  if ($pluginid == 'workspace:' . $machine_name) {
-    //    return $endpoint->id();
-    //  }
-    //}
+    $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+    return 'workspace:' . $workspace->id();
   }
 
   protected function getDefaultTarget() {
-    //$workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
-    //$upstream = $workspace->get('upstream')->entity;
-    //if (!$upstream) {
-    //  return null;
-    //}
-    //$machine_name = $upstream->getMachineName();
-    //$endpoints = Endpoint::loadMultiple();
-    //foreach ($endpoints as $endpoint) {
-    //  $pluginid = $endpoint->getPlugin()->getPluginId();
-    //  if ($pluginid == 'workspace:' . $machine_name) {
-    //    return $endpoint->id();
-    //  }
-    //}
+    $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+    $upstream = $workspace->get('upstream')->entity;
+    if (!$upstream) {
+      return null;
+    }
+    return 'workspace:' . $upstream->id();
   }
 }
