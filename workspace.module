@@ -5,15 +5,63 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\workspace\Pointer;
 
 /**
+ * Implements hook_entity_type_alter().
+ *
+ * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_types
+ */
+function workspace_entity_type_alter(array &$entity_types) {
+  \Drupal::service('workspace.entity_type_alter')->entityTypeAlter($entity_types);
+}
+
+/**
  * Implements hook_ENTITY_TYPE_insert()
  *
  * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
  */
 function workspace_workspace_insert(\Drupal\multiversion\Entity\WorkspaceInterface $workspace) {
+  /** @var $pointer \Drupal\workspace\PointerInterface */
   $pointer = new Pointer('workspace:' . $workspace->id(), $workspace->label(), ['workspace' => $workspace->id()]);
   \Drupal::service('workspace.pointer')->add($pointer);
 }
 
 function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
   return \Drupal\workspace\Entity\Replication::getPointerAllowedValues($definition, $entity, $cacheable);
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @param $existing
+ * @param $type
+ * @param $theme
+ * @param $path
+ * @return array
+ */
+function workspace_theme($existing, $type, $theme, $path) {
+  return [
+    'workspace_add_list' => [
+      'variables' => ['content' => NULL],
+    ],
+  ];
+}
+
+/**
+ * @param $variables
+ */
+function template_preprocess_workspace_add_list(&$variables) {
+  if (!empty($variables['content'])) {
+    foreach ($variables['content'] as $type) {
+      $variables['types'][$type->id()]['label'] = $type->label();
+      $options = array('query' => \Drupal::request()->query->all());
+      $variables['types'][$type->id()]['url'] = \Drupal::url('entity.workspace.add_form', array('workspace_type' => $type->id()), $options);
+    }
+  }
+}
+
+
+/**
+ * Implements hook_toolbar().
+ */
+function workspace_toolbar() {
+  return \Drupal::service('workspace.toolbar')->toolbar();
 }

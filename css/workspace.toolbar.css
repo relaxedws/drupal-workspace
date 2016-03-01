@@ -1,0 +1,12 @@
+/**
+ * @file
+ * Styling for Workspace toolbar.
+ */
+
+.toolbar-bar .toolbar-icon-workspace:before {
+    background-image: url("../icons/bebebe/workspace.svg");
+}
+
+.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
+    float: right;
+}

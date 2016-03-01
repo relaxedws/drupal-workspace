@@ -10,3 +10,8 @@ services:
   workspace.pointer:
     class: Drupal\workspace\WorkspacePointer
     arguments: ['@keyvalue']
+  workspace.entity_type_alter:
+    class: Drupal\workspace\EntityTypeAlter
+  workspace.toolbar:
+    class: Drupal\workspace\Toolbar
+    arguments: ['@entity_type.manager', '@workspace.manager']

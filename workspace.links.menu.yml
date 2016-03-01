@@ -10,3 +10,8 @@ replication.admin.structure.settings:
   route_name: replication.settings
   parent: system.admin_config_services
 
+entity.workspace.collection:
+  title: 'Workspaces'
+  parent: system.admin_structure
+  description: 'Create and manage workspaces.'
+  route_name: entity.workspace.collection
