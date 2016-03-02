@@ -25,8 +25,13 @@ class EntityTypeAlter {
    * @param array $entity_types
    */
   public function entityTypeAlter(array &$entity_types) {
-    $this->alterWorkspaceType($entity_types['workspace_type']);
-    $this->alterWorkspace($entity_types['workspace']);
+    if (isset($entity_types['workspace_type'])) {
+      $this->alterWorkspaceType($entity_types['workspace_type']);
+    }
+
+    if (isset($entity_types['workspace'])) {
+      $this->alterWorkspace($entity_types['workspace']);
+    }
 
     foreach ($entity_types as $entity_type) {
       $this->addRevisionLinks($entity_type);

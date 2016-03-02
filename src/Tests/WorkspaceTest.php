@@ -25,7 +25,7 @@ class WorkspaceTest extends WebTestBase {
       'administer workspaces',
     ]);
     $this->drupalLogin($this->webUser);
-    $this->drupalGet('admin/structure/workspaces/add');
+    $this->drupalGet('admin/structure/workspace/add');
     $workspace1 = [
       'label' => 'Workspace 1',
       'machine_name' => 'a0_$()+-/',
