@@ -7,6 +7,7 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Entity\WorkspaceTypeInterface;
@@ -31,7 +32,8 @@ class WorkspaceListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(WorkspaceInterface $entity) {
+  public function buildRow(EntityInterface $entity) {
+    /** @var WorkspaceInterface $entity */
     $row['label'] = $entity->label() . ' (' . $entity->getMachineName() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
     /** @var WorkspaceTypeInterface $type */
@@ -43,7 +45,8 @@ class WorkspaceListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultOperations(WorkspaceInterface $entity) {
+  public function getDefaultOperations(EntityInterface $entity) {
+    /** @var WorkspaceInterface $entity */
     $operations = parent::getDefaultOperations($entity);
     if (isset($operations['edit'])) {
       $operations['edit']['query']['destination'] = $entity->url('collection');
