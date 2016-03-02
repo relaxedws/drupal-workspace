@@ -28,6 +28,9 @@ use Drupal\user\UserInterface;
  *     "view_builder" = "Drupal\workspace\Entity\ReplicationViewBuilder",
  *     "list_builder" = "Drupal\workspace\ReplicationListBuilder",
  *     "views_data" = "Drupal\workspace\Entity\ReplicationViewsData",
+ *     "route_provider" = {
+ *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
+ *     },
  *     "form" = {
  *       "default" = "Drupal\workspace\Entity\Form\ReplicationForm",
  *       "add" = "Drupal\workspace\Entity\Form\ReplicationForm",
@@ -44,8 +47,10 @@ use Drupal\user\UserInterface;
  *   },
  *   links = {
  *     "canonical" = "/admin/replication/{replication}",
+ *     "add-form" = "/admin/replication/add",
  *     "edit-form" = "/admin/replication/{replication}/edit",
- *     "delete-form" = "/admin/replication/{replication}/delete"
+ *     "delete-form" = "/admin/replication/{replication}/delete",
+ *     "collection" = "/admin/replication",
  *   },
  *   field_ui_base_route = "replication.settings",
  *   local = TRUE,
