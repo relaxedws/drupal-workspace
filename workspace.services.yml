@@ -1,9 +1,9 @@
 services:
-  replicator.manager:
+  workspace.replicator_manager:
     class: Drupal\workspace\ReplicatorManager
     tags:
       - { name: service_collector, tag: workspace_replicator, call: addReplicator}
-  internal.replicator:
+  workspace.internal_replicator:
     class: Drupal\workspace\InternalReplicator
     tags:
       - {name: workspace_replicator, priority: 10}
@@ -21,12 +21,13 @@ services:
     arguments: ['@entity.manager']
     tags:
       - { name: event_subscriber }
-  paramconverter.entity_revision:
+  workspace.paramconverter.entity_revision:
     class: Drupal\workspace\ParamConverter\EntityRevisionConverter
     arguments: ['@entity.manager']
     tags:
+      - { name: paramconverter, priority: 30 }
   workspace.workbench_moderation_subscriber:
     class: Drupal\workspace\EventSubscriber\WorkbenchModerationSubscriber
-    arguments: ['@entity_type.manager', '@workspace.pointer', '@replicator.manager']
+    arguments: ['@entity_type.manager', '@workspace.pointer', '@workspace.replicator_manager']
     tags:
       - { name: event_subscriber }
