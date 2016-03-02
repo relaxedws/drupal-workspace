@@ -12,6 +12,17 @@ services:
     arguments: ['@keyvalue']
   workspace.entity_type_alter:
     class: Drupal\workspace\EntityTypeAlter
+    arguments: ['@multiversion.manager']
   workspace.toolbar:
     class: Drupal\workspace\Toolbar
     arguments: ['@entity_type.manager', '@workspace.manager']
+  workspace.route_subscriber:
+    class: Drupal\workspace\Routing\RouteSubscriber
+    arguments: ['@entity.manager']
+    tags:
+      - { name: event_subscriber }
+  paramconverter.entity_revision:
+    class: Drupal\workspace\ParamConverter\EntityRevisionConverter
+    arguments: ['@entity.manager']
+    tags:
+      - { name: paramconverter, priority: 30 }
