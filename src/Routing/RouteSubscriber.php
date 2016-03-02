@@ -41,7 +41,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
 
-      if ($entity_type->hasLinkTemplate('version-history')) {
+      if ($entity_type->hasLinkTemplate('version-tree')) {
 
         $options = array(
           '_admin_route' => TRUE,
@@ -56,7 +56,7 @@ class RouteSubscriber extends RouteSubscriberBase {
           ),
         );
 
-        if ($link_template = $entity_type->getLinkTemplate('version-history')) {
+        if ($link_template = $entity_type->getLinkTemplate('version-tree')) {
           $route = new Route(
             $link_template,
             array(
@@ -69,12 +69,12 @@ class RouteSubscriber extends RouteSubscriberBase {
             $options
           );
 
-          // This will create new routes (and override the version_history
-          // route for entity types that already has one).
-          $collection->add("entity.$entity_type_id.version_history", $route);
+          // This will create new routes
+          $collection->add("entity.$entity_type_id.version_tree", $route);
         }
 
-        if ($link_template = $entity_type->getLinkTemplate('revision')) {
+        if (($link_template = $entity_type->getLinkTemplate('revision')) && empty($collection->get("entity.$entity_type_id.revision"))) {
+          unset($options['_admin_route']);
           $route = new Route(
             $link_template,
             array(

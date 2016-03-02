@@ -37,14 +37,6 @@ function workspace_toolbar() {
 }
 
 /**
- * Implements hook_local_tasks_alter().
- */
-function workspace_ui_local_tasks_alter(&$local_tasks) {
-  // Remove the revisions local task for node since we're defining our own.
-  unset($local_tasks['entity.node.version_history']);
-}
-
-/**
  * Implements hook_theme().
  *
  * @param $existing

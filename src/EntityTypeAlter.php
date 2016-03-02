@@ -72,6 +72,7 @@ class EntityTypeAlter {
   protected function addRevisionLinks(EntityTypeInterface &$entity_type) {
     if ($this->multiversionManager->isEnabledEntityType($entity_type)) {
       if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
+        $entity_type->setLinkTemplate('version-tree', $entity_type->getLinkTemplate('canonical') . '/tree');
         $entity_type->setLinkTemplate('version-history', $entity_type->getLinkTemplate('canonical') . '/revisions');
         $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
       }

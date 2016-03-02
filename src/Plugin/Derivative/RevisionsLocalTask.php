@@ -29,7 +29,7 @@ class RevisionsLocalTask extends DeriverBase implements ContainerDeriverInterfac
   protected $entityManager;
 
   /**
-   * Creates an DevelLocalTask object.
+   * Creates an RevisionsLocalTask object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
@@ -58,10 +58,10 @@ class RevisionsLocalTask extends DeriverBase implements ContainerDeriverInterfac
     $this->derivatives = array();
 
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($entity_type->hasLinkTemplate('version-history')) {
+      if ($entity_type->hasLinkTemplate('version-tree')) {
         $this->derivatives[$entity_type_id] = array(
-          'route_name' => "entity.$entity_type_id.version_history",
-          'title' => $this->t('Revisions'),
+          'route_name' => "entity.$entity_type_id.version_tree",
+          'title' => $this->t('Tree'),
           'base_route' => "entity.$entity_type_id.canonical",
           'weight' => 20,
         );

@@ -21,10 +21,10 @@ class RevisionsContextual extends RevisionsLocalTask implements ContainerDeriver
     $this->derivatives = array();
 
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($entity_type->hasLinkTemplate('version-history')) {
+      if ($entity_type->hasLinkTemplate('version-tree')) {
         $this->derivatives[$entity_type_id] = array(
-          'route_name' => "entity.$entity_type_id.version_history",
-          'title' => $this->t('Revisions'),
+          'route_name' => "entity.$entity_type_id.version_tree",
+          'title' => $this->t('Tree'),
           'group' => $entity_type_id,
           'weight' => 20,
         );
