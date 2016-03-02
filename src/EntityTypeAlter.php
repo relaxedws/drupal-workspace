@@ -61,7 +61,6 @@ class EntityTypeAlter {
       'add' => 'Drupal\workspace\Entity\Form\WorkspaceForm',
       'edit' => 'Drupal\workspace\Entity\Form\WorkspaceForm',
     ]);
-    $workspace->setLinkTemplate('canonical', '/admin/structure/workspace/{workspace}');
     $workspace->setLinkTemplate('edit-form', '/admin/structure/workspace/{workspace}/edit');
     $workspace->setLinkTemplate('collection', '/admin/structure/workspace');
     $workspace->set('field_ui_base_route', 'entity.workspace_type.edit_form');
