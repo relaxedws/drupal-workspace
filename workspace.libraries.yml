@@ -3,3 +3,9 @@ drupal.workspace.toolbar:
   css:
     theme:
       css/workspace.toolbar.css: {}
+
+drupal.workspace.admin:
+  version: VERSION
+  css:
+    theme:
+      css/workspace.admin.css: {}

@@ -78,9 +78,9 @@ function workspace_preprocess_workspace_add_list(&$variables) {
 }
 
 /**
- * Prepares variables for Multiversion revision templates.
+ * Prepares variables for revision templates.
  */
-function workspace_preprocess_multiversion_rev(&$variables) {
+function workspace_preprocess_workspace_rev(&$variables) {
   $uuid = $variables['elements']['#uuid'];
   $rev = $variables['elements']['#rev'];
   $rev_info = array_merge(
