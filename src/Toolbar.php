@@ -4,11 +4,13 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
-
+use Drupal\workspace\Form\WorkspaceSwitcherForm;
 
 /**
  * Service for hooks and utilities related to Toolbar integration.
@@ -27,16 +29,25 @@ class Toolbar {
   protected $workspaceManager;
 
   /**
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
    * Constructs a new Toolbar.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager) {
+
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, FormBuilderInterface $form_builder) {
     $this->entityTypeManager = $entity_type_manager;
     $this->workspaceManager = $workspace_manager;
+    $this->formBuilder = $form_builder;
   }
 
   /**
@@ -67,28 +78,27 @@ class Toolbar {
     $items['workspace_switcher']['tab'] = [
       '#type' => 'link',
       '#title' => $this->t('Workspaces (@active)', ['@active' => $active->label()]),
-      // @todo This should likely be something else, but not sure what.
-      '#url' => Url::fromRoute('<front>'),
+      '#url' => Url::fromRoute('entity.workspace.collection'),
       '#attributes' => [
         'title' => $this->t('Switch workspaces'),
         'class' => ['toolbar-icon', 'toolbar-icon-workspace'],
       ],
     ];
 
+    $create_link = Link::createFromRoute($this->t('Create new workspace'), 'entity.workspace.add');
+
     $items['workspace_switcher']['tray'] = [
       '#heading' => $this->t('Switch to workspace'),
-      'workspace_links' => [
-        '#pre_render' => ['workspace.toolbar:preRenderWorkspaceLinks'],
-        '#cache' => [
-          'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
-          'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),
-        ],
-        '#theme' => 'links__toolbar_workspaces',
-        // This will be filled in during pre-render.
-        '#links' => [],
-        '#attributes' => [
-          'class' => ['toolbar-menu'],
-        ],
+      '#pre_render' => ['workspace.toolbar:preRenderWorkspaceSwitcherForms'],
+      'create_link' => $create_link->toRenderable(),
+      // This wil get filled in via pre-render.
+      'workspace_forms' => [],
+      '#cache' => [
+        'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
+        'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),
+      ],
+      '#attributes' => [
+        'class' => ['toolbar-menu'],
       ],
     ];
 
@@ -96,48 +106,19 @@ class Toolbar {
   }
 
   /**
-   * Prerender callback; Adds the workspace links to the render array.
+   * Prerender callback; Adds the workspace switcher forms to the render array.
    *
    * @param array $element
    *
    * @return array
    *   The modified $element.
    */
-  public function preRenderWorkspaceLinks(array $element) {
-    $element['#links'] = $this->workspaceLinks();
-
-    return $element;
-  }
-
-  /**
-   * Builds a render array of links to switch to all workspaces.
-   *
-   * Note: This is an expensive call so should only be made from within a
-   * pre-render callback, so it gets cached.
-   *
-   * @return array
-   *   A render array of links to switch to each workspace.
-   */
-  protected function workspaceLinks() {
-    $links = [];
-
-    $links['add'] = [
-      'title' => $this->t('Create new workspace'),
-      'url' => Url::fromRoute('entity.workspace.add'),
-    ];
-
-    /** @var WorkspaceInterface $workspace */
+  public function preRenderWorkspaceSwitcherForms(array $element) {
     foreach ($this->allWorkspaces() as $workspace) {
-      $links['workspace_' . $workspace->getMachineName()] = [
-        'title' => $workspace->label(),
-        'url' => Url::fromRoute('<front>', ['workspace' => $workspace->id()]),
-        'attributes' => [
-          'title' => t('Switch to %workspace workspace', ['%workspace' => $workspace->label()])
-        ],
-      ];
+      $element['workspace_forms']['workspace_' . $workspace->getMachineName()] = $this->formBuilder->getForm(WorkspaceSwitcherForm::class, $workspace);
     }
 
-    return $links;
+    return $element;
   }
 
   /**
