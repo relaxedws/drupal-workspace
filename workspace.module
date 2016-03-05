@@ -15,6 +15,43 @@ function workspace_entity_type_alter(array &$entity_types) {
 }
 
 /**
+ * Implements hook_entity_base_field_info().
+ * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+ * @return
+ */
+function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'workspace') {
+    $fields['upstream'] = \Drupal\Core\Field\BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Assign default target workspace'))
+      ->setDescription(t('The workspace to push to and pull from.'))
+      ->setRevisionable(TRUE)
+      ->setRequired(TRUE)
+      ->setSetting('target_type', 'workspace')
+      ->setDefaultValueCallback('workspace_active_id')
+      ->setDisplayOptions('form', array(
+        'type' => 'options_buttons',
+        'weight' => 0
+      ))
+      ->setDisplayConfigurable('form', TRUE);
+
+    return $fields;
+  }
+}
+
+/**
+ * Default value callback for 'upstream' base field definition.
+ *
+ * @return array
+ */
+function workspace_active_id() {
+  /** @var \Drupal\multiversion\Entity\Workspace $active_workspace */
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+  if ($active_workspace instanceof \Drupal\multiversion\Entity\Workspace) {
+    return [$active_workspace->id()];
+  }
+}
+
+/**
  * Implements hook_ENTITY_TYPE_insert()
  *
  * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
