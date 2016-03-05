@@ -15,7 +15,7 @@ services:
     arguments: ['@multiversion.manager']
   workspace.toolbar:
     class: Drupal\workspace\Toolbar
-    arguments: ['@entity_type.manager', '@workspace.manager']
+    arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder']
   workspace.route_subscriber:
     class: Drupal\workspace\Routing\RouteSubscriber
     arguments: ['@entity.manager']

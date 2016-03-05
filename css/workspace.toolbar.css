@@ -10,3 +10,36 @@
 .toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
     float: right;
 }
+#toolbar-item-workspace-switcher-tray nav {
+   display: flex;
+   align-items: center;
+ }
+
+#toolbar-item-workspace-switcher-tray.toolbar-tray-vertical nav {
+   display: flex;
+   align-items: center;
+   flex-direction: column;
+}
+
+.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"],
+.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"]:hover {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-weight: normal;
+  color: #565656;
+}
+
+.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"]:hover {
+  text-decoration: underline;
+  color: #000000;
+  box-shadow: none;
+}
+
+.toolbar #toolbar-item-workspace-switcher-tray.toolbar-tray-horizontal a {
+  border-right: 1px solid darkgray;
+}
+
+.toolbar #toolbar-item-workspace-switcher-tray.toolbar-tray-vertical a {
+  border-bottom: 1px solid darkgray;
+}

@@ -53,27 +53,21 @@ class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterfac
    * {@inheritdoc}
    */
   public function build() {
-    $build = array();
-    $route_name = \Drupal::service('path.matcher')->isFrontPage() ? '<front>' : '<current>';
-    $links = $this->workspaceManager->getWorkspaceSwitchLinks(Url::fromRoute($route_name));
-
-    if (isset($links)) {
-      $build = array(
-        '#theme' => 'links__workspace_block',
-        '#links' => $links,
-        '#attributes' => array(
-          'class' => array(
-            'workspace-switcher',
-          ),
-        ),
-        '#set_active_class' => TRUE,
-        // @todo: The caching need tests.
-        '#cache' => [
-          'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
-          'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),
+    $build = [
+      // @todo the block depending on the toolbar is obscure; find a better way to generate this form
+      '#pre_render' => ['workspace.toolbar:preRenderWorkspaceSwitcherForms'],
+      // This wil get filled in via pre-render.
+      'workspace_forms' => [],
+      '#attached' => [
+        'library' => [
+          'workspace/drupal.workspace.switcher',
         ],
-      );
-    }
+      ],
+      '#cache' => [
+        'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
+        'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),
+      ],
+    ];
     return $build;
   }
 

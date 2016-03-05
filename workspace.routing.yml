@@ -58,6 +58,16 @@ entity.workspace.collection:
   requirements:
     _permission: 'administer workspaces'
 
+entity.workspace.activate_form:
+  path: '/admin/structure/workspace/{workspace}/activate'
+  defaults:
+    _title: 'Activate Workspace'
+    _form: '\Drupal\workspace\Form\WorkspaceActivateForm'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer workspaces'
+
 # WorkspaceType routing definition
 entity.workspace_type.collection:
   path: '/admin/structure/workspace/types'
