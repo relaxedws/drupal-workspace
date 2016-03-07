@@ -27,7 +27,6 @@ use Drupal\user\UserInterface;
  *   id = "replication",
  *   label = @Translation("Deployment"),
  *   base_table = "replication",
- *   admin_permission = "administer Replication entity",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "name",
