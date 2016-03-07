@@ -1,34 +1,3 @@
-# Replication routing definition
-entity.replication.collection:
-  path: '/admin/replication'
-  defaults:
-    _entity_list: 'replication'
-    _title: 'Deployments'
-  requirements:
-    _permission: 'view replication entities'
-  options:
-    _admin_route: TRUE
-
-entity.replication.add_form:
-  path: '/admin/replication/add'
-  defaults:
-    _entity_form: replication.add
-    _title: 'Start new deployment'
-  requirements:
-    _permission: 'add replication entities'
-  options:
-    _admin_route: TRUE
-
-replication.settings:
-  path: 'admin/structure/replication'
-  defaults:
-   _form: '\Drupal\workspace\Entity\Form\ReplicationSettingsForm'
-   _title: 'Replication settings'
-  requirements:
-    _permission: 'administer replication entities'
-  options:
-    _admin_route: TRUE
-
 # Workspace routing definition
 entity.workspace.add:
   path: '/admin/structure/workspace/add'

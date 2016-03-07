@@ -7,12 +7,15 @@
 
 namespace Drupal\workspace\Entity;
 
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\user\EntityOwnerInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -22,22 +25,7 @@ use Drupal\user\UserInterface;
  *
  * @ContentEntityType(
  *   id = "replication",
- *   label = @Translation("Replication"),
- *   handlers = {
- *     "access" = "Drupal\workspace\Entity\ReplicationAccessControlHandler",
- *     "view_builder" = "Drupal\workspace\Entity\ReplicationViewBuilder",
- *     "list_builder" = "Drupal\workspace\ReplicationListBuilder",
- *     "views_data" = "Drupal\workspace\Entity\ReplicationViewsData",
- *     "route_provider" = {
- *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
- *     },
- *     "form" = {
- *       "default" = "Drupal\workspace\Entity\Form\ReplicationForm",
- *       "add" = "Drupal\workspace\Entity\Form\ReplicationForm",
- *       "edit" = "Drupal\workspace\Entity\Form\ReplicationForm",
- *       "delete" = "Drupal\workspace\Entity\Form\ReplicationDeleteForm",
- *     },
- *   },
+ *   label = @Translation("Deployment"),
  *   base_table = "replication",
  *   admin_permission = "administer Replication entity",
  *   entity_keys = {
@@ -45,19 +33,11 @@ use Drupal\user\UserInterface;
  *     "label" = "name",
  *     "uuid" = "uuid"
  *   },
- *   links = {
- *     "canonical" = "/admin/replication/{replication}",
- *     "add-form" = "/admin/replication/add",
- *     "edit-form" = "/admin/replication/{replication}/edit",
- *     "delete-form" = "/admin/replication/{replication}/delete",
- *     "collection" = "/admin/replication",
- *   },
- *   field_ui_base_route = "replication.settings",
  *   local = TRUE,
  *   multiversion = FALSE
  * )
  */
-class Replication extends ContentEntityBase implements ReplicationInterface {
+class Replication extends ContentEntityBase implements ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
   use EntityChangedTrait;
 
   /**
