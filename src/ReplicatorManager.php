@@ -10,7 +10,7 @@ namespace Drupal\workspace;
 /**
  * Provides the Replicator manager.
  */
-class ReplicatorManager implements ReplicatorInterface{
+class ReplicatorManager implements ReplicatorInterface {
 
   protected $replicators = [];
 
@@ -24,7 +24,7 @@ class ReplicatorManager implements ReplicatorInterface{
   /**
    * Adds replication services.
    *
-   * @param \Drupal\workspace\ReplicatorInterface $replicator
+   * @param ReplicatorInterface $replicator
    */
   public function addReplicator(ReplicatorInterface $replicator) {
     $this->replicators[] = $replicator;
@@ -34,6 +34,7 @@ class ReplicatorManager implements ReplicatorInterface{
    * {@inheritdoc}
    */
   public function replicate(PointerInterface $source, PointerInterface $target) {
+    /** @var ReplicatorInterface $replicator */
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
         return $replicator->replicate($source, $target);

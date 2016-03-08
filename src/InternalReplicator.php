@@ -2,8 +2,11 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\multiversion\MultiversionManagerInterface;
+use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 
 /**
  * @Replicator(
@@ -11,7 +14,22 @@ use Drupal\multiversion\Entity\WorkspaceInterface;
  *   label = "Internal Replicator"
  * )
  */
-class InternalReplicator implements ReplicatorInterface{
+class InternalReplicator implements ReplicatorInterface {
+
+  /** @var  WorkspaceManagerInterface */
+  protected $workspaceManager;
+
+  /** @var  MultiversionManagerInterface */
+  protected $multiversionManager;
+
+  /** @var  EntityTypeManagerInterface */
+  protected $entityTypeManager;
+
+  public function __construct(WorkspaceManagerInterface $workspace_manager, MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager) {
+    $this->workspaceManager = $workspace_manager;
+    $this->multiversionManager = $multiversion_manager;
+    $this->entityTypeManager = $entity_type_manager;
+  }
 
   /**
    * {@inheritdoc}
@@ -34,12 +52,12 @@ class InternalReplicator implements ReplicatorInterface{
     // Set active workspace to source.
     $source_workspace = Workspace::load($source->data()['workspace']);
     $target_workspace = Workspace::load($target->data()['workspace']);
-    \Drupal::service('workspace.manager')->setActiveWorkspace($source_workspace);
+    $this->workspaceManager->setActiveWorkspace($source_workspace);
     // Get multiversion supported content entities.
-    $entity_types = \Drupal::service('multiversion.manager')->getSupportedEntityTypes();
+    $entity_types = $this->multiversionManager->getSupportedEntityTypes();
     // Load all entities.
     foreach ($entity_types as $entity_type) {
-      $entities = \Drupal::service('entity_type.manager')->getStorage($entity_type->id())->loadMultiple();
+      $entities = $this->entityTypeManager->getStorage($entity_type->id())->loadMultiple();
       foreach ($entities as $entity) {
         // Add target workspace id to the workspace field.
         $entity->workspace = $target_workspace;
