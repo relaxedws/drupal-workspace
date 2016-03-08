@@ -44,7 +44,6 @@ class EntityTypeAlterTest extends WebTestBase {
     $this->assertTrue($workspace->getHandlerClass('form', 'add'));
     $this->assertTrue($workspace->getHandlerClass('form', 'edit'));
     $this->assertTrue($workspace->getLinkTemplate('collection'));
-    $this->assertTrue($workspace->getLinkTemplate('canonical'));
     $this->assertTrue($workspace->getLinkTemplate('edit-form'));
     $this->assertTrue($workspace->getLinkTemplate('activate-form'));
     $this->assertTrue($workspace->get('field_ui_base_route'));
