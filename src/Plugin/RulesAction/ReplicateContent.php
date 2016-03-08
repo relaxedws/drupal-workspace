@@ -7,8 +7,10 @@
 
 namespace Drupal\workspace\Plugin\RulesAction;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\multiversion\Entity\Workspace;
+use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\workspace\Pointer;
@@ -22,7 +24,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @RulesAction(
  *   id = "workspace_replicate_content",
  *   label = @Translation("Replicate content"),
- *   category = @Translation("Workspace")
+ *   category = @Translation("Workspace"),
+ *   context = {
+ *     "entity" = @ContextDefinition("entity",
+ *       label = @Translation("Entity"),
+ *       description = @Translation("Specifies the entity, which the source workspace is derived from.")
+ *     )
+ *   }
  * )
  *
  */
@@ -37,6 +45,9 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
   /** @var  ReplicatorManager */
   protected $replicatorManager;
 
+  /** @var  MultiversionManagerInterface */
+  protected $multiversionManager;
+
   /**
    * Constructs an ReplicateContent object.
    *
@@ -50,11 +61,12 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
    * @param \Drupal\workspace\WorkspacePointerInterface $workspace_pointer
    * @param \Drupal\workspace\ReplicatorManager $replicator_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, WorkspaceManagerInterface $workspace_manager, WorkspacePointerInterface $workspace_pointer, ReplicatorManager $replicator_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, WorkspaceManagerInterface $workspace_manager, WorkspacePointerInterface $workspace_pointer, ReplicatorManager $replicator_manager, MultiversionManagerInterface $multiversion_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->workspaceManager = $workspace_manager;
     $this->workspacePointer = $workspace_pointer;
     $this->replicatorManager = $replicator_manager;
+    $this->multiversionManager = $multiversion_manager;
   }
 
   /**
@@ -67,15 +79,23 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
       $plugin_definition,
       $container->get('workspace.manager'),
       $container->get('workspace.pointer'),
-      $container->get('workspace.replicator_manager')
-    );
+      $container->get('workspace.replicator_manager'),
+      $container->get('multiversion.manager')
+      );
   }
   /**
    * Replicate content from active Workspace to it's upstream.
    */
-  protected function doExecute() {
-    /** @var Workspace $worksapce */
-    $workspace = $this->workspaceManager->getActiveWorkspace();
+  protected function doExecute(EntityInterface $entity) {
+    $entity_type = $entity->getEntityType();
+    if ($this->multiversionManager->isSupportedEntityType($entity_type)) {
+      /** @var Workspace $workspace */
+      $workspace = $entity->get('workspace')->entity;
+    }
+    else {
+      /** @var Workspace $workspace */
+      $workspace = $this->workspaceManager->getActiveWorkspace();
+    }
     /** @var Workspace $upstream */
     $upstream = $workspace->get('upstream')->entity;
     /** @var Pointer $source */
