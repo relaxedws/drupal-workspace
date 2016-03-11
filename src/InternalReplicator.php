@@ -4,11 +4,8 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
-use Drupal\multiversion\Entity\Index\UuidIndexInterface;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\multiversion\MultiversionManagerInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\RevisionDiffFactoryInterface;
 
@@ -19,12 +16,6 @@ use Drupal\replication\RevisionDiffFactoryInterface;
  * )
  */
 class InternalReplicator implements ReplicatorInterface {
-
-  /** @var  WorkspaceManagerInterface */
-  protected $workspaceManager;
-
-  /** @var  MultiversionManagerInterface */
-  protected $multiversionManager;
 
   /** @var  EntityTypeManagerInterface */
   protected $entityTypeManager;
@@ -38,9 +29,7 @@ class InternalReplicator implements ReplicatorInterface {
   /** @var RevisionIndexInterface  */
   protected $revIndex;
 
-  public function __construct(WorkspaceManagerInterface $workspace_manager, MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index) {
-    $this->workspaceManager = $workspace_manager;
-    $this->multiversionManager = $multiversion_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index) {
     $this->entityTypeManager = $entity_type_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
