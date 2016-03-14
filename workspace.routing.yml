@@ -27,6 +27,13 @@ entity.workspace.collection:
   requirements:
     _permission: 'administer workspaces'
 
+entity.workspace.canonical:
+  path: '/admin/structure/workspace/{workspace}'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer workspaces'
+
 entity.workspace.activate_form:
   path: '/admin/structure/workspace/{workspace}/activate'
   defaults:

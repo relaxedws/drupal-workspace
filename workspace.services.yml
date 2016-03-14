@@ -32,3 +32,7 @@ services:
     arguments: ['@entity_type.manager', '@workspace.pointer', '@workspace.replicator_manager']
     tags:
       - { name: event_subscriber }
+  workspace.normalizer.entity_reference_field_item:
+    class: Drupal\workspace\Normalizer\EntityReferenceFieldItemNormalizer
+    tags:
+      - { name: normalizer, priority: 10 }

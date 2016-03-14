@@ -59,7 +59,7 @@ class EntityTypeAlter {
    * @param \Drupal\Core\Entity\EntityTypeInterface $workspace
    */
   protected function alterWorkspace(EntityTypeInterface &$workspace) {
-    $workspace ->setHandlerClass('list_builder', 'Drupal\workspace\WorkspaceListBuilder');
+    $workspace->setHandlerClass('list_builder', 'Drupal\workspace\WorkspaceListBuilder');
     $workspace->setHandlerClass('route_provider', ['html' => 'Drupal\Core\Entity\Routing\AdminHtmlRouteProvider']);
     $workspace->setHandlerClass('form', [
       'default' => 'Drupal\workspace\Entity\Form\WorkspaceForm',
