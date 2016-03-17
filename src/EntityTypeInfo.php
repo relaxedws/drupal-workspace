@@ -59,7 +59,7 @@ class EntityTypeInfo {
    */
   protected function selectMultiversionedUiEntityTypes(array $entity_types) {
     return array_filter($entity_types, function (EntityTypeInterface $type) use ($entity_types) {
-      $this->multiversionManager->isEnabledEntityType($type)
+      return $this->multiversionManager->isSupportedEntityType($type)
       && $type->hasViewBuilderClass()
       && $type->hasLinkTemplate('canonical');
     });

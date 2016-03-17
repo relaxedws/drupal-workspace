@@ -10,6 +10,7 @@ namespace Drupal\workspace\Tests;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\node\Entity\Node;
 use Drupal\simpletest\WebTestBase;
+use Drupal\workspace\Entity\WorkspacePointer;
 
 /**
  * Test the workspace entity.
@@ -46,11 +47,7 @@ class ReplicatorTest extends WebTestBase {
 
   public function testReplicator() {
     $this->assertEqual(count($this->node->get('workspace')), 1, 'Node is in one workspace');
-    /** @var PointerInterface $source_pointer */
-    $source_pointer = \Drupal::service('workspace.pointer')->get('workspace:2');
-    /** @var PointerInterface $target_pointer */
-    $target_pointer = \Drupal::service('workspace.pointer')->get('workspace:1');
-    \Drupal::service('workspace.replicator_manager')->replicate($source_pointer, $target_pointer);
+    \Drupal::service('workspace.replicator_manager')->replicate(WorkspacePointer::load(2), WorkspacePointer::load(1));
     $reloaded_node = Node::load($this->node->id());
     $this->assertEqual(count($reloaded_node->get('workspace')), 2, 'Node is in two workspaces');
   }
