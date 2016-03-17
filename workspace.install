@@ -1,7 +1,6 @@
 <?php
 
 use Drupal\multiversion\Entity\Workspace;
-use Drupal\workspace\Pointer;
 
 /**
  * Implementation of hook_install().

@@ -5,9 +5,7 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\user\EntityOwnerInterface;
 
 /**
  * Provides an interface for defining Workspace pointer entities.
