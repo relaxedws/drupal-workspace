@@ -137,13 +137,11 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['source'] = BaseFieldDefinition::create('list_string')
+    $fields['source'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Source'))
       ->setDescription(t('The source endpoint.'))
       ->setRequired(TRUE)
-      ->setSettings([
-        'allowed_values_function' => 'workspace_pointer_allowed_values'
-      ])
+      ->setSetting('target_type', 'workspace_pointer')
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -2,
@@ -155,13 +153,11 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['target'] = BaseFieldDefinition::create('list_string')
+    $fields['target'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Target'))
       ->setDescription(t('The target endpoint.'))
       ->setRequired(TRUE)
-      ->setSettings([
-        'allowed_values_function' => 'workspace_pointer_allowed_values'
-      ])
+      ->setSetting('target_type', 'workspace_pointer')
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'weight' => -1,
@@ -198,16 +194,6 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public static function getCurrentUserId() {
     return array(\Drupal::currentUser()->id());
-  }
-
-  public static function getPointerAllowedValues(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
-    $cacheable = FALSE;
-    $pointers = \Drupal::service('workspace.pointer')->getMultiple();
-    $pointer_allowed_values = [];
-    foreach ($pointers as $key => $value) {
-      $pointer_allowed_values[$key] = $value->label();
-    }
-    return $pointer_allowed_values;
   }
 
 }

@@ -17,7 +17,7 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies(PointerInterface $source, PointerInterface $target) {
+  public function applies(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     return TRUE;
   }
 
@@ -33,7 +33,7 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function replicate(PointerInterface $source, PointerInterface $target) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     /** @var ReplicatorInterface $replicator */
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {

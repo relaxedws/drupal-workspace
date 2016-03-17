@@ -8,12 +8,12 @@ services:
     arguments: ['@workspace.manager', '@multiversion.manager', '@entity_type.manager']
     tags:
       - {name: workspace_replicator, priority: 10}
-  workspace.pointer:
-    class: Drupal\workspace\WorkspacePointer
-    arguments: ['@keyvalue']
-  workspace.entity_type_alter:
-    class: Drupal\workspace\EntityTypeAlter
+  workspace.entity_type_info:
+    class: Drupal\workspace\EntityTypeInfo
     arguments: ['@multiversion.manager']
+  workspace.entity_operations:
+    class: Drupal\workspace\EntityOperations
+    arguments: ['@multiversion.manager', '@entity_type.manager']
   workspace.toolbar:
     class: Drupal\workspace\Toolbar
     arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder']
@@ -29,6 +29,6 @@ services:
       - { name: paramconverter, priority: 30 }
   workspace.workbench_moderation_subscriber:
     class: Drupal\workspace\EventSubscriber\WorkbenchModerationSubscriber
-    arguments: ['@entity_type.manager', '@workspace.pointer', '@workspace.replicator_manager']
+    arguments: ['@entity_type.manager', '@workspace.replicator_manager']
     tags:
       - { name: event_subscriber }

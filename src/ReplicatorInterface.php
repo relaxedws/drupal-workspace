@@ -13,17 +13,17 @@ namespace Drupal\workspace;
 interface ReplicatorInterface {
 
   /**
-   * @param \Drupal\workspace\PointerInterface $source
-   * @param \Drupal\workspace\PointerInterface $target
+   * @param \Drupal\workspace\WorkspacePointerInterface $source
+   * @param \Drupal\workspace\WorkspacePointerInterface $target
    * @return bool
    */
-  public function applies(PointerInterface $source, PointerInterface $target);
+  public function applies(WorkspacePointerInterface $source, WorkspacePointerInterface $target);
 
   /**
-   * @param \Drupal\workspace\PointerInterface $source
-   * @param \Drupal\workspace\PointerInterface $target
+   * @param \Drupal\workspace\WorkspacePointerInterface $source
+   * @param \Drupal\workspace\WorkspacePointerInterface $target
    * @return array
    */
-  public function replicate(PointerInterface $source, PointerInterface $target);
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target);
 
 }

@@ -8,12 +8,13 @@
 namespace Drupal\workspace\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\multiversion\Entity\Workspace;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\rules\Core\RulesActionBase;
-use Drupal\workspace\Pointer;
 use Drupal\workspace\ReplicatorManager;
 use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -34,13 +35,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  *
  */
-class ReplicateContent extends RulesActionBase implements ContainerFactoryPluginInterface{
+class ReplicateContent extends RulesActionBase implements ContainerFactoryPluginInterface {
 
   /** @var  WorkspaceManagerInterface */
   protected $workspaceManager;
 
-  /** @var  WorkspacePointerInterface */
-  protected $workspacePointer;
+  /** @var  EntityTypeManagerInterface */
+  protected $entityTypeManager;
 
   /** @var  ReplicatorManager */
   protected $replicatorManager;
@@ -49,7 +50,7 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
   protected $multiversionManager;
 
   /**
-   * Constructs an ReplicateContent object.
+   * Constructs a new ReplicateContent.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -58,13 +59,14 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
-   * @param \Drupal\workspace\WorkspacePointerInterface $workspace_pointer
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\workspace\ReplicatorManager $replicator_manager
+   * @param \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, WorkspaceManagerInterface $workspace_manager, WorkspacePointerInterface $workspace_pointer, ReplicatorManager $replicator_manager, MultiversionManagerInterface $multiversion_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ReplicatorManager $replicator_manager, MultiversionManagerInterface $multiversion_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->workspaceManager = $workspace_manager;
-    $this->workspacePointer = $workspace_pointer;
+    $this->entityTypeManager = $entity_type_manager;
     $this->replicatorManager = $replicator_manager;
     $this->multiversionManager = $multiversion_manager;
   }
@@ -78,7 +80,7 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
       $plugin_id,
       $plugin_definition,
       $container->get('workspace.manager'),
-      $container->get('workspace.pointer'),
+      $container->get('entity_type.manager'),
       $container->get('workspace.replicator_manager'),
       $container->get('multiversion.manager')
       );
@@ -87,22 +89,18 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
    * Replicate content from active Workspace to it's upstream.
    */
   protected function doExecute(EntityInterface $entity) {
-    $entity_type = $entity->getEntityType();
-    if ($this->multiversionManager->isSupportedEntityType($entity_type)) {
-      /** @var Workspace $workspace */
-      $workspace = $entity->get('workspace')->entity;
-    }
-    else {
-      /** @var Workspace $workspace */
-      $workspace = $this->workspaceManager->getActiveWorkspace();
-    }
-    /** @var Workspace $upstream */
-    $upstream = $workspace->get('upstream')->entity;
-    /** @var Pointer $source */
-    $source = $this->workspacePointer->get('workspace:' . $workspace->id());
-    /** @var Pointer $target */
-    $target = $this->workspacePointer->get('workspace:' . $upstream->id());
+    /** @var Workspace $workspace */
+    $workspace = $this->multiversionManager->isSupportedEntityType($entity->getEntityType())
+      ? $entity->get('workspace')->entity
+      : $this->workspaceManager->getActiveWorkspace();
+
+    $source = $this->getPointerToWorkspace($workspace);
+
+    /** @var WorkspacePointerInterface $upstream */
+    $target = $workspace->get('upstream')->entity;
+
     $result = $this->replicatorManager->replicate($source, $target);
+
     if (!isset($result['error'])) {
       drupal_set_message($this->t('Content replicated from workspace @source to workspace @target',
         ['@source' => $workspace->label(), '@target' => $upstream->label()]));
@@ -110,6 +108,26 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     else {
       drupal_set_message($this->t('Error replicating content: @message', ['@message' => $result['error']]));
     }
+  }
+
+  /**
+   * Returns a pointer to the specified workspace.
+   *
+   * In most cases this pointer will be unique, but that is not guaranteed
+   * by the schema. If there are multiple pointers, which one is returned is
+   * undefined.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace for which we want a pointer.
+   * @return WorkspacePointerInterface
+   *   The pointer to the provided workspace.
+   */
+  protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
+    $pointers = $this->entityTypeManager
+      ->getStorage('workspace_pointer')
+      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    $pointer = reset($pointers);
+    return $pointer;
   }
 
 }

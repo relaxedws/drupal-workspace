@@ -12,11 +12,6 @@ function workspace_install() {
 
   // Add pointers for all existing workspaces.
   foreach (Workspace::loadMultiple() as $workspace) {
-    $pointer = new Pointer(
-      'workspace:' . $workspace->id(),
-      $workspace->label(),
-      ['workspace' => $workspace->id()]
-    );
-    \Drupal::service('workspace.pointer')->add($pointer);
+    \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
   }
 }

@@ -9,8 +9,12 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Entity\WorkspaceTypeInterface;
+use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines a class to build a listing of workspace entities.
@@ -18,6 +22,31 @@ use Drupal\multiversion\Entity\WorkspaceTypeInterface;
  * @see \Drupal\multiversion\Entity\Workspace
  */
 class WorkspaceListBuilder extends EntityListBuilder {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('entity.manager')->getStorage($entity_type->id()),
+      $container->get('workspace.manager')
+    );
+  }
+
+  /**
+   * Constructs a new EntityListBuilder object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage class.
+   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   */
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager) {
+    parent::__construct($entity_type, $storage);
+    $this->workspaceManager = $workspace_manager;
+  }
 
   /**
    * {@inheritdoc}
@@ -41,8 +70,8 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var WorkspaceTypeInterface $type */
     $type = $entity->get('type')->first()->entity;
     $row['type'] = $type ? $type->label() : '';
-    $active_workspace = $entity->getActiveWorkspaceId();
-    $row['status'] = $active_workspace && $active_workspace[0] == $entity->id() ? 'Active' : 'Inactive';
+    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    $row['status'] = $active_workspace == $entity->id() ? 'Active' : 'Inactive';
     return $row + parent::buildRow($entity);
   }
 
@@ -56,8 +85,8 @@ class WorkspaceListBuilder extends EntityListBuilder {
       $operations['edit']['query']['destination'] = $entity->url('collection');
     }
 
-    $active_workspace = $entity->getActiveWorkspaceId();
-    if (!$active_workspace || $entity->id() != $active_workspace[0]) {
+    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    if ($entity->id() != $active_workspace) {
       $operations['activate'] = array(
         'title' => $this->t('Set Active'),
         'weight' => 20,

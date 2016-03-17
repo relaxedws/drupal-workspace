@@ -34,25 +34,22 @@ class InternalReplicator implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies(PointerInterface $source, PointerInterface $target) {
-    if (isset($source->data()['workspace']) && isset($target->data()['workspace'])) {
-      $source_workspace = Workspace::load($source->data()['workspace']);
-      $target_workspace = Workspace::load($target->data()['workspace']);
-      if (($source_workspace instanceof WorkspaceInterface) && ($target_workspace instanceof WorkspaceInterface)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
+  public function applies(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
+    $source_workspace = $source->getWorkspace();
+    $target_workspace = $target->getWorkspace();
+
+    return ($source_workspace instanceof WorkspaceInterface) && ($target_workspace instanceof WorkspaceInterface);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function replicate(PointerInterface $source, PointerInterface $target) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     // Set active workspace to source.
-    $source_workspace = Workspace::load($source->data()['workspace']);
-    $target_workspace = Workspace::load($target->data()['workspace']);
+    $source_workspace = $source->getWorkspace();
+    $target_workspace = $target->getWorkspace();
     $this->workspaceManager->setActiveWorkspace($source_workspace);
+
     // Get multiversion supported content entities.
     $entity_types = $this->multiversionManager->getSupportedEntityTypes();
     // Load all entities.

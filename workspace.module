@@ -3,39 +3,20 @@
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\workspace\Pointer;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 
 /**
  * Implements hook_entity_type_alter().
- *
- * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_types
  */
 function workspace_entity_type_alter(array &$entity_types) {
-  \Drupal::service('workspace.entity_type_alter')->entityTypeAlter($entity_types);
+  \Drupal::service('workspace.entity_type_info')->entityTypeAlter($entity_types);
 }
 
 /**
  * Implements hook_entity_base_field_info().
- * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
- * @return
  */
 function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
-  if ($entity_type->id() === 'workspace') {
-    $fields['upstream'] = \Drupal\Core\Field\BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Assign default target workspace'))
-      ->setDescription(t('The workspace to push to and pull from.'))
-      ->setRevisionable(TRUE)
-      ->setRequired(TRUE)
-      ->setSetting('target_type', 'workspace')
-      ->setDefaultValueCallback('workspace_active_id')
-      ->setDisplayOptions('form', array(
-        'type' => 'options_buttons',
-        'weight' => 0
-      ))
-      ->setDisplayConfigurable('form', TRUE);
-
-    return $fields;
-  }
+  return \Drupal::service('workspace.entity_type_info')->entityBaseFieldInfo($entity_type);
 }
 
 /**
@@ -46,7 +27,7 @@ function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterfac
 function workspace_active_id() {
   /** @var \Drupal\multiversion\Entity\Workspace $active_workspace */
   $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
-  if ($active_workspace instanceof \Drupal\multiversion\Entity\Workspace) {
+  if ($active_workspace instanceof WorkspaceInterface) {
     return [$active_workspace->id()];
   }
 }
@@ -56,10 +37,8 @@ function workspace_active_id() {
  *
  * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
  */
-function workspace_workspace_insert(\Drupal\multiversion\Entity\WorkspaceInterface $workspace) {
-  /** @var $pointer \Drupal\workspace\PointerInterface */
-  $pointer = new Pointer('workspace:' . $workspace->id(), $workspace->label(), ['workspace' => $workspace->id()]);
-  \Drupal::service('workspace.pointer')->add($pointer);
+function workspace_workspace_insert(WorkspaceInterface $workspace) {
+  \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
 }
 
 function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {

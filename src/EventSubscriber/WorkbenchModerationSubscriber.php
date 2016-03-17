@@ -7,7 +7,6 @@ use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\workbench_moderation\Entity\ModerationState;
 use Drupal\workbench_moderation\Event\WorkbenchModerationEvents;
 use Drupal\workbench_moderation\Event\WorkbenchModerationTransitionEvent;
-use Drupal\workspace\PointerInterface;
 use Drupal\workspace\ReplicatorManager;
 use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -23,18 +22,12 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
   protected $entityTypeManager;
 
   /**
-   * @var \Drupal\workspace\WorkspacePointerInterface
-   */
-  protected $workspacePointer;
-
-  /**
    * @var \Drupal\workspace\ReplicatorManager
    */
   protected $replicatorManager;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspacePointerInterface $workspace_pointer, ReplicatorManager $replicator_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ReplicatorManager $replicator_manager) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->workspacePointer = $workspace_pointer;
     $this->replicatorManager = $replicator_manager;
   }
 
@@ -79,19 +72,36 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    */
   protected function mergeWorkspaceToParent(WorkspaceInterface $workspace) {
     // This may be insufficient for handling a missing parent.
-    /** @var WorkspaceInterface $parent_workspace */
-    $parent_workspace = $workspace->get('upstream')->entity;
-    if (!$parent_workspace) {
+    /** @var WorkspacePointerInterface $parent_workspace */
+    $parent_workspace_pointer = $workspace->get('upstream')->entity;
+    if (!$parent_workspace_pointer) {
       // @todo Should we silently ignore this, or throw an error, or...?
       return;
     }
 
-    /** @var PointerInterface $source_pointer */
-    $source_pointer = $this->workspacePointer->get('workspace:' . $workspace->id());
-    /** @var PointerInterface $target_pointer */
-    $target_pointer = $this->workspacePointer->get('workspace:' . $parent_workspace->id());
+    $source_pointer = $this->getPointerToWorkspace($workspace);
 
-    $this->replicatorManager->replicate($source_pointer, $target_pointer);
+    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer);
+  }
+
+  /**
+   * Returns a pointer to the specified workspace.
+   *
+   * In most cases this pointer will be unique, but that is not guaranteed
+   * by the schema. If there are multiple pointers, which one is returned is
+   * undefined.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace for which we want a pointer.
+   * @return WorkspacePointerInterface
+   *   The pointer to the provided workspace.
+   */
+  protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
+    $pointers = $this->entityTypeManager
+      ->getStorage('workspace_pointer')
+      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    $pointer = reset($pointers);
+    return $pointer;
   }
 
   /**
