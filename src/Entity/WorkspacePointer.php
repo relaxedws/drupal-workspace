@@ -97,7 +97,7 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    * {@inheritdoc}
    */
   public function getWorkspaceId() {
-    return $this->get('workspace_point')->target_id;
+    return $this->get('workspace_pointer')->target_id;
   }
 
   /**
