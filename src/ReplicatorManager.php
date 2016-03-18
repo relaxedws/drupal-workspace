@@ -6,6 +6,7 @@
  */
 
 namespace Drupal\workspace;
+use Drupal\replication\Entity\ReplicationLog;
 
 /**
  * Provides the Replicator manager.
@@ -40,6 +41,16 @@ class ReplicatorManager implements ReplicatorInterface {
         return $replicator->replicate($source, $target);
       }
     }
-    return ['error' => t('No valid replicators.')];
+    $time = new \DateTime();
+    $replication_log = ReplicationLog::create([
+      'ok' => FALSE,
+      'history' => [
+        'start_time' => $time->format('D, d M Y H:i:s e'),
+        'end_time' => $time->format('D, d M Y H:i:s e'),
+        'session_id' => \md5((\microtime(true) * 1000000)),
+      ]
+    ]);
+    $replication_log->save();
+    return $replication_log;
   }
 }
