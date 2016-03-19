@@ -29,7 +29,7 @@ class RevisionsController extends ControllerBase {
     $entity = $route_match->getParameter($parameter_name);
 
     if ($entity && $entity instanceof ContentEntityInterface) {
-      $tree = \Drupal::service('entity.index.rev.tree')->getTree($entity->uuid());
+      $tree = \Drupal::service('multiversion.entity_index.rev.tree')->getTree($entity->uuid());
       $output = array(
         '#theme' => 'item_list',
         '#attributes' => array('class' => array('workspace')),

@@ -92,7 +92,7 @@ function workspace_preprocess_workspace_rev(&$variables) {
   $uuid = $variables['elements']['#uuid'];
   $rev = $variables['elements']['#rev'];
   $rev_info = array_merge(
-    \Drupal::service('entity.index.rev')->get("$uuid:$rev"),
+    \Drupal::service('multiversion.entity_index.rev')->get("$uuid:$rev"),
     $variables['elements']['#rev_info']
   );
 
