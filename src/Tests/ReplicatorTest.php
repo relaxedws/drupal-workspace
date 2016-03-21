@@ -53,6 +53,7 @@ class ReplicatorTest extends WebTestBase {
     $reloaded_node = Node::load($this->node->id());
     $this->assertEqual(count($reloaded_node->get('workspace')), 2, 'Node is in two workspaces');
     $this->assertTrue(($replication_log instanceof ReplicationLogInterface), "ReplicationLog returned.");
+    $this->assertTrue($replication_log->get('ok'), "Replication went ok");
     $this->assertEqual(1, $replication_log->getHistory()[0]['docs_read'], "ReplicationLog states 1 document was read");
     $this->assertEqual(1, $replication_log->getHistory()[0]['docs_written'], "ReplicationLog states 1 document was written");
   }

@@ -99,14 +99,15 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     /** @var WorkspacePointerInterface $upstream */
     $target = $workspace->get('upstream')->entity;
 
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */
     $result = $this->replicatorManager->replicate($source, $target);
 
-    if (!isset($result['error'])) {
-      drupal_set_message($this->t('Content replicated from workspace @source to workspace @target',
+    if ($result->get('ok') == TRUE) {
+      drupal_set_message($this->t('Content replicated from workspace @source to workspace @target.',
         ['@source' => $workspace->label(), '@target' => $upstream->label()]));
     }
     else {
-      drupal_set_message($this->t('Error replicating content: @message', ['@message' => $result['error']]));
+      drupal_set_message($this->t('Error replicating content.'));
     }
   }
 
