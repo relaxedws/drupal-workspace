@@ -9,6 +9,7 @@ namespace Drupal\workspace\Tests;
 
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\node\Entity\Node;
+use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\simpletest\WebTestBase;
 use Drupal\workspace\Entity\WorkspacePointer;
 
@@ -47,8 +48,12 @@ class ReplicatorTest extends WebTestBase {
 
   public function testReplicator() {
     $this->assertEqual(count($this->node->get('workspace')), 1, 'Node is in one workspace');
-    \Drupal::service('workspace.replicator_manager')->replicate(WorkspacePointer::load(2), WorkspacePointer::load(1));
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
+    $replication_log = \Drupal::service('workspace.replicator_manager')->replicate(WorkspacePointer::load(2), WorkspacePointer::load(1));
     $reloaded_node = Node::load($this->node->id());
     $this->assertEqual(count($reloaded_node->get('workspace')), 2, 'Node is in two workspaces');
+    $this->assertTrue(($replication_log instanceof ReplicationLogInterface), "ReplicationLog returned.");
+    $this->assertEqual(1, $replication_log->getHistory()[0]['docs_read'], "ReplicationLog states 1 document was read");
+    $this->assertEqual(1, $replication_log->getHistory()[0]['docs_written'], "ReplicationLog states 1 document was written");
   }
 }

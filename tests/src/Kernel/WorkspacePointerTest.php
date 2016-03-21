@@ -22,7 +22,7 @@ class WorkspacePointerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['workspace', 'multiversion', 'key_value', 'serialization', 'user', 'system'];
+  public static $modules = ['workspace', 'replication', 'multiversion', 'key_value', 'serialization', 'user', 'system'];
 
   /**
    * {@inheritdoc}
