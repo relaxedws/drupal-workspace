@@ -67,13 +67,6 @@ class InternalReplicator implements ReplicatorInterface {
     $target_workspace = $target->getWorkspace();
     // Set active workspace to source
     $this->workspaceManager->setActiveWorkspace($source_workspace);
-    // Load existing ReplicationLog entity
-    $replication_logs = $this->entityTypeManager
-      ->getStorage('replication_log')
-      ->loadByProperties(['uuid' => $this->generateReplicationId($source, $target)]);
-    if (!empty($replication_logs)) {
-      $replication_log = reset($replication_logs);
-    }
     // Fetch the site time
     $start_time = new \DateTime();
     // Get changes on the source workspace
@@ -108,40 +101,26 @@ class InternalReplicator implements ReplicatorInterface {
       }
     }
     $end_time = new \DateTime();
-    $log_data = [
-      'ok' => TRUE,
+    $history = [
+      'docs_read' => $docs_read,
+      'docs_written' => $docs_written,
+      'doc_write_failures' => $doc_write_failures,
+      'missing_checked' => count($source_changes),
+      'missing_found' => $missing_found,
+      'start_time' => $start_time->format('D, d M Y H:i:s e'),
+      'end_time' => $end_time->format('D, d M Y H:i:s e'),
       'session_id' => \md5($start_time->getTimestamp()),
-      'source_last_seq' => $source_workspace->getUpdateSeq(),
-      'history' => [
-        'docs_read' => $docs_read,
-        'docs_written' => $docs_written,
-        'doc_write_failures' => $doc_write_failures,
-        'missing_checked' => count($source_changes),
-        'missing_found' => $missing_found,
-        'start_time' => $start_time->format('D, d M Y H:i:s e'),
-        'end_time' => $end_time->format('D, d M Y H:i:s e'),
-        'session_id' => \md5($start_time->getTimestamp()),
-        'start_last_seq' => $source_workspace->getUpdateSeq(),
-      ]
-    ];
-    if (isset($replication_log)) {
-      foreach ($log_data as $key => $value) {
-        $replication_log->{$key} = $value;
-      }
-    }
-    else {
-      $log_data['uuid'] = $this->generateReplicationId($source, $target);
-      $replication_log = ReplicationLog::create($log_data);
-    }
+      'start_last_seq' => $source_workspace->getUpdateSeq(),
+      ];
+    $replication_log_id = $source->generateReplicationId($target);
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
+    $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
+    $replication_log->set('ok', TRUE);
+    $replication_log->setSessionId(\md5($start_time->getTimestamp()));
+    $replication_log->setSourceLastSeq($source_workspace->getUpdateSeq());
+    $replication_log->setHistory($history);
     $replication_log->save();
     return $replication_log;
-  }
-
-  protected function generateReplicationId(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
-    return \md5(
-      $source->getWorkspace()->getMachineName() .
-      $target->getWorkspace()->getMachineName()
-    );
   }
 
 }

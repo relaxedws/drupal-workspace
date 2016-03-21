@@ -89,4 +89,10 @@ interface WorkspacePointerInterface extends ContentEntityInterface, EntityChange
    * @return $this
    */
   public function setWorkspaceId($uid);
+
+  /**
+   * @param \Drupal\workspace\WorkspacePointerInterface $target
+   * @return string
+   */
+  public function generateReplicationId(WorkspacePointerInterface $target);
 }

@@ -42,14 +42,19 @@ class ReplicatorManager implements ReplicatorInterface {
       }
     }
     $time = new \DateTime();
-    $replication_log = ReplicationLog::create([
-      'ok' => FALSE,
-      'history' => [
-        'start_time' => $time->format('D, d M Y H:i:s e'),
-        'end_time' => $time->format('D, d M Y H:i:s e'),
-        'session_id' => \md5((\microtime(true) * 1000000)),
-      ]
-    ]);
+    $history = [
+      'start_time' => $time->format('D, d M Y H:i:s e'),
+      'end_time' => $time->format('D, d M Y H:i:s e'),
+      'session_id' => \md5((\microtime(true) * 1000000)),
+      'start_last_seq' => $source->getWorkspace()->getUpdateSeq(),
+    ];
+    $replication_log_id = $source->generateReplicationId($target);
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
+    $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
+    $replication_log->set('ok', FALSE);
+    $replication_log->setSourceLastSeq($source->getWorkspace()->getUpdateSeq());
+    $replication_log->setSessionId($history['session_id']);
+    $replication_log->setHistory($history);
     $replication_log->save();
     return $replication_log;
   }

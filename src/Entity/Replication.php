@@ -15,6 +15,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\user\UserInterface;
+use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Defines the Replication entity.
@@ -194,4 +195,10 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
     return array(\Drupal::currentUser()->id());
   }
 
+  public static function generateReplicationId(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
+    return \md5(
+      $source->getWorkspace()->getMachineName() .
+      $target->getWorkspace()->getMachineName()
+    );
+  }
 }

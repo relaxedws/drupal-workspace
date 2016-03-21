@@ -103,6 +103,16 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
   /**
    * {@inheritdoc}
    */
+  public function generateReplicationId(WorkspacePointerInterface $target) {
+    return \md5(
+      $this->getWorkspace()->getMachineName() .
+      $target->getWorkspace()->getMachineName()
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields['id'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('ID'))
