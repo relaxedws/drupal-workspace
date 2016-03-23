@@ -98,7 +98,6 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
 
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setDescription(t('The title for the deployment.'))
       ->setRequired(TRUE)
       ->setSettings(array(
         'max_length' => 50,
@@ -117,9 +116,8 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['description'] = BaseFieldDefinition::create('text_long')
+    $fields['description'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Description'))
-      ->setDescription(t('The description for the deployment.'))
       ->setSettings(array(
         'max_length' => 50,
         'text_processing' => 0,
@@ -130,7 +128,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
         'weight' => -3,
       ))
       ->setDisplayOptions('form', array(
-        'type' => 'text_textarea',
+        'type' => 'string_textarea',
         'weight' => -3,
       ))
       ->setDisplayConfigurable('form', TRUE)

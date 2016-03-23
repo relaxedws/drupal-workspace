@@ -36,7 +36,17 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    */
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
+  }
 
+  /**
+   * @inheritDoc
+   */
+  public function label() {
+    if (!empty($this->getWorkspace())) {
+      return $this->getWorkspace()->label();
+    }
+
+    return parent::label();
   }
 
   /**

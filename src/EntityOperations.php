@@ -46,10 +46,7 @@ class EntityOperations {
 
     /** @var WorkspacePointerInterface $pointer */
     $pointer = $this->entityTypeManager->getStorage('workspace_pointer')->create();
-
     $pointer->setWorkspace($workspace);
-    $pointer->setName($workspace->label() . ' workspace');
-
     $pointer->save();
   }
 
