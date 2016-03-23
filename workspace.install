@@ -16,4 +16,8 @@ function workspace_install() {
   foreach (Workspace::loadMultiple() as $workspace) {
     \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
   }
+
+  // allow workspace entity route alterations
+  \Drupal::service('entity_type.manager')->clearCachedDefinitions();
+  \Drupal::service('router.builder')->rebuild();
 }
