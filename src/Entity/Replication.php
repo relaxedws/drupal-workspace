@@ -117,7 +117,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['description'] = BaseFieldDefinition::create('string_long')
+    $fields['description'] = BaseFieldDefinition::create('text_long')
       ->setLabel(t('Description'))
       ->setDescription(t('The description for the deployment.'))
       ->setSettings(array(
@@ -130,7 +130,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
         'weight' => -3,
       ))
       ->setDisplayOptions('form', array(
-        'type' => 'string_textarea',
+        'type' => 'text_textarea',
         'weight' => -3,
       ))
       ->setDisplayConfigurable('form', TRUE)

@@ -7,6 +7,10 @@
     background-image: url("../icons/bebebe/workspace.svg");
 }
 
+.toolbar-bar .toolbar-icon-workspace.is-active:before {
+    background-image: url("../icons/ffffff/workspace.svg");
+}
+
 .toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
     float: right;
 }
