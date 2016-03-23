@@ -77,7 +77,7 @@ class Toolbar {
 
     $items['workspace_switcher']['tab'] = [
       '#type' => 'link',
-      '#title' => $this->t('Workspace: @active', ['@active' => $active->label()]),
+      '#title' => $this->t('@active', ['@active' => $active->label()]),
       '#url' => Url::fromRoute('entity.workspace.collection'),
       '#attributes' => [
         'title' => $this->t('Switch workspaces'),
