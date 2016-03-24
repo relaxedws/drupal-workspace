@@ -116,7 +116,7 @@ class InternalReplicator implements ReplicatorInterface {
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
     $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
     $replication_log->set('ok', TRUE);
-    $replication_log->setSessionId(\md5($start_time->getTimestamp()));
+    $replication_log->setSessionId(\md5((int) (microtime(TRUE) * 1000000)));
     $replication_log->setSourceLastSeq($source_workspace->getUpdateSeq());
     $replication_log->setHistory($history);
     $replication_log->save();
