@@ -6,6 +6,7 @@
  */
 
 namespace Drupal\workspace;
+use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 
 /**
@@ -13,7 +14,15 @@ use Drupal\replication\Entity\ReplicationLog;
  */
 class ReplicatorManager implements ReplicatorInterface {
 
+  /** @var ReplicatorInterface[] */
   protected $replicators = [];
+
+  /** @var  ConflictTrackerInterface */
+  protected $conflictTracker;
+
+  public function __construct(ConflictTrackerInterface $conflict_tracker) {
+    $this->conflictTracker = $conflict_tracker;
+  }
 
   /**
    * {@inheritdoc}
@@ -35,12 +44,18 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
+    $conflicts = $this->conflictTracker->getAll();
     /** @var ReplicatorInterface $replicator */
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
         return $replicator->replicate($source, $target);
       }
     }
+
+    return $this->failedReplicationLog($source, $target);
+  }
+
+  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     $time = new \DateTime();
     $history = [
       'start_time' => $time->format('D, d M Y H:i:s e'),
