@@ -106,7 +106,8 @@ class WorkspaceForm extends ContentEntityForm {
     if ($workspace->id()) {
       $form_state->setValue('id', $workspace->id());
       $form_state->set('id', $workspace->id());
-      $form_state->setRedirectUrl($workspace->urlInfo('collection'));
+      $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
+      $form_state->setRedirectUrl($redirect);
     }
     else {
       drupal_set_message($this->t('The workspace could not be saved.'), 'error');

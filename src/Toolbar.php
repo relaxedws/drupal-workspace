@@ -6,6 +6,7 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
@@ -34,6 +35,11 @@ class Toolbar {
   protected $formBuilder;
 
   /**
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a new Toolbar.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -42,12 +48,14 @@ class Toolbar {
    *   The workspace manager service.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder service.
+   * @param AccountInterface $current_user
+   *   The current user service.
    */
-
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, FormBuilderInterface $form_builder) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, FormBuilderInterface $form_builder, AccountInterface $current_user) {
     $this->entityTypeManager = $entity_type_manager;
     $this->workspaceManager = $workspace_manager;
     $this->formBuilder = $form_builder;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -122,7 +130,7 @@ class Toolbar {
   }
 
   /**
-   * Returns a list of all defined workspaces.
+   * Returns a list of all defined and accessible workspaces.
    *
    * Note: This assumes that the total number of workspaces on the site is
    * very small.  If it's actually large this method will have memory issues.
@@ -130,6 +138,8 @@ class Toolbar {
    * @return WorkspaceInterface[]
    */
   protected function allWorkspaces() {
-    return $this->entityTypeManager->getStorage('workspace')->loadMultiple();
+    return array_filter($this->entityTypeManager->getStorage('workspace')->loadMultiple(), function(WorkspaceInterface $workspace) {
+      return $workspace->access('view', $this->currentUser);
+    });
   }
 }

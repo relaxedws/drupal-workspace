@@ -7,7 +7,7 @@ entity.workspace.add:
   options:
     _admin_route: TRUE
   requirements:
-    _permission: 'administer workspaces'
+    _permission: 'administer workspaces+create_workspace'
 
 entity.workspace.add_form:
   path: '/admin/structure/workspace/add/{workspace_type}'
@@ -25,7 +25,7 @@ entity.workspace.collection:
     _title: 'Workspaces'
     _entity_list: 'workspace'
   requirements:
-    _permission: 'administer workspaces'
+    _permission: 'administer workspaces+edit_any_workspace'
 
 entity.workspace.activate_form:
   path: '/admin/structure/workspace/{workspace}/activate'
@@ -35,7 +35,7 @@ entity.workspace.activate_form:
   options:
     _admin_route: TRUE
   requirements:
-    _permission: 'administer workspaces'
+    _workspace_view: 'TRUE'
 
 # WorkspaceType routing definition
 entity.workspace_type.collection:

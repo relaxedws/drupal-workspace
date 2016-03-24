@@ -1,8 +1,10 @@
 <?php
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 
 /**
@@ -51,6 +53,21 @@ function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $defin
 function workspace_toolbar() {
   return \Drupal::service('workspace.toolbar')->toolbar();
 }
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ */
+function workspace_workspace_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  return \Drupal::service('workspace.entity_access')->workspaceAccess($entity, $operation, $account);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_create_access().
+ */
+function workspace_workspace_create_access(AccountInterface $account, array $context, $entity_bundle) {
+  return \Drupal::service('workspace.entity_access')->workspaceCreateAccess($account, $context, $entity_bundle);
+}
+
 
 /**
  * Implements hook_theme().
