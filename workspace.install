@@ -9,8 +9,11 @@ function workspace_install() {
   // Set workspace earlier to alter entities before anyone else does.
   module_set_weight('workspace', -10);
 
-  // @todo: Add upstream.
-  Workspace::create(['machine_name' => 'stage', 'label' => 'Stage', 'type' => 'basic'])->save();
+  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+  /** @var \Drupal\multiversion\Entity\WorkspaceInterface $stage */
+  $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage', 'type' => 'basic']);
+  $stage->set('upstream', $default_workspace_id);
+  $stage->save();
 
   // Add pointers for all existing workspaces.
   foreach (Workspace::loadMultiple() as $workspace) {
