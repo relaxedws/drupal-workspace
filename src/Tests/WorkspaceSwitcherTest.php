@@ -62,16 +62,16 @@ class WorkspaceSwitcherTest extends WebTestBase {
 
     // Ensure both workspaces are listed on the collection list.
     $this->drupalGet('admin/structure/workspace');
-    $this->assertText('Default (default)', 'Default workspace found.');
+    $this->assertText('Live (live)', 'Default workspace found.');
     $this->assertText('New Workspace (new_workspace)', 'New Workspace found.');
 
     // Load the activate form and check the confirmation message.
     $this->drupalGet('admin/structure/workspace/1/activate');
-    $this->assertText('Would you like to activate the Default workspace?');
+    $this->assertText('Would you like to activate the Live workspace?');
 
     // Submit the activate form and ensure switching a workspace is successful.
     $this->drupalPostForm('admin/structure/workspace/1/activate', [], t('Activate'));
-    $this->assertText('Now viewing workspace Default', 'Form button to switch workspaces completes successfully.');
+    $this->assertText('Now viewing workspace Live', 'Form button to switch workspaces completes successfully.');
 
   }
 }
