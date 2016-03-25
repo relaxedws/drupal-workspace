@@ -93,7 +93,7 @@ class Toolbar {
       ],
     ];
 
-    $create_link = Link::createFromRoute($this->t('Add new workspace'), 'entity.workspace.add');
+    $create_link = Link::createFromRoute($this->t('Add workspace'), 'entity.workspace.add');
 
     $items['workspace_switcher']['tray'] = [
       '#heading' => $this->t('Switch to workspace'),
