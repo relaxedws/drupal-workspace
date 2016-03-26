@@ -73,10 +73,15 @@ abstract class WorkspaceActivateFormBase extends FormBase {
     /** @var WorkspaceInterface $workspace */
     $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
 
-    $this->workspaceManager->setActiveWorkspace($workspace);
-
-    drupal_set_message($this->t('Now viewing workspace %workspace', ['%workspace' => $workspace->label()]));
-    $form_state->setRedirect('<front>');
+    try {
+      $this->workspaceManager->setActiveWorkspace($workspace);
+      drupal_set_message($this->t('Now viewing workspace %workspace', ['%workspace' => $workspace->label()]));
+      $form_state->setRedirect('<front>');
+    }
+    catch(\Exception $e) {
+      watchdog_exception('Workspace', $e);
+      drupal_set_message($e->getMessage(), 'error');
+    }
   }
 
 }

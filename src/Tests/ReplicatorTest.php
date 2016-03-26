@@ -33,6 +33,8 @@ class ReplicatorTest extends WebTestBase {
 
   public function setUp() {
     parent::setUp();
+    $test_user = $this->drupalCreateUser(['administer workspaces']);
+    $this->drupalLogin($test_user);
     $this->developmentWorkspace = Workspace::create([
       'type' => 'basic',
       'label' => 'Development',

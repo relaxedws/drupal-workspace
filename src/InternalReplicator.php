@@ -66,7 +66,13 @@ class InternalReplicator implements ReplicatorInterface {
     $source_workspace = $source->getWorkspace();
     $target_workspace = $target->getWorkspace();
     // Set active workspace to source
-    $this->workspaceManager->setActiveWorkspace($source_workspace);
+    try {
+      $this->workspaceManager->setActiveWorkspace($source_workspace);
+    }
+    catch(\Exception $e) {
+      watchdog_exception('Workspace', $e);
+      drupal_set_message($e->getMessage(), 'error');
+    }
     // Fetch the site time
     $start_time = new \DateTime();
     // Get changes on the source workspace
