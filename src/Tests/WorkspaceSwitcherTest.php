@@ -34,6 +34,9 @@ class WorkspaceSwitcherTest extends WebTestBase {
    * Then test the admin page displays workspaces and allows switching.
    */
   public function testSwitchingWorkspaces() {
+    /** @var \Drupal\multiversion\Workspace\WorkspaceManager $workspace_manager */
+    $workspace_manager = \Drupal::service('workspace.manager');
+
     // Login as a user who can administer workspaces.
     $user = $this->drupalCreateUser(['administer workspaces']);
     $this->drupalLogin($user);
@@ -58,7 +61,7 @@ class WorkspaceSwitcherTest extends WebTestBase {
     $this->drupalPostForm($current_path, [], t('New Workspace'));
 
     // Ensure switching a workspace is successful.
-    $this->assertText('Now viewing workspace New Workspace', 'Form button to switch workspaces completes successfully.');
+    $this->assertEqual('New Workspace', $workspace_manager->getActiveWorkspace()->label());
 
     // Ensure both workspaces are listed on the collection list.
     $this->drupalGet('admin/structure/workspace');
@@ -71,7 +74,7 @@ class WorkspaceSwitcherTest extends WebTestBase {
 
     // Submit the activate form and ensure switching a workspace is successful.
     $this->drupalPostForm('admin/structure/workspace/1/activate', [], t('Activate'));
-    $this->assertText('Now viewing workspace Live', 'Form button to switch workspaces completes successfully.');
+    $this->assertEqual('Live', $workspace_manager->getActiveWorkspace()->label());
 
   }
 }
