@@ -5,7 +5,6 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
@@ -93,14 +92,19 @@ class Toolbar {
       ],
     ];
 
-    $create_link = Link::createFromRoute($this->t('Add workspace'), 'entity.workspace.add');
+    $create_link = [
+      '#type' => 'link',
+      '#title' => t('Add workspace'),
+      '#url' => Url::fromRoute('entity.workspace.add'),
+      '#options' => array('attributes' => array('class' => array('add-workspace'))),
+    ];
 
     $items['workspace_switcher']['tray'] = [
       '#heading' => $this->t('Switch to workspace'),
       '#pre_render' => ['workspace.toolbar:preRenderWorkspaceSwitcherForms'],
-      'create_link' => $create_link->toRenderable(),
       // This wil get filled in via pre-render.
       'workspace_forms' => [],
+      'create_link' => $create_link,
       '#cache' => [
         'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
         'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),

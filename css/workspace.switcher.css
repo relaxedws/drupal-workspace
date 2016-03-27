@@ -3,8 +3,7 @@
  * Styling for Multiversion switcher block.
  */
 
-#block-workspaceswitcher input[type="submit"],
-#block-workspaceswitcher input[type="submit"]:hover {
+#block-workspaceswitcher input[type="submit"] {
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -13,6 +12,8 @@
   color: #0071b3;
   border-bottom: 1px dotted;
   text-decoration: none;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 1em;
 }
 
 #block-workspaceswitcher input[type="submit"]:hover {
@@ -20,7 +21,6 @@
   color: #018fe2;
 }
 
-#block-workspaceswitcher input[type="submit"].active {
-  border-bottom-style: solid;
-  color: #23aeff;
+#block-workspaceswitcher input[type="submit"].is-active {
+  color: #000000;
 }
