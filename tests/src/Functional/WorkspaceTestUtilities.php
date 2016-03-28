@@ -44,6 +44,9 @@ trait WorkspaceTestUtilities {
    * @param string $machine_name
    *   The machine name of the workspace to create.
    *
+   * @return WorkspaceInterface
+   *   The workspace that was just created.
+   *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function createWorkspaceThroughUI($label, $machine_name) {
@@ -59,5 +62,7 @@ trait WorkspaceTestUtilities {
 
     $session->getPage()->hasContent("$label ($machine_name)");
 
+    return $this->getOneWorkspaceByLabel($label);
   }
+
 }
