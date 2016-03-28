@@ -9,6 +9,7 @@ use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\replication\BulkDocsFactoryInterface;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\RevisionDiffFactoryInterface;
@@ -33,14 +34,18 @@ class InternalReplicator implements ReplicatorInterface {
   /** @var  RevisionDiffFactoryInterface */
   protected $revisionDiffFactory;
 
+  /** @var  BulkDocsFactoryInterface */
+  protected $bulkDocsFactory;
+
   /** @var RevisionIndexInterface  */
   protected $revIndex;
 
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, BulkDocsFactoryInterface $bulkdocs_factory, RevisionIndexInterface $rev_index) {
     $this->workspaceManager = $workspace_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
+    $this->bulkDocsFactory = $bulkdocs_factory;
     $this->revIndex = $rev_index;
   }
 
@@ -75,6 +80,7 @@ class InternalReplicator implements ReplicatorInterface {
     }
     // Fetch the site time
     $start_time = new \DateTime();
+
     // Get changes on the source workspace
     $source_changes = $this->changesFactory->get($source_workspace)->getNormal();
     $data = [];
@@ -84,28 +90,40 @@ class InternalReplicator implements ReplicatorInterface {
         $data[$source_change['id']][] = $change['rev'];
       }
     }
+
     // Get revisions the target workspace is missing
     $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($data)->getMissing();
+    $entities = [];
     foreach ($revs_diff as $uuid => $revs) {
       foreach ($revs['missing'] as $rev) {
         $missing_found++;
         $item = $this->revIndex->useWorkspace($source_workspace->id())->get("$uuid:$rev");
         $entity_type_id = $item['entity_type_id'];
         $revision_id = $item['revision_id'];
+
         $storage = $this->entityTypeManager->getStorage($entity_type_id);
         $entity = $storage->loadRevision($revision_id);
         if ($entity instanceof ContentEntityInterface) {
           $docs_read++;
-          $entity->workspace = $target_workspace;
-          if ($entity->save()) {
-            $docs_written++;
-          }
-          else {
-            $doc_write_failures++;
-          }
+          $entities[] = $entity;
         }
       }
     }
+
+    // Save all entities in bulk.
+    $bulk_docs = $this->bulkDocsFactory->get($target_workspace);
+    $bulk_docs->setEntities($entities);
+    $bulk_docs->save();
+
+    foreach ($bulk_docs->getResult() as $result) {
+      if (isset($result['error'])) {
+        $doc_write_failures++;
+      }
+      elseif (!empty($result['ok'])) {
+        $docs_written++;
+      }
+    }
+
     $end_time = new \DateTime();
     $history = [
       'docs_read' => $docs_read,
