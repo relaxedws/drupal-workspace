@@ -105,7 +105,8 @@ class EntityAccess {
     foreach ($this->getAllWorkspaces() as $workspace) {
       $perms += $this->createWorkspaceViewPermission($workspace)
       + $this->createWorkspaceEditPermission($workspace)
-      + $this->createWorkspaceDeletePermission($workspace);
+      + $this->createWorkspaceDeletePermission($workspace)
+      + $this->createWorkspaceBypassPermission($workspace);
     }
 
     return $perms;
@@ -166,6 +167,24 @@ class EntityAccess {
     $perms['delete_workspace_' . $workspace->id()] = [
       'title' => $this->t('Delete the %workspace workspace', ['%workspace' => $workspace->label()]),
       'description' => $this->t('View the %workspace workspace and all content within it', ['%workspace' => $workspace->label()]),
+    ];
+
+    return $perms;
+  }
+
+  /**
+   * Derives the delete permission for a specific workspace.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace from which to derive the permission.
+   * @return array
+   *   A single-item array with the permission to define.
+   */
+  protected function createWorkspaceBypassPermission(WorkspaceInterface $workspace) {
+    $perms['bypass_content_access_' . $workspace->id()] = [
+      'title' => $this->t('Bypass content access in %workspace workspace', ['%workspace' => $workspace->label()]),
+      'description' => $this->t('Allow all Edit/Update/Delete permissions for all content in the %workspace workspace', ['%workspace' => $workspace->label()]),
+      'restrict access' => TRUE,
     ];
 
     return $perms;
