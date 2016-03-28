@@ -9,7 +9,7 @@ projects:
     type: module
     download:
       type: git
-      branch: refactor-ContentEntityStorageTrait
+      branch: refactor-ContentEntityStorageTrait-2
       url: "https://github.com/dickolsson/drupal-multiversion.git"
   replication:
     type: module
