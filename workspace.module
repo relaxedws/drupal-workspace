@@ -55,6 +55,13 @@ function workspace_toolbar() {
 }
 
 /**
+ * Implements hook_entity_access().
+ */
+function workspace_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  return \Drupal::service('workspace.entity_access')->entityAccess($entity, $operation, $account);
+}
+
+/**
  * Implements hook_ENTITY_TYPE_access().
  */
 function workspace_workspace_access(EntityInterface $entity, $operation, AccountInterface $account) {
