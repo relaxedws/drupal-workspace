@@ -112,8 +112,10 @@ class InternalReplicator implements ReplicatorInterface {
 
     // Save all entities in bulk.
     $bulk_docs = $this->bulkDocsFactory->get($target_workspace);
-    $bulk_docs->setEntities($entities);
-    $bulk_docs->save();
+    $bulk_docs
+      ->setEntities($entities)
+      ->newEdits(FALSE)
+      ->save();
 
     foreach ($bulk_docs->getResult() as $result) {
       if (isset($result['error'])) {

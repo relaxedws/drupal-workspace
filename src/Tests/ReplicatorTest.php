@@ -7,8 +7,10 @@
 
 namespace Drupal\workspace\Tests;
 
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\multiversion\Workspace\WorkspaceManager;
 use Drupal\node\Entity\Node;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\simpletest\WebTestBase;
@@ -25,6 +27,9 @@ class ReplicatorTest extends WebTestBase {
 
   public static $modules = ['node', 'workspace'];
 
+  /** @var  WorkspaceManager */
+  protected $workspaceManager;
+
   /** @var  Workspace */
   protected $developmentWorkspace;
 
@@ -33,6 +38,8 @@ class ReplicatorTest extends WebTestBase {
 
   public function setUp() {
     parent::setUp();
+    $this->workspaceManager = \Drupal::service('workspace.manager');
+
     $test_user = $this->drupalCreateUser(['administer workspaces']);
     $this->drupalLogin($test_user);
     $this->developmentWorkspace = Workspace::create([
@@ -41,7 +48,10 @@ class ReplicatorTest extends WebTestBase {
       'machine_name' => 'development'
     ]);
     $this->developmentWorkspace->save();
-    \Drupal::service('workspace.manager')->setActiveWorkspace($this->developmentWorkspace);
+    $this->workspaceManager->setActiveWorkspace($this->developmentWorkspace);
+
+    // Create test content.
+    // @todo: We need to test with a lot more entities and entity types.
     $this->node = Node::create([
       'type' => 'article',
       'title' => 'test'
@@ -55,14 +65,24 @@ class ReplicatorTest extends WebTestBase {
     $default_workspace = Workspace::load($default_workspace_id);
     $source_pointer = $this->loadPointer($this->developmentWorkspace);
     $target_pointer = $this->loadPointer($default_workspace);
+
+    // Execute the replication.
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
     $replication_log = \Drupal::service('workspace.replicator_manager')->replicate($source_pointer, $target_pointer);
-    $reloaded_node = Node::load($this->node->id());
-    $this->assertEqual(count($reloaded_node->get('workspace')), 2, 'Node is in two workspaces');
+
     $this->assertTrue(($replication_log instanceof ReplicationLogInterface), "ReplicationLog returned.");
     $this->assertTrue($replication_log->get('ok'), "Replication went ok");
     $this->assertEqual(1, $replication_log->getHistory()[0]['docs_read'], "ReplicationLog states 1 document was read");
     $this->assertEqual(1, $replication_log->getHistory()[0]['docs_written'], "ReplicationLog states 1 document was written");
+
+    // Check that the node exists on the target workspace.
+    $this->workspaceManager->setActiveWorkspace($default_workspace);
+    /** @var EntityTypeManager $entity_type_manager */
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $entities = $entity_type_manager->getStorage('node')->loadByProperties(['uuid' => $this->node->uuid()]);
+    $this->assertEqual(count($entities), 1, 'The node was replicated.');
+    $entity = reset($entities);
+    $this->assertEqual($entity->_rev->value, $this->node->_rev->value, 'The revision hash was retained during replication.');
   }
 
   protected function loadPointer(WorkspaceInterface $workspace) {
