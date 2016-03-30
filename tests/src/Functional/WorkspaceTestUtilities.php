@@ -28,12 +28,39 @@ trait WorkspaceTestUtilities {
    * @return WorkspaceInterface
    */
   protected function getOneWorkspaceByLabel($label) {
+    return $this->getOneEntityByLabel('workspace', $label);
+  }
+
+  /**
+   * Loads a single entity by its label.
+   *
+   * The UI approach to creating an entity doesn't make it easy to know what
+   * the ID is, so this lets us make paths for an entity after it's created.
+   *
+   * @param string $type
+   *   The type of entity to load.
+   * @param $label
+   *   The label of the entity to load.
+   * @return WorkspaceInterface
+   */
+  protected function getOneEntityByLabel($type, $label) {
     /** @var EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
 
+    $property = $etm->getDefinition($type)->getKey('label');
+
     /** @var WorkspaceInterface $bears */
-    $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => $label]);
-    return current($entity_list);
+    $entity_list = $etm->getStorage($type)->loadByProperties([$property => $label]);
+
+    $entity = current($entity_list);
+
+    if (!$entity) {
+      $this->fail("No {$type} entity named {$label} found.");
+    }
+
+    //print "Just loaded entity by label: {$label}, got: {$entity->label()}\n";
+
+    return $entity;
   }
 
   /**
