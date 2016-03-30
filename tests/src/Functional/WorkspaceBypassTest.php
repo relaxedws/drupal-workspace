@@ -46,7 +46,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
 
-    $default = $this->getOneEntityByLabel('workspace', 'Default');
+    $live = $this->getOneEntityByLabel('workspace', 'Live');
 
     $this->switchToWorkspace($bears);
 
@@ -57,7 +57,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     // Replicate all content from the default workspace to Bears.
     /** @var ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
-    $rm->replicate($this->getPointerToWorkspace($default), $this->getPointerToWorkspace($bears));
+    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
 
     // Create a new user that should be able to edit anything in the Bears workspace.
     $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id(), 'bypass_content_access_workspace_' . $bears->id()]));

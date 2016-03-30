@@ -10,6 +10,7 @@ namespace Drupal\Tests\workspace\Functional;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\node\Entity\NodeType;
+use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Utility methods for use in BrowserTestBase tests.
