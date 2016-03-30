@@ -7,6 +7,8 @@ use Drupal\node\Entity\NodeType;
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\ReplicatorManager;
+use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Tests access bypass permission controls on workspaces.
@@ -44,26 +46,26 @@ class WorkspaceBypassTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($ditka);
 
-    //$vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
+    $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
+
+    $default = $this->getOneEntityByLabel('workspace', 'Default');
 
     $this->switchToWorkspace($bears);
 
     // Now create a node as editor 1.
     $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
-
-    print "Ditka node: {$ditka_bears_node->label()}\n";
-
-
     $ditka_bears_node_id = $ditka_bears_node->id();
 
-    /*
+    // Replicate all content from the default workspace to Bears.
+    /** @var ReplicatorManager $rm */
+    $rm = \Drupal::service('workspace.replicator_manager');
+    $rm->replicate($this->getPointerToWorkspace($default), $this->getPointerToWorkspace($bears));
 
+    // Create a new user that should be able to edit anything in the Bears workspace.
     $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id(), 'bypass_content_access_workspace_' . $bears->id()]));
-
     $this->drupalLogin($lombardi);
-
     $this->switchToWorkspace($bears);
 
     // Because editor 2 has the bypass permission, he should be able to
@@ -78,7 +80,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
 
     $this->createNodeThroughUI('Lombardi Bears node', 'test');
-*/
 
     /*
 
@@ -107,58 +108,6 @@ Editor 1 should NOT have access to * on node
     $page = $this->getSession()->getPage();
 
     $this->assertTrue($page->hasContent('Workspace switcher'));
-  }
-
-  /**
-   * Sets a given workspace as "active" for subsequent requests.
-   *
-   * This assumes that the switcher block has already been setup by calling
-   * setupWorkspaceSwitcherBlock().
-   *
-   * @param WorkspaceInterface $workspace
-   *   The workspace to set active.
-   */
-  protected function switchToWorkspace(WorkspaceInterface $workspace) {
-    $this->getSession()->getPage()->findButton($workspace->label())->click();
-  }
-
-  protected function createNodeType($label, $machine_name) {
-    $node_type = NodeType::create([
-      'type' => $machine_name,
-      'label' => $label,
-    ]);
-    $node_type->save();
-  }
-
-
-  /**
-   * Creates a node by "clicking" buttons.
-   *
-   * @todo This seems to break  when called inside a workspace. Why?
-   *
-   * @param string $label
-   * @param string $bundle
-   *
-   * @return \Drupal\multiversion\Entity\WorkspaceInterface
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
-   */
-  protected function createNodeThroughUI($label, $bundle) {
-    $this->drupalGet('/node/add/' . $bundle);
-
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-
-    $page = $session->getPage();
-    $page->fillField('Title', $label);
-    $page->findButton(t('Save'))->click();
-
-    $session->getPage()->hasContent($label);
-
-    $node = $this->getOneEntityByLabel('node', $label);
-
-    print "Returning node: {$node->label()}\n";
-
-    return $node;
   }
 
 
