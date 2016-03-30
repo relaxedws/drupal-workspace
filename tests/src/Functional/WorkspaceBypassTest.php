@@ -46,18 +46,17 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
 
-    $live = $this->getOneEntityByLabel('workspace', 'Live');
-
-    $this->switchToWorkspace($bears);
-
-    // Now create a node as editor 1.
-    $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
-    $ditka_bears_node_id = $ditka_bears_node->id();
-
     // Replicate all content from the default workspace to Bears.
+    $live = $this->getOneEntityByLabel('workspace', 'Live');
     /** @var ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
+
+    $this->switchToWorkspace($bears);
+
+    // Now create a node in the Bears workspace, as the owner of that workspace.
+    $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
+    $ditka_bears_node_id = $ditka_bears_node->id();
 
     // Create a new user that should be able to edit anything in the Bears workspace.
     $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id(), 'bypass_content_access_workspace_' . $bears->id()]));
