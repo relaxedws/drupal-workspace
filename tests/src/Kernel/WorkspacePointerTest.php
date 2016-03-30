@@ -3,11 +3,11 @@
 namespace Drupal\Tests\workspace\Kernel;
 
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Entity\WorkspaceType;
 use Drupal\workspace\Entity\WorkspacePointer;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests for the WorkspacePointer entity.

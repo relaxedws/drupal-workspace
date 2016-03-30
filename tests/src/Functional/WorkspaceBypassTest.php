@@ -2,13 +2,9 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\node\Entity\NodeType;
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\simpletest\BrowserTestBase;
-use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\workspace\ReplicatorManager;
-use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Tests access bypass permission controls on workspaces.
