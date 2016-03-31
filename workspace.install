@@ -19,4 +19,9 @@ function workspace_install() {
   $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage', 'type' => 'basic']);
   $stage->set('upstream', $default_workspace_id);
   $stage->save();
+
+  // allow workspace entity route alterations
+  \Drupal::service('entity_type.manager')->clearCachedDefinitions();
+  \Drupal::service('router.builder')->rebuild();
 }
+
