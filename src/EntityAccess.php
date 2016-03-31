@@ -101,10 +101,10 @@ class EntityAccess {
     // to ALL THE THINGS! That's why this is a dangerous permission.
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-    return AccessResult::allowedIfHasPermission($account, 'bypass_content_access_workspace_' . $active_workspace->id())
+    return AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_workspace_' . $active_workspace->id())
       ->orIf(
         AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
-          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_content_access_own_workspace'))
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_own_workspace'))
       );
   }
 
@@ -250,8 +250,8 @@ class EntityAccess {
    *   A single-item array with the permission to define.
    */
   protected function createWorkspaceBypassPermission(WorkspaceInterface $workspace) {
-    $perms['bypass_content_access_workspace_' . $workspace->id()] = [
-      'title' => $this->t('Bypass content access in %workspace workspace', ['%workspace' => $workspace->label()]),
+    $perms['bypass_entity_access_workspace_' . $workspace->id()] = [
+      'title' => $this->t('Bypass content entity access in %workspace workspace', ['%workspace' => $workspace->label()]),
       'description' => $this->t('Allow all Edit/Update/Delete permissions for all content in the %workspace workspace', ['%workspace' => $workspace->label()]),
       'restrict access' => TRUE,
     ];

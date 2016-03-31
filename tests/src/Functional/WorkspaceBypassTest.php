@@ -59,7 +59,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $ditka_bears_node_id = $ditka_bears_node->id();
 
     // Create a new user that should be able to edit anything in the Bears workspace.
-    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id(), 'bypass_content_access_workspace_' . $bears->id()]));
+    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id(), 'bypass_entity_access_workspace_' . $bears->id()]));
     $this->drupalLogin($lombardi);
     $this->switchToWorkspace($bears);
 
