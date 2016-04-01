@@ -13,6 +13,7 @@ use Drupal\replication\BulkDocsFactoryInterface;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\RevisionDiffFactoryInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @Replicator(
@@ -34,19 +35,19 @@ class InternalReplicator implements ReplicatorInterface {
   /** @var  RevisionDiffFactoryInterface */
   protected $revisionDiffFactory;
 
-  /** @var  BulkDocsFactoryInterface */
-  protected $bulkDocsFactory;
-
   /** @var RevisionIndexInterface  */
   protected $revIndex;
 
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, BulkDocsFactoryInterface $bulkdocs_factory, RevisionIndexInterface $rev_index) {
+  /** @var SerializerInterface  */
+  protected $serializer;
+
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, SerializerInterface $serializer) {
     $this->workspaceManager = $workspace_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
-    $this->bulkDocsFactory = $bulkdocs_factory;
     $this->revIndex = $rev_index;
+    $this->serializer = $serializer;
   }
 
   /**
@@ -105,17 +106,18 @@ class InternalReplicator implements ReplicatorInterface {
         $entity = $storage->loadRevision($revision_id);
         if ($entity instanceof ContentEntityInterface) {
           $docs_read++;
-          $entities[] = $entity;
+          $entities[] = $this->serializer->normalize($entity, 'json', ['new_revision_id' => TRUE]);
         }
       }
     }
 
+    $data = [
+      'new_edits' => FALSE,
+      'docs' => $entities,
+    ];
     // Save all entities in bulk.
-    $bulk_docs = $this->bulkDocsFactory->get($target_workspace);
-    $bulk_docs
-      ->setEntities($entities)
-      ->newEdits(FALSE)
-      ->save();
+    $bulk_docs = $this->serializer->denormalize($data, 'Drupal\replication\BulkDocs\BulkDocs', 'json', ['workspace' => $target_workspace]);
+    $bulk_docs->save();
 
     foreach ($bulk_docs->getResult() as $result) {
       if (isset($result['error'])) {

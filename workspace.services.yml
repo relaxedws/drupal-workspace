@@ -6,7 +6,7 @@ services:
       - { name: service_collector, tag: workspace_replicator, call: addReplicator}
   workspace.internal_replicator:
     class: Drupal\workspace\InternalReplicator
-    arguments: ['@workspace.manager', '@entity_type.manager', '@replication.changes_factory', '@replication.revisiondiff_factory', '@replication.bulkdocs_factory', '@multiversion.entity_index.rev']
+    arguments: ['@workspace.manager', '@entity_type.manager', '@replication.changes_factory', '@replication.revisiondiff_factory', '@multiversion.entity_index.rev', '@serializer']
     tags:
       - {name: workspace_replicator, priority: 10}
   workspace.entity_type_info:
