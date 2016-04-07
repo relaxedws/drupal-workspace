@@ -62,6 +62,13 @@ function workspace_entity_access(EntityInterface $entity, $operation, AccountInt
 }
 
 /**
+ * Implements hook_entity_create_access().
+ */
+function workspace_entity_create_access(AccountInterface $account, array $context, $entity_bundle) {
+  return \Drupal::service('workspace.entity_access')->entityCreateAccess($account, $context, $entity_bundle);
+}
+
+/**
  * Implements hook_ENTITY_TYPE_access().
  */
 function workspace_workspace_access(EntityInterface $entity, $operation, AccountInterface $account) {

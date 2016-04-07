@@ -67,16 +67,45 @@ class EntityAccess {
       return AccessResult::neutral();
     }
 
+    return $this->bypassAccessResult($account);
+  }
+
+  /**
+   * Hook bridge;
+   *
+   * @see hook_entity_create_access()
+   *
+   * @param AccountInterface $account
+   * @param array $context
+   * @param $entity_bundle
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   */
+  public function entityCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
+
+    // Workspaces themselves are handled by another hook. Ignore them here.
+    if ($entity_bundle == 'workspace') {
+      return AccessResult::neutral();
+    }
+
+    return $this->bypassAccessResult($account);
+  }
+
+  /**
+   * @param AccountInterface $account
+   * @return AccessResult
+   */
+  protected function bypassAccessResult(AccountInterface $account) {
     // This approach assumes that the current "global" active workspace is
     // correct, ie, if you're "in" a given workspace then you get ALL THE PERMS
     // to ALL THE THINGS! That's why this is a dangerous permission.
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
     return AccessResult::allowedIfHasPermission($account, 'bypass_content_access_workspace_' . $active_workspace->id())
-    ->orIf(
-      AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
-      ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_content_access_own_workspace'))
-    );
+      ->orIf(
+        AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_content_access_own_workspace'))
+      );
   }
 
   /**

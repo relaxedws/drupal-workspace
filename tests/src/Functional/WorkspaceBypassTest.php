@@ -74,19 +74,15 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
-    $this->createNodeThroughUI('Lombardi Bears node', 'test');
+    $lombardi_bears_node = $this->createNodeThroughUI('Lombardi Bears node', 'test');
+    $lombardi_bears_node_id = $lombardi_bears_node->id();
 
-    /*
+    $this->drupalLogin($ditka);
+    $this->switchToWorkspace($bears);
 
-Create Bears workspace
-Grant access to Editor 1 and 2 to Bears
-Editor 1 creates node
-Editor 2 should have access to * on node
-Editor 2 creates node
-Editor 1 should NOT have access to * on node
-
-
-     */
+    $this->drupalGet('/node/' . $lombardi_bears_node_id . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
 
   }
 
