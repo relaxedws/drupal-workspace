@@ -27,8 +27,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
    */
   public function testBypassSpecificWorkspace() {
     $permissions = [
-      'access administration pages',
-      'administer site configuration',
       'create_workspace',
       'edit_own_workspace',
       'view_own_workspace',
@@ -63,7 +61,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->drupalLogin($lombardi);
     $this->switchToWorkspace($bears);
 
-    // Because editor 2 has the bypass permission, he should be able to
+    // Because Lombardi has the bypass permission, he should be able to
     // create and edit any node.
 
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
@@ -84,21 +82,81 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
+    // Create a new user that should NOT be able to edit anything in the Bears workspace.
+    $belichick = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id()]));
+    $this->drupalLogin($belichick);
+    $this->switchToWorkspace($bears);
+
+    $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
+
+    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
+
   }
 
-  protected function setupWorkspaceSwitcherBlock() {
-    // Add the block to the sidebar.
-    $this->drupalPlaceBlock('workspace_switcher_block', [
-      'id' => 'workspaceswitcher',
-      'region' => 'sidebar_first',
-      'label' => 'Workspace switcher',
-    ]);
+  /**
+   * Verifies that a user can edit anything in a workspace they own.
+   */
+  public function testBypassOwnWorkspace() {
+    $permissions = [
+      'create_workspace',
+      'edit_own_workspace',
+      'view_own_workspace',
+      'bypass_entity_access_own_workspace',
+    ];
 
-    // Confirm the block shows on the front page.
-    $this->drupalGet('<front>');
-    $page = $this->getSession()->getPage();
+    $this->createNodeType('Test', 'test');
+    $this->setupWorkspaceSwitcherBlock();
 
-    $this->assertTrue($page->hasContent('Workspace switcher'));
+    $ditka = $this->drupalCreateUser(array_merge($permissions, ['create test content']));
+
+    // Login as a limited-access user and create a workspace.
+    $this->drupalLogin($ditka);
+
+    $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
+
+    $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
+
+    // Replicate all content from the default workspace to Bears.
+    $live = $this->getOneEntityByLabel('workspace', 'Live');
+    /** @var ReplicatorManager $rm */
+    $rm = \Drupal::service('workspace.replicator_manager');
+    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
+
+    $this->switchToWorkspace($bears);
+
+    // Now create a node in the Bears workspace, as the owner of that workspace.
+    $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
+    $ditka_bears_node_id = $ditka_bears_node->id();
+
+    // Editing both nodes should be possible.
+
+    $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+
+    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+
+    // Create a new user that should be able to edit anything in the Bears workspace.
+    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id()]));
+    $this->drupalLogin($lombardi);
+    $this->switchToWorkspace($bears);
+
+    // Because editor 2 has the bypass permission, he should be able to
+    // create and edit any node.
+
+    $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
+
+    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
   }
 
 

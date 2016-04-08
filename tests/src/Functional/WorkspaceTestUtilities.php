@@ -93,6 +93,26 @@ trait WorkspaceTestUtilities {
   }
 
   /**
+   * Adds the workspace switcher block to the site.
+   *
+   * This is necessary for switchToWorkspace() to function correctly.
+   */
+  protected function setupWorkspaceSwitcherBlock() {
+    // Add the block to the sidebar.
+    $this->drupalPlaceBlock('workspace_switcher_block', [
+      'id' => 'workspaceswitcher',
+      'region' => 'sidebar_first',
+      'label' => 'Workspace switcher',
+    ]);
+
+    // Confirm the block shows on the front page.
+    $this->drupalGet('<front>');
+    $page = $this->getSession()->getPage();
+
+    $this->assertTrue($page->hasContent('Workspace switcher'));
+  }
+
+  /**
    * Sets a given workspace as "active" for subsequent requests.
    *
    * This assumes that the switcher block has already been setup by calling
