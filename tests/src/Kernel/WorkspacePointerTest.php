@@ -3,11 +3,11 @@
 namespace Drupal\Tests\workspace\Kernel;
 
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Entity\WorkspaceType;
 use Drupal\workspace\Entity\WorkspacePointer;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests for the WorkspacePointer entity.
@@ -22,7 +22,7 @@ class WorkspacePointerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['workspace', 'replication', 'multiversion', 'key_value', 'serialization', 'user', 'system'];
+  public static $modules = ['workspace', 'replication', 'multiversion', 'entity_storage_migrate', 'key_value', 'serialization', 'user', 'system'];
 
   /**
    * {@inheritdoc}

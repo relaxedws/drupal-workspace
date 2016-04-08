@@ -3,10 +3,12 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 
 /**
  * Service wrapper for hooks relating to entity access control.
@@ -27,16 +29,83 @@ class EntityAccess {
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
    * Constructs a new EntityAccess.
    *
    * @param EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager service.
    * @param int $default_workspace
    *   The ID of the default workspace.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, $default_workspace) {
-    $this->defaultWorkspaceId = $default_workspace;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $default_workspace) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->workspaceManager = $workspace_manager;
+    $this->defaultWorkspaceId = $default_workspace;
+  }
+
+  /**
+   * Hook bridge;
+   *
+   * @see hook_entity_access()
+   *
+   * @param EntityInterface $entity
+   * @param string $operation
+   * @param AccountInterface $account
+   *
+   * @return AccessResult
+   */
+  public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+
+    // Workspaces themselves are handled by another hook. Ignore them here.
+    if ($entity->getEntityTypeId() == 'workspace') {
+      return AccessResult::neutral();
+    }
+
+    return $this->bypassAccessResult($account);
+  }
+
+  /**
+   * Hook bridge;
+   *
+   * @see hook_entity_create_access()
+   *
+   * @param AccountInterface $account
+   * @param array $context
+   * @param $entity_bundle
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   */
+  public function entityCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
+
+    // Workspaces themselves are handled by another hook. Ignore them here.
+    if ($entity_bundle == 'workspace') {
+      return AccessResult::neutral();
+    }
+
+    return $this->bypassAccessResult($account);
+  }
+
+  /**
+   * @param AccountInterface $account
+   * @return AccessResult
+   */
+  protected function bypassAccessResult(AccountInterface $account) {
+    // This approach assumes that the current "global" active workspace is
+    // correct, ie, if you're "in" a given workspace then you get ALL THE PERMS
+    // to ALL THE THINGS! That's why this is a dangerous permission.
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
+
+    return AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_workspace_' . $active_workspace->id())
+      ->orIf(
+        AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_own_workspace'))
+      );
   }
 
   /**
@@ -105,7 +174,8 @@ class EntityAccess {
     foreach ($this->getAllWorkspaces() as $workspace) {
       $perms += $this->createWorkspaceViewPermission($workspace)
       + $this->createWorkspaceEditPermission($workspace)
-      + $this->createWorkspaceDeletePermission($workspace);
+      + $this->createWorkspaceDeletePermission($workspace)
+      + $this->createWorkspaceBypassPermission($workspace);
     }
 
     return $perms;
@@ -166,6 +236,24 @@ class EntityAccess {
     $perms['delete_workspace_' . $workspace->id()] = [
       'title' => $this->t('Delete the %workspace workspace', ['%workspace' => $workspace->label()]),
       'description' => $this->t('View the %workspace workspace and all content within it', ['%workspace' => $workspace->label()]),
+    ];
+
+    return $perms;
+  }
+
+  /**
+   * Derives the delete permission for a specific workspace.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace from which to derive the permission.
+   * @return array
+   *   A single-item array with the permission to define.
+   */
+  protected function createWorkspaceBypassPermission(WorkspaceInterface $workspace) {
+    $perms['bypass_entity_access_workspace_' . $workspace->id()] = [
+      'title' => $this->t('Bypass content entity access in %workspace workspace', ['%workspace' => $workspace->label()]),
+      'description' => $this->t('Allow all Edit/Update/Delete permissions for all content in the %workspace workspace', ['%workspace' => $workspace->label()]),
+      'restrict access' => TRUE,
     ];
 
     return $perms;

@@ -91,6 +91,8 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    * by the schema. If there are multiple pointers, which one is returned is
    * undefined.
    *
+   * @todo Move this to somewhere more logical and globally accessible.
+   *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
    * @return WorkspacePointerInterface

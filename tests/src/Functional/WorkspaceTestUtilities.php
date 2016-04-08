@@ -9,6 +9,8 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\node\Entity\NodeType;
+use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Utility methods for use in BrowserTestBase tests.
@@ -28,12 +30,37 @@ trait WorkspaceTestUtilities {
    * @return WorkspaceInterface
    */
   protected function getOneWorkspaceByLabel($label) {
+    return $this->getOneEntityByLabel('workspace', $label);
+  }
+
+  /**
+   * Loads a single entity by its label.
+   *
+   * The UI approach to creating an entity doesn't make it easy to know what
+   * the ID is, so this lets us make paths for an entity after it's created.
+   *
+   * @param string $type
+   *   The type of entity to load.
+   * @param $label
+   *   The label of the entity to load.
+   * @return WorkspaceInterface
+   */
+  protected function getOneEntityByLabel($type, $label) {
     /** @var EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
 
+    $property = $etm->getDefinition($type)->getKey('label');
+
     /** @var WorkspaceInterface $bears */
-    $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => $label]);
-    return current($entity_list);
+    $entity_list = $etm->getStorage($type)->loadByProperties([$property => $label]);
+
+    $entity = current($entity_list);
+
+    if (!$entity) {
+      $this->fail("No {$type} entity named {$label} found.");
+    }
+
+    return $entity;
   }
 
   /**
@@ -43,6 +70,9 @@ trait WorkspaceTestUtilities {
    *   The label of the workspace to create.
    * @param string $machine_name
    *   The machine name of the workspace to create.
+   *
+   * @return WorkspaceInterface
+   *   The workspace that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
@@ -59,5 +89,111 @@ trait WorkspaceTestUtilities {
 
     $session->getPage()->hasContent("$label ($machine_name)");
 
+    return $this->getOneWorkspaceByLabel($label);
   }
+
+  /**
+   * Adds the workspace switcher block to the site.
+   *
+   * This is necessary for switchToWorkspace() to function correctly.
+   */
+  protected function setupWorkspaceSwitcherBlock() {
+    // Add the block to the sidebar.
+    $this->drupalPlaceBlock('workspace_switcher_block', [
+      'id' => 'workspaceswitcher',
+      'region' => 'sidebar_first',
+      'label' => 'Workspace switcher',
+    ]);
+
+    // Confirm the block shows on the front page.
+    $this->drupalGet('<front>');
+    $page = $this->getSession()->getPage();
+
+    $this->assertTrue($page->hasContent('Workspace switcher'));
+  }
+
+  /**
+   * Sets a given workspace as "active" for subsequent requests.
+   *
+   * This assumes that the switcher block has already been setup by calling
+   * setupWorkspaceSwitcherBlock().
+   *
+   * @param WorkspaceInterface $workspace
+   *   The workspace to set active.
+   */
+  protected function switchToWorkspace(WorkspaceInterface $workspace) {
+    // Switch the test runner's context to the specified workspace.
+    \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);
+
+    // Switch the system under test to the specified workspace.
+    $this->getSession()->getPage()->findButton($workspace->label())->click();
+
+    // If we don't do both of those, test runner utility methods will not be
+    // run in the same workspace as the system under test, and you'll be left
+    // wondering why your test runner cannot find content you just created.
+  }
+
+  /**
+   * Creates a new node type.
+   *
+   * @param string $label
+   *   The human-readable label of the type to create.
+   * @param string $machine_name
+   *   The machine name of the type to create.
+   */
+  protected function createNodeType($label, $machine_name) {
+    $node_type = NodeType::create([
+      'type' => $machine_name,
+      'label' => $label,
+    ]);
+    $node_type->save();
+  }
+
+
+  /**
+   * Creates a node by "clicking" buttons.
+   *
+   * @param string $label
+   * @param string $bundle
+   *
+   * @return \Drupal\multiversion\Entity\WorkspaceInterface
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
+  protected function createNodeThroughUI($label, $bundle) {
+    $this->drupalGet('/node/add/' . $bundle);
+
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+
+    $page = $session->getPage();
+    $page->fillField('Title', $label);
+    $page->findButton(t('Save'))->click();
+
+    $session->getPage()->hasContent("{$label} has been created");
+
+    return $this->getOneEntityByLabel('node', $label);
+  }
+
+  /**
+   * Returns a pointer to the specified workspace.
+   *
+   * @todo Replace this with a common method in the module somewhere.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace for which we want a pointer.
+   * @return WorkspacePointerInterface
+   *   The pointer to the provided workspace.
+   */
+  protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
+    /** @var EntityTypeManagerInterface $etm */
+    $etm = \Drupal::service('entity_type.manager');
+
+    $pointers = $etm->getStorage('workspace_pointer')
+      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    $pointer = reset($pointers);
+    return $pointer;
+  }
+
+
 }

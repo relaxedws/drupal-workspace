@@ -25,5 +25,10 @@ delete_any_workspace:
   title: Delete any workspace
   description: Delete a workspace and all content revisions within it, regardless of ownership.
 
+bypass_entity_access_own_workspace:
+  title: Bypass content entity access in own workspace
+  description: Allow all Edit/Update/Delete permissions for all content entities in a workspace owned by the user.
+  restrict access: TRUE
+
 permission_callbacks:
   - workspace.entity_access::workspacePermissions
