@@ -72,14 +72,13 @@ class EntityTypeInfo {
    */
   protected function alterWorkspaceType(EntityTypeInterface $workspace_type) {
     $workspace_type->setHandlerClass('list_builder', WorkspaceTypeListBuilder::class);
-    $workspace_type->setHandlerClass('route_provider', ['html' => AdminHtmlRouteProvider::class]);
-    $workspace_type->setHandlerClass('form', [
-      'default' => WorkspaceTypeForm::class,
-      'add' => WorkspaceTypeForm::class,
-      'edit' => WorkspaceTypeForm::class,
-      'delete' => WorkspaceTypeDeleteForm::class,
-    ]);
-
+    $providers = $workspace_type->getRouteProviderClasses() ?: [];
+    $providers['html'] = AdminHtmlRouteProvider::class;
+    $workspace_type->setHandlerClass('route_provider', $providers);
+    $workspace_type->setFormClass('default', WorkspaceTypeForm::class);
+    $workspace_type->setFormClass('add', WorkspaceTypeForm::class);
+    $workspace_type->setFormClass('edit', WorkspaceTypeForm::class);
+    $workspace_type->setFormClass('delete', WorkspaceTypeDeleteForm::class);
     $workspace_type->setLinkTemplate('edit-form', '/admin/structure/workspace/types/{workspace_type}/edit');
     $workspace_type->setLinkTemplate('delete-form', '/admin/structure/workspace/types/{workspace_type}/delete');
     $workspace_type->setLinkTemplate('collection', '/admin/structure/workspace/types');
@@ -93,14 +92,13 @@ class EntityTypeInfo {
    * @return \Drupal\Core\Entity\EntityTypeInterface
    */
   protected function alterWorkspace(EntityTypeInterface $workspace) {
-    $workspace ->setHandlerClass('list_builder', WorkspaceListBuilder::class);
-    $workspace->setHandlerClass('route_provider', ['html' => AdminHtmlRouteProvider::class]);
-    $workspace->setHandlerClass('form', [
-      'default' => WorkspaceForm::class,
-      'add' => WorkspaceForm::class,
-      'edit' => WorkspaceForm::class,
-    ]);
-
+    $workspace->setHandlerClass('list_builder', WorkspaceListBuilder::class);
+    $providers = $workspace->getRouteProviderClasses() ?: [];
+    $providers['html'] = AdminHtmlRouteProvider::class;
+    $workspace->setHandlerClass('route_provider', $providers);
+    $workspace->setFormClass('default', WorkspaceForm::class);
+    $workspace->setFormClass('add', WorkspaceForm::class);
+    $workspace->setFormClass('edit', WorkspaceForm::class);
     $workspace->setLinkTemplate('collection', '/admin/structure/workspace');
     $workspace->setLinkTemplate('canonical', '/admin/structure/workspace/{workspace}');
     $workspace->setLinkTemplate('edit-form', '/admin/structure/workspace/{workspace}/edit');
