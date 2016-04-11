@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\workspace\Tests\EntityTypeAlterTest.
+ * Contains \Drupal\Tests\workspace\Functional\EntityTypeAlterTest.
  */
 
-namespace Drupal\workspace\Tests;
+namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityTypeInterface;
