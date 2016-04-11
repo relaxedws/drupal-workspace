@@ -2,16 +2,15 @@
 
 /**
  * @file
- * Contains \Drupal\workspace\Tests\ReplicatorTest.
+ * Contains \Drupal\Tests\workspace\Functional\ReplicatorTest.
  */
 
-namespace Drupal\workspace\Tests;
+namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\Tests\workspace\Functional\WorkspaceTestUtilities;
 use Drupal\workspace\ReplicatorManager;
 
 /**
