@@ -7,7 +7,7 @@ use Drupal\multiversion\Entity\Workspace;
  */
 function workspace_install() {
   // Set workspace earlier to alter entities before anyone else does.
-  module_set_weight('workspace', -10);
+  module_set_weight('workspace', 10);
 
   // Add pointers for all existing workspaces.
   foreach (Workspace::loadMultiple() as $workspace) {

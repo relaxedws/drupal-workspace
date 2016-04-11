@@ -35,15 +35,20 @@ class EntityTypeInfo {
   /**
    * @param array $entity_types
    */
-  public function entityTypeAlter(array &$entity_types) {
+  public function entityTypeBuild(array &$entity_types) {
     if (isset($entity_types['workspace_type'])) {
-      $entity_types['workspace_type'] = $this->alterWorkspaceType($entity_types['workspace_type']);
+      $entity_types['workspace_type'] = $this->buildWorkspaceType($entity_types['workspace_type']);
     }
 
     if (isset($entity_types['workspace'])) {
-      $entity_types['workspace'] = $this->alterWorkspace($entity_types['workspace']);
+      $entity_types['workspace'] = $this->buildWorkspace($entity_types['workspace']);
     }
+  }
 
+  /**
+   * @param array $entity_types
+   */
+  public function entityTypeAlter(array &$entity_types) {
     foreach ($this->selectMultiversionedUiEntityTypes($entity_types) as $type_name => $entity_type) {
       $entity_types[$type_name] = $this->addRevisionLinks($entity_type);
     }
@@ -70,7 +75,7 @@ class EntityTypeInfo {
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected function alterWorkspaceType(EntityTypeInterface $workspace_type) {
+  protected function buildWorkspaceType(EntityTypeInterface $workspace_type) {
     $workspace_type->setHandlerClass('list_builder', WorkspaceTypeListBuilder::class);
     $providers = $workspace_type->getRouteProviderClasses() ?: [];
     $providers['html'] = AdminHtmlRouteProvider::class;
@@ -91,7 +96,7 @@ class EntityTypeInfo {
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected function alterWorkspace(EntityTypeInterface $workspace) {
+  protected function buildWorkspace(EntityTypeInterface $workspace) {
     $workspace->setHandlerClass('list_builder', WorkspaceListBuilder::class);
     $providers = $workspace->getRouteProviderClasses() ?: [];
     $providers['html'] = AdminHtmlRouteProvider::class;
@@ -120,17 +125,18 @@ class EntityTypeInfo {
    *   The modified type definition.
    */
   protected function addRevisionLinks(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('canonical')) {
+      if (!$entity_type->hasLinkTemplate('version-tree')) {
+        $entity_type->setLinkTemplate('version-tree', $entity_type->getLinkTemplate('canonical') . '/tree');
+      }
 
-    if (!$entity_type->hasLinkTemplate('version-tree')) {
-      $entity_type->setLinkTemplate('version-tree', $entity_type->getLinkTemplate('canonical') . '/tree');
-    }
+      if (!$entity_type->hasLinkTemplate('version-history')) {
+        $entity_type->setLinkTemplate('version-history', $entity_type->getLinkTemplate('canonical') . '/revisions');
+      }
 
-    if (!$entity_type->hasLinkTemplate('version-history')) {
-      $entity_type->setLinkTemplate('version-history', $entity_type->getLinkTemplate('canonical') . '/revisions');
-    }
-
-    if (!$entity_type->hasLinkTemplate('revision')) {
-      $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
+      if (!$entity_type->hasLinkTemplate('revision')) {
+        $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
+      }
     }
 
     return $entity_type;

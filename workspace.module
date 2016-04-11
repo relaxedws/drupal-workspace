@@ -15,6 +15,13 @@ function workspace_entity_type_alter(array &$entity_types) {
 }
 
 /**
+ * Implements hook_entity_type_build().
+ */
+function workspace_entity_type_build(array &$entity_types) {
+  \Drupal::service('workspace.entity_type_info')->entityTypeBuild($entity_types);
+}
+
+/**
  * Implements hook_entity_base_field_info().
  */
 function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {

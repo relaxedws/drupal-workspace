@@ -30,5 +30,9 @@ bypass_entity_access_own_workspace:
   description: Allow all Edit/Update/Delete permissions for all content entities in a workspace owned by the user.
   restrict access: TRUE
 
+view_revision_trees:
+  title: View revision trees
+  description: View the revision tree for any entities.
+
 permission_callbacks:
   - workspace.entity_access::workspacePermissions
