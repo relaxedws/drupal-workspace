@@ -154,8 +154,7 @@ class ReplicatorTest extends BrowserTestBase {
     $this->assertEquals($target->id(), $test_node_target->get('workspace')->entity->id());
     $this->assertEquals(3, count($test_node_target->get('field_tags')));
     foreach ($test_node_target->get('field_tags') as $item) {
-      // @todo: Fix this!
-      //$this->assertTrue(in_array($item->target_id, [4, 5, 6]));
+      $this->assertTrue(in_array($item->target_id, [4, 5, 6]));
     }
     $this->drupalGet('/admin/content');
     $session = $this->getSession();
