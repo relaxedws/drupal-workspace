@@ -59,9 +59,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
     /** @var ModerationState $post_state */
     $post_state = $this->entityTypeManager->getStorage('moderation_state')->load($event->getStateAfter());
 
-    // @todo should this look for the Published flag instead? Published means
-    // nothing else for Workspaces.
-    return $post_state->isDefaultRevisionState();
+    return $post_state->isPublishedState();
   }
 
   /**
