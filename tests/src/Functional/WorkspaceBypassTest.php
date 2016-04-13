@@ -68,7 +68,8 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
-    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $bears_vanilla_node = $this->getOneEntityByLabel('node', 'Vanilla node');
+    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
@@ -91,7 +92,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
-    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
@@ -138,7 +139,8 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
-    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $bears_vanilla_node = $this->getOneEntityByLabel('node', 'Vanilla node');
+    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
@@ -154,7 +156,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
-    $this->drupalGet('/node/' . $vanilla_node->id() . '/edit');
+    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
   }
