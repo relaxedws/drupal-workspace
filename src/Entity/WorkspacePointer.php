@@ -114,9 +114,13 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    * {@inheritdoc}
    */
   public function generateReplicationId(WorkspacePointerInterface $target) {
+    $target_name = $target->label();
+    if ($target->getWorkspace() instanceof WorkspaceInterface) {
+      $target_name = $target->getWorkspace()->getMachineName();
+    }
     return \md5(
       $this->getWorkspace()->getMachineName() .
-      $target->getWorkspace()->getMachineName()
+      $target_name
     );
   }
 
