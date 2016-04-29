@@ -43,29 +43,26 @@ class RouteSubscriber extends RouteSubscriberBase {
 
       if ($entity_type->hasLinkTemplate('version-tree')) {
 
-        $options = array(
+        $options = [
           '_admin_route' => TRUE,
           '_entity_type_id' => $entity_type_id,
-          'parameters' => array(
-            $entity_type_id => array(
+          'parameters' => [
+            $entity_type_id => [
               'type' => 'entity:' . $entity_type_id,
-            ),
-            $entity_type_id . '_revision' => array(
-              'type' => 'entity_revision:' . $entity_type_id,
-            )
-          ),
-        );
+            ]
+          ],
+        ];
 
         if ($link_template = $entity_type->getLinkTemplate('version-tree')) {
           $route = new Route(
             $link_template,
-            array(
+            [
               '_controller' => '\Drupal\workspace\Controller\RevisionsController::revisions',
               '_title' => 'Revisions',
-            ),
+            ],
             // @todo: {@link https://www.drupal.org/node/2596783 Provide more
             // granular permissions.}
-            array('_permission' => 'view_revision_trees'),
+            ['_permission' => 'view_revision_trees'],
             $options
           );
 
@@ -75,15 +72,18 @@ class RouteSubscriber extends RouteSubscriberBase {
 
         if (($link_template = $entity_type->getLinkTemplate('revision')) && empty($collection->get("entity.$entity_type_id.revision"))) {
           unset($options['_admin_route']);
+          $options['parameters'][$entity_type_id . '_revision'] = [
+            'type' => 'entity_revision:' . $entity_type_id
+          ];
           $route = new Route(
             $link_template,
-            array(
+            [
               '_controller' => '\Drupal\workspace\Controller\RevisionController::view',
               '_title_callback' => '\Drupal\workspace\Controller\RevisionController::viewTitle',
-            ),
+            ],
             // @todo: {@link https://www.drupal.org/node/2596783 Provide more
             // granular permissions.}
-            array('_permission' => 'view_revision_trees'),
+            ['_permission' => 'view_revision_trees'],
             $options
           );
 
@@ -100,7 +100,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   public static function getSubscribedEvents() {
     $events = parent::getSubscribedEvents();
-    $events[RoutingEvents::ALTER] = array('onAlterRoutes', 100);
+    $events[RoutingEvents::ALTER] = ['onAlterRoutes', 100];
     return $events;
   }
 
