@@ -45,6 +45,8 @@ class ReplicatorManager implements ReplicatorInterface {
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     $initial_conflicts = $this->conflictTracker->getAll();
+    $pull = $this->update($target, $source);
+    $post_conflicts = $this->conflictTracker->getAll();
     $push = $this->doReplication($source, $target);
     return $push;
   }
