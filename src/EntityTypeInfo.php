@@ -130,10 +130,6 @@ class EntityTypeInfo {
         $entity_type->setLinkTemplate('version-tree', $entity_type->getLinkTemplate('canonical') . '/tree');
       }
 
-      if (!$entity_type->hasLinkTemplate('version-history')) {
-        $entity_type->setLinkTemplate('version-history', $entity_type->getLinkTemplate('canonical') . '/revisions');
-      }
-
       if (!$entity_type->hasLinkTemplate('revision')) {
         $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
       }
