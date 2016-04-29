@@ -53,7 +53,6 @@ class EntityTypeAlterTest extends BrowserTestBase {
       if (\Drupal::service('multiversion.manager')->isSupportedEntityType($entity_type)) {
         if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
           $this->assertTrue($entity_type->getLinkTemplate('version-tree') !== null);
-          $this->assertTrue($entity_type->getLinkTemplate('version-history') !== null);
           $this->assertTrue($entity_type->getLinkTemplate('revision') !== null);
         }
       }
