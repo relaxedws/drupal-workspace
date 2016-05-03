@@ -11,7 +11,16 @@
   background-image: url("../icons/ffffff/workspace.svg");
 }
 
-.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
+.toolbar .toolbar-icon-workspace-update:before {
+  background-image: url("../icons/bebebe/update.svg");
+}
+
+.toolbar .toolbar-icon-workspace-update.is-active:before {
+  background-image: url("../icons/ffffff/update.svg");
+}
+
+.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab,
+.toolbar .toolbar-bar .workspace-update-toolbar-tab.toolbar-tab{
   float: right;
 }
 

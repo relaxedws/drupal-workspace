@@ -57,3 +57,13 @@ entity.workspace_type.add_form:
     _permission: 'administer site configuration'
   options:
     _admin_route: TRUE
+
+# Update form
+workspace.update.form:
+  path: '/admin/structure/deployment/update'
+  defaults:
+    _form: '\Drupal\workspace\Form\UpdateForm'
+  requirements:
+    _permission: 'administer deployments'
+  options:
+    _admin_route: TRUE
