@@ -14,9 +14,13 @@ class UpdateForm extends ConfirmFormBase {
 
   /**
    * Get the current active workspace's pointer.
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
    */
   protected function getActive() {
+    /** @var \Drupal\multiversion\Entity\WorkspaceInterface $workspace */
     $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+    /** @var \Drupal\workspace\WorkspacePointerInterface[] $pointers */
     $pointers = \Drupal::service('entity_type.manager')
       ->getStorage('workspace_pointer')
       ->loadByProperties(['workspace_pointer' => $workspace->id()]);
@@ -89,10 +93,10 @@ class UpdateForm extends ConfirmFormBase {
       );
 
       if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
-        drupal_set_message('Successful update.');
+        drupal_set_message($this->t('%workspace has been updated with content from %upstream.', ['%upstream' => $this->getUpstream()->label(), '%workspace' => $this->getActive()->label()]));
       }
       else {
-        drupal_set_message('Error when updating.', 'error');
+        drupal_set_message($this->t('Error updating %workspace from %upstream.', ['%upstream' => $this->getUpstream()->label(), '%workspace' => $this->getActive()->label()]), 'error');
       }
     }
     catch(\Exception $e) {
