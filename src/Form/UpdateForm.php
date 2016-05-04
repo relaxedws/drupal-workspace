@@ -36,7 +36,7 @@ class UpdateForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
@@ -58,28 +58,28 @@ class UpdateForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getQuestion() {
     return $this->t('Update @workspace', ['@workspace' => $this->getActive()->label()]);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getCancelUrl() {
     return new Url('system.admin');
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'workspace_update_form';
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
@@ -92,7 +92,7 @@ class UpdateForm extends ConfirmFormBase {
         drupal_set_message('Successful update.');
       }
       else {
-        drupal_set_message('Error', 'error');
+        drupal_set_message('Error when updating.', 'error');
       }
     }
     catch(\Exception $e) {
@@ -115,7 +115,7 @@ class UpdateForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getDescription() {
     if (!$this->getUpstream()) {
