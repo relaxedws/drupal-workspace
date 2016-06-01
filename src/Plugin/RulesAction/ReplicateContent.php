@@ -99,6 +99,7 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     /** @var WorkspacePointerInterface $upstream */
     $target = $workspace->get('upstream')->entity;
 
+    // @todo pass a ReplicationTask to replicate()
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */
     $result = $this->replicatorManager->replicate($source, $target);
 

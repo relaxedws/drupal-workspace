@@ -79,6 +79,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
+    // @todo pass a ReplicationTask to replicate()
     $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer);
   }
 
