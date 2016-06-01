@@ -9,6 +9,7 @@ use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\Entity\ReplicationLog;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\replication\RevisionDiffFactoryInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -83,7 +84,7 @@ class InternalReplicator implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     $missing_found = 0;
     $docs_read = 0;
     $docs_written = 0;
@@ -101,6 +102,11 @@ class InternalReplicator implements ReplicatorInterface {
     }
     // Fetch the site time.
     $start_time = new \DateTime();
+
+    // If no task sent, create an empty task for its defaults.
+    if ($task === NULL) {
+      $task = new ReplicationTask();
+    }
 
     // Get changes on the source workspace.
     $source_changes = $this->changesFactory->get($source_workspace)

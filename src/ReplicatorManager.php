@@ -51,7 +51,7 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     // @todo why is $initial_conflicts not used?
     $initial_conflicts = $this->conflictTracker->getAll();
     // @todo why is $pull unused?
@@ -76,7 +76,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, ReplicationTaskInterface $task) {
+  public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, ReplicationTaskInterface $task = NULL) {
     return $this->doReplication($target, $source, $task);
   }
 
@@ -93,7 +93,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task) {
+  protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
         return $replicator->replicate($source, $target, $task);
@@ -116,7 +116,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task) {
+  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     $time = new \DateTime();
     $history = [
       'start_time' => $time->format('D, d M Y H:i:s e'),

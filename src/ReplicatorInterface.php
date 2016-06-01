@@ -37,6 +37,6 @@ interface ReplicatorInterface {
    * @return \Drupal\replication\Entity\ReplicationLog
    *   The replication log entry.
    */
-  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task);
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL);
 
 }
