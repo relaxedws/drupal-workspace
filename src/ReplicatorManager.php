@@ -96,7 +96,7 @@ class ReplicatorManager implements ReplicatorInterface {
   protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
-        return $replicator->replicate($source, $target);
+        return $replicator->replicate($source, $target, $task);
       }
     }
 
