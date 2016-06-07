@@ -22,4 +22,4 @@ projects:
     download:
       type: git
       branch: replication-filter
-      url: "https://github.com/relaxedws/drupal-replication.git"
+      url: "https://github.com/josephdpurcell/drupal-workspace.git"
