@@ -52,12 +52,11 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
-    // @todo why is $initial_conflicts not used?
+    // @todo Utilize the following unused variables when we build out the
+    // conflict logic, e.g. a workflow to resolve conflicts.
     $initial_conflicts = $this->conflictTracker->getAll();
-    // @todo why is $pull unused?
     // Pull in changes from $target to $source to ensure a merge will complete.
     $pull = $this->update($target, $source);
-    // @todo why is $post_conflicts unused?
     $post_conflicts = $this->conflictTracker->getAll();
     $push = $this->doReplication($source, $target, $task);
     return $push;
