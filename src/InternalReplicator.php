@@ -110,7 +110,6 @@ class InternalReplicator implements ReplicatorInterface {
 
     // Get changes on the source workspace.
     $source_changes = $this->changesFactory->get($source_workspace)
-        ->uuids($task->getUuids())
         ->filter($task->getFilter())
         ->parameters($task->getParameters())
         ->getNormal();
