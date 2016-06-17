@@ -77,12 +77,6 @@ class EntityTypeAlterTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
     $page->findLink($this->truncateRev($layla_node->_rev->value));
-
-    $this->drupalGet('/user/' . $clapton->id() . '/tree');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->findLink($this->truncateRev($clapton->_rev->value));
   }
 
   protected function truncateRev($rev) {
