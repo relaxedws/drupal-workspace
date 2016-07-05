@@ -165,6 +165,15 @@ class EntityTypeInfo {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
+    $fields['replication_settings'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Configure replication settings'))
+      ->setRevisionable(TRUE)
+      ->setSetting('target_type', 'replication_settings')
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 1
+      ]);
+
     return $fields;
   }
 }
