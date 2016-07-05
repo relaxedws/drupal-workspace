@@ -4,6 +4,7 @@ namespace Drupal\workspace\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\workbench_moderation\Entity\ModerationState;
 use Drupal\workbench_moderation\Event\WorkbenchModerationEvents;
 use Drupal\workbench_moderation\Event\WorkbenchModerationTransitionEvent;
@@ -79,8 +80,15 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
-    // @todo pass a ReplicationTask to replicate()
-    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer);
+    // Derive a replication task from the Workspace.
+    $task = new ReplicationTask();
+    $replication_settings = $workspace->get('replication_settings')->referencedEntities();
+    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
+    if ($replication_settings !== NULL) {
+      $task->setFilter($replication_settings->getFilterId());
+    }
+
+    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
   }
 
   /**
