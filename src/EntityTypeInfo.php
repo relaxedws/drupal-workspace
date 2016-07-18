@@ -165,13 +165,24 @@ class EntityTypeInfo {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['replication_settings'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Configure replication settings'))
+    $fields['pull_replication_settings'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Replication settings on update'))
+      ->setDescription(t('The settings to use when content is pulled from upstream.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'replication_settings')
       ->setDisplayOptions('form', [
         'type' => 'options_select',
         'weight' => 1
+      ]);
+
+    $fields['push_replication_settings'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Replication settings on deploy'))
+      ->setDescription(t('The settings to use when content is pushed to upstream.'))
+      ->setRevisionable(TRUE)
+      ->setSetting('target_type', 'replication_settings')
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 2
       ]);
 
     return $fields;
