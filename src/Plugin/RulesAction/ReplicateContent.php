@@ -9,6 +9,7 @@ use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\workspace\ReplicatorManager;
 use Drupal\workspace\WorkspacePointerInterface;
@@ -94,9 +95,16 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     /** @var WorkspacePointerInterface $upstream */
     $target = $workspace->get('upstream')->entity;
 
-    // @todo pass a ReplicationTask to replicate(), but where would it come from?
+    // Derive a replication task from the source Workspace.
+    $task = new ReplicationTask();
+    $replication_settings = $source->get('push_replication_settings')->referencedEntities();
+    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
+    if ($replication_settings !== NULL) {
+      $task->setFilter($replication_settings->getFilterId());
+    }
+
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */
-    $result = $this->replicatorManager->replicate($source, $target);
+    $result = $this->replicatorManager->replicate($source, $target, $task);
 
     if ($result->get('ok') == TRUE) {
       drupal_set_message($this->t('Content replicated from workspace @source to workspace @target.',
