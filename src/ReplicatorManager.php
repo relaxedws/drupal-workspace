@@ -52,14 +52,27 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
-    // @todo Utilize the following unused variables when we build out the
-    // conflict logic, e.g. a workflow to resolve conflicts.
+    // @todo use $initial_conflicts in a conflict management workflow
     $initial_conflicts = $this->conflictTracker->getAll();
+
+    // Derive a replication task from the target Workspace for pulling.
+    $pull_task = new ReplicationTask();
+    $replication_settings = $source->get('pull_replication_settings')->referencedEntities();
+    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
+    if ($replication_settings !== NULL) {
+      $pull_task->setFilter($replication_settings->getFilterId());
+    }
+
     // Pull in changes from $target to $source to ensure a merge will complete.
-    $pull = $this->update($target, $source);
+    $pull_log = $this->update($target, $source, $pull_task);
+
+    // @todo use $post_conflicts in a conflict management workflow
     $post_conflicts = $this->conflictTracker->getAll();
-    $push = $this->doReplication($source, $target, $task);
-    return $push;
+
+    // Push changes from $source to $target.
+    $push_log = $this->doReplication($source, $target, $task);
+
+    return $push_log;
   }
 
   /**
