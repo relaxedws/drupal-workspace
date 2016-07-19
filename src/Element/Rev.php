@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Element\Rev.
- */
-
 namespace Drupal\workspace\Element;
 
 use Drupal\Core\Render\Element\RenderElement;

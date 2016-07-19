@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Entity\Form\WorkspaceForm.
- */
-
 namespace Drupal\workspace\Entity\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\workspace\Form\WorkspaceActivateFormBase.
- */
 
 namespace Drupal\workspace\Form;
 

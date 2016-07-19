@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Entity\Replication.
- */
-
 namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;

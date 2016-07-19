@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Controller\RevisionController.
- */
-
 namespace Drupal\workspace\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

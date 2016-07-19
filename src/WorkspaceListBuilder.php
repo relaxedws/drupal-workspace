@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\WorkspaceListBuilder.
- */
-
 namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;

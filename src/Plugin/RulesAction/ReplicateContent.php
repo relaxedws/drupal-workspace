@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Plugin\RulesAction\ReplicateContent.
- */
-
 namespace Drupal\workspace\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;

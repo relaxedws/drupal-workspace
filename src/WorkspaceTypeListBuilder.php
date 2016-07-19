@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\workspace\WorkspaceTypeListBuilder.
- */
 
 namespace Drupal\workspace;
 

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Plugin\Derivative\RevisionsLocalTask.
- */
-
 namespace Drupal\workspace\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;

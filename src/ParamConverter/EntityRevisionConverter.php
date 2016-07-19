@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\workspace\ParamConverter\EntityRevisionConverter.
- */
-
 namespace Drupal\workspace\ParamConverter;
 
 use Drupal\Core\Entity\EntityInterface;

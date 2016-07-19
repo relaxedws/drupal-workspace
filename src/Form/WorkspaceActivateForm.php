@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Form\WorkspaceActivateForm.
- */
-
 namespace Drupal\workspace\Form;
 
 use Drupal\Core\Form\FormStateInterface;

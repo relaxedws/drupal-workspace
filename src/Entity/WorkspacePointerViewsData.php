@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\workspace\Entity\WorkspacePointer.
- */
-
 namespace Drupal\workspace\Entity;
 
 use Drupal\views\EntityViewsData;

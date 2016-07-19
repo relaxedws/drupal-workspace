@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\workspace\Form\WorkspaceSwitcherForm.
- */
 
 namespace Drupal\workspace\Form;
 
