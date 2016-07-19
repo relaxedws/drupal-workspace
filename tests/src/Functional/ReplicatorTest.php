@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\workspace\Functional\ReplicatorTest.
- */
-
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Core\Entity\Entity\EntityFormDisplay;

@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\workspace\Kernel;
 
-
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Entity\WorkspaceType;

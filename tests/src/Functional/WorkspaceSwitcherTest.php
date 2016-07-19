@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\workspace\Functional\WorkspaceSwitcherTest.
- */
-
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\multiversion\Entity\Workspace;

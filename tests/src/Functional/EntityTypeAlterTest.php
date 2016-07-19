@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\workspace\Functional\EntityTypeAlterTest.
- */
-
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Component\Utility\Unicode;

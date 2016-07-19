@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\workspace\FunctionalWorkspaceTest.
- */
-
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BrowserTestBase;

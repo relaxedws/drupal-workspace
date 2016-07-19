@@ -1,9 +1,4 @@
 <?php
-/**
- * @file
- * Contains WorkspaceTestUtilities.php
- */
-
 
 namespace Drupal\Tests\workspace\Functional;
 
