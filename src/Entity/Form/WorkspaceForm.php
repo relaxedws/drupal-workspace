@@ -86,7 +86,7 @@ class WorkspaceForm extends ContentEntityForm {
     $insert = $workspace->isNew();
     $workspace->save();
     $info = ['%info' => $workspace->label()];
-    $context = array('@type' => $workspace->bundle(), $info);
+    $context = array('@type' => $workspace->bundle(), '%info' => $workspace->label());
     $logger = $this->logger('workspace');
 
     if ($insert) {
