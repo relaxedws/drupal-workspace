@@ -58,7 +58,10 @@ class ReplicatorManager implements ReplicatorInterface {
 
     // Derive a replication task from the target Workspace for pulling.
     $pull_task = new ReplicationTask();
-    $replication_settings = $source->get('pull_replication_settings')->referencedEntities();
+    $replication_settings = $source
+      ->getWorkspace()
+      ->get('pull_replication_settings')
+      ->referencedEntities();
     $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
     if ($replication_settings !== NULL) {
       $pull_task->setFilter($replication_settings->getFilterId());
