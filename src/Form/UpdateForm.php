@@ -9,6 +9,7 @@ use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\replication\Entity\ReplicationLogInterface;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 
 class UpdateForm extends ConfirmFormBase {
 
@@ -89,9 +90,21 @@ class UpdateForm extends ConfirmFormBase {
     $upstream = $this->getUpstream();
     $active = $this->getActive();
     try {
+      // Derive a replication task from the source Workspace.
+      $task = new ReplicationTask();
+      $replication_settings = $active
+        ->getWorkspace()
+        ->get('push_replication_settings')
+        ->referencedEntities();
+      $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
+      if ($replication_settings !== NULL) {
+        $task->setFilter($replication_settings->getFilterId());
+      }
+
       $response = \Drupal::service('workspace.replicator_manager')->update(
         $upstream,
-        $active
+        $active,
+        $task
       );
 
       if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
