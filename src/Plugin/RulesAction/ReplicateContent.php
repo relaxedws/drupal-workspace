@@ -101,6 +101,7 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
     if ($replication_settings !== NULL) {
       $task->setFilter($replication_settings->getFilterId());
+      $task->setParametersByArray($replication_settings->getParameters());
     }
 
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */

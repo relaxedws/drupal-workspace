@@ -65,6 +65,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
     if ($replication_settings !== NULL) {
       $pull_task->setFilter($replication_settings->getFilterId());
+      $pull_task->setParametersByArray($replication_settings->getParameters());
     }
 
     // Pull in changes from $target to $source to ensure a merge will complete.
