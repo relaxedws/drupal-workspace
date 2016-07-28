@@ -4,7 +4,9 @@ use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 
 /**
@@ -118,7 +120,7 @@ function workspace_preprocess_workspace_add_list(&$variables) {
     foreach ($variables['content'] as $type) {
       $variables['types'][$type->id()]['label'] = $type->label();
       $options = array('query' => \Drupal::request()->query->all());
-      $variables['types'][$type->id()]['url'] = \Drupal::url('entity.workspace.add_form', array('workspace_type' => $type->id()), $options);
+      $variables['types'][$type->id()]['url'] = Url::fromRoute('entity.workspace.add_form', array('workspace_type' => $type->id()), $options);
     }
   }
 }
@@ -142,8 +144,8 @@ function workspace_preprocess_workspace_rev(&$variables) {
   $title = Unicode::truncate($rev, $length, FALSE, TRUE);
 
   if (!empty($rev_info['revision_id'])) {
-    $entity_revision = \Drupal::entityManager()->getStorage($rev_info['entity_type_id'])->loadRevision($rev_info['revision_id']);
-    $variables['title'] = \Drupal::l($title, $entity_revision->urlInfo('revision'));
+    $entity_revision = \Drupal::entityTypeManager()->getStorage($rev_info['entity_type_id'])->loadRevision($rev_info['revision_id']);
+    $variables['title'] = Link::fromTextAndUrl($title, $entity_revision->toUrl('revision'));
   }
   else {
     $variables['title'] = $title;
