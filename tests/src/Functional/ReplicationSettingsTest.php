@@ -94,6 +94,12 @@ class ReplicationSettings extends BrowserTestBase {
 
     $session = $this->getSession();
 
+    // Validate Workspaces are moderatable.
+    $this->drupalGet('/admin/structure/workspace/add');
+    $this->assertEquals(200, $session->getStatusCode());
+    $page = $session->getPage();
+    $this->assertTrue($page->hasContent('Save and Create New Draft'), 'Workspaces are moderatable');
+
     // Create Child workspace that replicates only published to/from live.
     $this->drupalGet('/admin/structure/workspace/add');
     $this->assertEquals(200, $session->getStatusCode());
@@ -102,7 +108,6 @@ class ReplicationSettings extends BrowserTestBase {
     $page->selectFieldOption('upstream', '1');
     $page->selectFieldOption('edit-pull-replication-settings', 'published');
     $page->selectFieldOption('edit-push-replication-settings', 'published');
-    // @todo this line fails because workspaces are not moderatable
     $page->findButton(t('Save and Create New Draft'))->click();
     $page = $session->getPage();
     $page->hasContent('Workspace Child has been created.');
