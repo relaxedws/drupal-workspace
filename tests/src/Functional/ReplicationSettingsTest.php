@@ -44,6 +44,25 @@ class ReplicationSettings extends BrowserTestBase {
   ];
 */
 
+  public function setUp() {
+    parent::setUp();
+
+    $workspace_type_storage = \Drupal::entityManager()->getStorage('workspace_type');
+    $workspace_type = $workspace_type_storage->load('basic');
+
+    $is_workspace_moderatable = $workspace_type->getThirdPartySetting('workbench_moderation', 'enabled');
+    $this->assertFalse($is_workspace_moderatable);
+
+    // Make the "basic" Workspace moderatable.
+    $workspace_type->setThirdPartySetting('workbench_moderation', 'enabled', TRUE);
+    $workspace_type->setThirdPartySetting('workbench_moderation', 'allowed_moderation_states', ['draft', 'needs_review', 'published']);
+    $workspace_type->setThirdPartySetting('workbench_moderation', 'default_moderation_state', 'draft');
+    $workspace_type->save();
+
+    $is_workspace_moderatable = $workspace_type->getThirdPartySetting('workbench_moderation', 'enabled');
+    $this->assertTrue($is_workspace_moderatable);
+  }
+
   /**
    * Test replication settings with the InternalReplicator.
    */
@@ -65,15 +84,6 @@ class ReplicationSettings extends BrowserTestBase {
 
     $container = \Drupal::getContainer();
     $workspace_manager = $container->get('workspace.manager');
-
-    // Make the "basic" Workspace moderatable.
-    // @todo figure out why the site's workspaces are not moderatable
-    $workspace_type_storage = \Drupal::entityManager()->getStorage('workspace_type');
-    $workspace_type = $workspace_type_storage->load('basic');
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'enabled', TRUE);
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'allowed_moderation_states', ['draft', 'needs_review', 'published']);
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'default_moderation_state', 'draft');
-    $workspace_type->save();
 
     $this->createNodeType('Test', 'test');
 
