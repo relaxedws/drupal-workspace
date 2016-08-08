@@ -2,193 +2,129 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Tests\BrowserTestBase;
-use Drupal\multiversion\Entity\Workspace;
-use Drupal\node\Entity\Node;
-use Drupal\node\Entity\NodeType;
+use Drupal\replication\ReplicationTask\ReplicationTask;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\simpletest\BlockCreationTrait;
-use Drupal\workspace\Entity\WorkspacePointer;
+use Drupal\simpletest\BrowserTestBase;
+use Drupal\workspace\ReplicatorManager;
 
 /**
- * Tests replication settings with the internal replicator.
- *
  * @group workspace
  */
-class ReplicationSettings extends BrowserTestBase {
-
+class ReplicationSettingsTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
-
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
 
-  public static $modules = [
-    'system',
-    'node',
-    'user',
-    'block',
-    'workspace',
-    'multiversion',
-    'taxonomy',
-    'entity_reference',
-    'field',
-    'field_ui',
-    'menu_link_content',
-    'menu_ui',
-    'replication',
-  ];
-
-/*
-  public static $modules = [
-    'replication',
-  ];
-*/
-
-  public function setUp() {
-    parent::setUp();
-
-    $workspace_type_storage = \Drupal::entityManager()->getStorage('workspace_type');
-    $workspace_type = $workspace_type_storage->load('basic');
-
-    $is_workspace_moderatable = $workspace_type->getThirdPartySetting('workbench_moderation', 'enabled');
-    $this->assertFalse($is_workspace_moderatable);
-
-    // Make the "basic" Workspace moderatable.
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'enabled', TRUE);
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'allowed_moderation_states', ['draft', 'needs_review', 'published']);
-    $workspace_type->setThirdPartySetting('workbench_moderation', 'default_moderation_state', 'draft');
-    $workspace_type->save();
-
-    $is_workspace_moderatable = $workspace_type->getThirdPartySetting('workbench_moderation', 'enabled');
-    $this->assertTrue($is_workspace_moderatable);
-  }
+  public static $modules = ['system', 'node', 'user', 'block', 'workspace', 'multiversion', 'entity_reference'];
 
   /**
-   * Test replication settings with the InternalReplicator.
+   * Verify replication settings using the published filter as an example.
+   * @todo since this is a copy and pasted test that was revised, verify there
+   * isn't any additional cruft that could be removed
    */
-  public function testReplicate() {
+  public function testReplicationSettingsPublishedFilter() {
     $permissions = [
       'create_workspace',
       'edit_own_workspace',
       'view_own_workspace',
       'create test content',
       'access administration pages',
-      'administer taxonomy',
-      'administer menu',
       'access content overview',
       'administer content types',
-      'administer node display',
-      'administer node fields',
-      'administer node form display',
     ];
 
-    $container = \Drupal::getContainer();
-    $workspace_manager = $container->get('workspace.manager');
-
+    $live = $this->getOneEntityByLabel('workspace', 'Live');
     $this->createNodeType('Test', 'test');
-
     $this->setupWorkspaceSwitcherBlock();
-
     $test_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($test_user);
 
+    // Create a published node.
+    $this->drupalGet('/node/add/test');
     $session = $this->getSession();
-
-    // Validate Workspaces are moderatable.
-    $this->drupalGet('/admin/structure/workspace/add');
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
-    $this->assertTrue($page->hasContent('Save and Create New Draft'), 'Workspaces are moderatable');
+    $page->fillField('Title', 'Published node');
+    $page->findButton(t('Save'))->click();
+    $page = $session->getPage();
+    $page->hasContent('Published node has been created');
 
-    // Create Child workspace that replicates only published to/from live.
-    $this->drupalGet('/admin/structure/workspace/add');
+    $published_node_live = $this->getOneEntityByLabel('node', 'Published node');
+    $this->assertNodeWasCreatedInWorkspace($published_node_live, $live);
+
+    // Create an unpublished node.
+    // @todo change this to an unpublished node somehow?
+    $this->drupalGet('/node/add/test');
+    $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
-    $page->fillField('Label', 'Child');
+    $page->fillField('Title', 'Unpublished node');
+    $page->findButton(t('Save'))->click();
+    $page = $session->getPage();
+    $page->hasContent('Unpublished node has been created');
+
+    $unpublished_node_live = $this->getOneEntityByLabel('node', 'Unpublished node');
+    $this->assertNodeWasCreatedInWorkspace($published_node_live, $live);
+
+    // Create a workspace with replication settings.
+    $this->drupalGet('/admin/structure/workspace/add');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $page = $session->getPage();
+    $page->fillField('label', 'Target');
+    $page->fillField('machine_name', 'target');
     $page->selectFieldOption('upstream', '1');
     $page->selectFieldOption('edit-pull-replication-settings', 'published');
     $page->selectFieldOption('edit-push-replication-settings', 'published');
-    $page->findButton(t('Save and Create New Draft'))->click();
-    $page = $session->getPage();
-    $page->hasContent('Workspace Child has been created.');
+    $page->findButton(t('Save'))->click();
+    $session->getPage()->hasContent("'Target (target)");
+    $target = $this->getOneWorkspaceByLabel('Target');
 
-    // Add a published node and an unpublished node on Live.
-    $this->drupalGet('/node/add/test');
+    $source_pointer = $this->getPointerToWorkspace($live);
+    $target_pointer = $this->getPointerToWorkspace($target);
+
+    // Derive a replication task from the source Workspace.
+    $task = new ReplicationTask();
+    $replication_settings = $target->get('push_replication_settings')->referencedEntities();
+    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
+    if ($replication_settings !== NULL) {
+      $task->setFilter($replication_settings->getFilterId());
+      $task->setParametersByArray($replication_settings->getParameters());
+    }
+
+    /** @var ReplicatorManager $rm */
+    $rm = \Drupal::service('workspace.replicator_manager');
+    // @todo figure out why this line fails the test:
+    $rm->replicate($source_pointer, $target_pointer, $task);
+
+    $this->switchToWorkspace($target);
+
+    // @todo figure out why this is needed; on initial investigation the
+    // ContentEntityStorageTrait::buildQuery does not have the active workspace
+    // set since it's using $this->workspaceId
+    drupal_flush_all_caches();
+
+    $test_node_target = $this->getOneEntityByLabel('node', 'Published node');
+    $this->assertEquals($target->id(), $test_node_target->get('workspace')->entity->id());
+    $this->drupalGet('/admin/content');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
-    $page->fillField('Title', 'Live published');
-    $page->findButton(t('Save and Create New Draft'))->click();
-    $page = $session->getPage();
-    $page->hasContent('Live published node has been created');
-    $live_published_node_url = $page->getCurrentUrl();
+    $page->hasContent($test_node_target->label());
 
-    $this->drupalGet('/node/add/test');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->fillField('Title', 'Live unpublished');
-    $page->findButton(t('Save and Create New Draft'))->click();
-    $page = $session->getPage();
-    $page->hasContent('Live unpublished node has been created');
-    $live_unpublished_node_url = $page->getCurrentUrl();
-
-    // Switch to child and update it (pull from live to child).
-    $this->drupalGet('/admin/structure/workspace');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    // @todo ensure this is the correct element to click on to switch
-    $page->findLink('.block-system tbody tr:last-child .activate a')->click();
-    $page = $session->getPage();
-    $page->hasContent('Activate workspace Child');
-    $page->findButton(t('Activate'))->click();
-    // @todo assert the active workspace has switched (there is no set message)
-
-    // Assert child has only the published node.
-    $this->drupalGet($live_published_node_url);
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-
-    $this->drupalGet($live_unpublished_node_url);
-    $session = $this->getSession();
-    $this->assertEquals(404, $session->getStatusCode());
-
-    // Add a published node and an unpublished node on child.
-    $this->drupalGet('/node/add/test');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->fillField('Title', 'Child published');
-    $page->findButton(t('Save and Create New Draft'))->click();
-    $page = $session->getPage();
-    $page->hasContent('Child published node has been created');
-    $child_published_node_url = $page->getCurrentUrl();
-
-    $this->drupalGet('/node/add/test');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->fillField('Title', 'Child unpublished');
-    $page->findButton(t('Save and Create New Draft'))->click();
-    $page = $session->getPage();
-    $page->hasContent('Child unpublished node has been created');
-    $child_unpublished_node_url = $page->getCurrentUrl();
-
-    // Publish the child workspace (push from child to live).
-    // @todo write this portion; can this be done without using a JavaScript test?
-
-    // Assert live has only the published node.
-    /* @todo once the action to "publish" the child workspace is written, uncomment this
-    $this->drupalGet($child_published_node_url);
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-
-    $this->drupalGet($child_unpublished_node_url);
-    $session = $this->getSession();
-    $this->assertEquals(404, $session->getStatusCode());
-    */
+    // @todo verify the unpublished node did not get replicated
   }
 
+  protected function assertNodeWasCreatedInWorkspace($node, $workspace) {
+    $this->assertEquals($workspace->id(), $node->get('workspace')->entity->id());
+    $this->drupalGet('/admin/content');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $page = $session->getPage();
+    $page->hasContent($node->label());
+  }
 }
-
