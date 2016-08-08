@@ -19,7 +19,16 @@ class ReplicationSettingsTest extends BrowserTestBase {
     placeBlock as drupalPlaceBlock;
   }
 
-  public static $modules = ['system', 'node', 'user', 'block', 'workspace', 'multiversion', 'entity_reference'];
+  public static $modules = [
+    'system',
+    'node',
+    'user',
+    'block',
+    'block_content',
+    'workspace',
+    'multiversion',
+    'entity_reference'
+  ];
 
   /**
    * Verify replication settings using the published filter as an example.
@@ -35,42 +44,40 @@ class ReplicationSettingsTest extends BrowserTestBase {
       'access administration pages',
       'access content overview',
       'administer content types',
+			'administer nodes',
+			'access content overview',
     ];
+
+    $this->drupalPlaceBlock('local_tasks_block', ['id' => 'tabs_block']);
+    $this->drupalPlaceBlock('page_title_block');
+    $this->drupalPlaceBlock('local_actions_block', ['id' => 'actions_block']);
 
     $live = $this->getOneEntityByLabel('workspace', 'Live');
     $this->createNodeType('Test', 'test');
     $this->setupWorkspaceSwitcherBlock();
     $test_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($test_user);
+    $session = $this->getSession();
 
     // Create a published node.
     $this->drupalGet('/node/add/test');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->fillField('Title', 'Published node');
-    $page->findButton(t('Save'))->click();
+    $this->drupalPostForm(NULL, [
+      'title[0][value]' => 'Published node',
+    ], t('Save and publish'));
     $page = $session->getPage();
     $page->hasContent('Published node has been created');
-
-    $published_node_live = $this->getOneEntityByLabel('node', 'Published node');
-    $this->assertNodeWasCreatedInWorkspace($published_node_live, $live);
+    $this->assertTrue($this->isLabelInContentList('Published node'));
 
     // Create an unpublished node.
-    // @todo change this to an unpublished node somehow?
     $this->drupalGet('/node/add/test');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->fillField('Title', 'Unpublished node');
-    $page->findButton(t('Save'))->click();
+    $this->drupalPostForm(NULL, [
+      'title[0][value]' => 'Unpublished node',
+    ], t('Save as unpublished'));
     $page = $session->getPage();
     $page->hasContent('Unpublished node has been created');
+    $this->assertTrue($this->isLabelInContentList('Unpublished node'));
 
-    $unpublished_node_live = $this->getOneEntityByLabel('node', 'Unpublished node');
-    $this->assertNodeWasCreatedInWorkspace($published_node_live, $live);
-
-    // Create a workspace with replication settings.
+    // Create a target workspace with replication settings.
     $this->drupalGet('/admin/structure/workspace/add');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
@@ -96,35 +103,31 @@ class ReplicationSettingsTest extends BrowserTestBase {
       $task->setParametersByArray($replication_settings->getParameters());
     }
 
+    // Replicate from Live to Target.
     /** @var ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
-    // @todo figure out why this line fails the test:
     $rm->replicate($source_pointer, $target_pointer, $task);
 
+    // Verify the correct nodes were replicated.
     $this->switchToWorkspace($target);
+    $this->assertTrue($this->isLabelInContentList('Published node'));
+    $this->assertFalse($this->isLabelInContentList('Unpublished node'));
+  }
 
-    // @todo figure out why this is needed; on initial investigation the
-    // ContentEntityStorageTrait::buildQuery does not have the active workspace
-    // set since it's using $this->workspaceId
-    drupal_flush_all_caches();
-
-    $test_node_target = $this->getOneEntityByLabel('node', 'Published node');
-    $this->assertEquals($target->id(), $test_node_target->get('workspace')->entity->id());
+  /**
+   * Determine if the content list has an entity's label.
+   *
+   * This assertion can be used to validate a particular entity exists in the
+   * current workspace.
+   *
+   * @todo move into WorkspaceTestUtilities
+   */
+  protected function isLabelInContentList($label) {
     $this->drupalGet('/admin/content');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
-    $page->hasContent($test_node_target->label());
-
-    // @todo verify the unpublished node did not get replicated
+    return $page->hasContent($label);
   }
 
-  protected function assertNodeWasCreatedInWorkspace($node, $workspace) {
-    $this->assertEquals($workspace->id(), $node->get('workspace')->entity->id());
-    $this->drupalGet('/admin/content');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
-    $page->hasContent($node->label());
-  }
 }
