@@ -190,5 +190,18 @@ trait WorkspaceTestUtilities {
     return $pointer;
   }
 
+  /**
+   * Determine if the content list has an entity's label.
+   *
+   * This assertion can be used to validate a particular entity exists in the
+   * current workspace.
+   */
+  protected function isLabelInContentOverview($label) {
+    $this->drupalGet('/admin/content');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $page = $session->getPage();
+    return $page->hasContent($label);
+  }
 
 }
