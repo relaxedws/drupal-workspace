@@ -2,6 +2,8 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
@@ -57,19 +59,10 @@ class ReplicatorManager implements ReplicatorInterface {
     $initial_conflicts = $this->conflictTracker->getAll();
 
     // Derive a replication task from the target Workspace for pulling.
-    $pull_task = new ReplicationTask();
-    $replication_settings = $source
-      ->getWorkspace()
-      ->get('pull_replication_settings')
-      ->referencedEntities();
-    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
-    if ($replication_settings !== NULL) {
-      $pull_task->setFilter($replication_settings->getFilterId());
-      $pull_task->setParametersByArray($replication_settings->getParameters());
-    }
+    $pull_task = $this->getTask($source->getWorkspace(), 'pull');
 
     // Pull in changes from $target to $source to ensure a merge will complete.
-    $pull_log = $this->update($target, $source, $pull_task);
+    $this->update($target, $source, $pull_task);
 
     // @todo use $post_conflicts in a conflict management workflow
     $post_conflicts = $this->conflictTracker->getAll();
@@ -78,6 +71,28 @@ class ReplicatorManager implements ReplicatorInterface {
     $push_log = $this->doReplication($source, $target, $task);
 
     return $push_log;
+  }
+
+  /**
+   * Returns a replication task.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param string $type
+   *   The replication type ('pull' or 'push').
+   *
+   * @return \Drupal\replication\ReplicationTask\ReplicationTaskInterface
+   */
+  public function getTask(WorkspaceInterface $workspace, $type) {
+    $task = new ReplicationTask();
+    $items = $workspace->get($type . '_replication_settings');
+    if ($items instanceof EntityReferenceFieldItemListInterface) {
+      $referenced_entities = $items->referencedEntities();
+      if (count($referenced_entities) > 0) {
+        $task->setFilter($referenced_entities[0]->getFilterId());
+        $task->setParametersByArray($referenced_entities[0]->getParameters());
+      }
+    }
+    return $task;
   }
 
   /**

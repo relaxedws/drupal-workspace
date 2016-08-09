@@ -2,9 +2,8 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\simpletest\BlockCreationTrait;
-use Drupal\simpletest\BrowserTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Test replication settings on replicate.
@@ -19,6 +18,11 @@ class ReplicationSettingsTest extends BrowserTestBase {
     placeBlock as drupalPlaceBlock;
   }
 
+  /**
+   * @var \Drupal\workspace\ReplicatorManager
+   */
+  protected $replicatorManager;
+
   public static $modules = [
     'system',
     'node',
@@ -29,6 +33,15 @@ class ReplicationSettingsTest extends BrowserTestBase {
     'multiversion',
     'entity_reference',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->replicatorManager = $this->container->get('workspace.replicator_manager');
+  }
 
   /**
    * Verify pull replication settings using the published filter as an example.
@@ -88,16 +101,10 @@ class ReplicationSettingsTest extends BrowserTestBase {
     $target_pointer = $this->getPointerToWorkspace($target);
 
     // Derive a replication task from the target Workspace.
-    $task = new ReplicationTask();
-    $replication_settings = $target->get('pull_replication_settings')->referencedEntities();
-    $replication_settings = reset($replication_settings);
-    $task->setFilter($replication_settings->getFilterId());
-    $task->setParametersByArray($replication_settings->getParameters());
+    $task = $this->replicatorManager->getTask($target, 'pull');
 
     // Replicate from Live to Target.
-    /** @var ReplicatorManager $replicator */
-    $replicator = \Drupal::service('workspace.replicator_manager');
-    $replicator->replicate($source_pointer, $target_pointer, $task);
+    $this->replicatorManager->replicate($source_pointer, $target_pointer, $task);
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($target);
@@ -166,16 +173,10 @@ class ReplicationSettingsTest extends BrowserTestBase {
     $this->assertTrue($this->isLabelInContentOverview('Unpublished node'));
 
     // Derive a replication task from the target Workspace.
-    $task = new ReplicationTask();
-    $replication_settings = $target->get('push_replication_settings')->referencedEntities();
-    $replication_settings = reset($replication_settings);
-    $task->setFilter($replication_settings->getFilterId());
-    $task->setParametersByArray($replication_settings->getParameters());
+    $task = $this->replicatorManager->getTask($target, 'push');
 
     // Replicate from Target to Live.
-    /** @var ReplicatorManager $replicator */
-    $replicator = \Drupal::service('workspace.replicator_manager');
-    $replicator->replicate($target_pointer, $source_pointer, $task);
+    $this->replicatorManager->replicate($target_pointer, $source_pointer, $task);
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($live);

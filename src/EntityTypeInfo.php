@@ -187,4 +187,5 @@ class EntityTypeInfo {
 
     return $fields;
   }
+
 }

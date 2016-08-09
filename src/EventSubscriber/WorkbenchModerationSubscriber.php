@@ -81,13 +81,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
     // Derive a replication task from the source Workspace.
-    $task = new ReplicationTask();
-    $replication_settings = $workspace->get('push_replication_settings')->referencedEntities();
-    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
-    if ($replication_settings !== NULL) {
-      $task->setFilter($replication_settings->getFilterId());
-      $task->setParametersByArray($replication_settings->getParameters());
-    }
+    $task = $this->replicatorManager->getTask($workspace, 'push');
 
     $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
   }

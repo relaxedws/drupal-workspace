@@ -96,13 +96,7 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
     $target = $workspace->get('upstream')->entity;
 
     // Derive a replication task from the source Workspace.
-    $task = new ReplicationTask();
-    $replication_settings = $source->get('push_replication_settings')->referencedEntities();
-    $replication_settings = count($replication_settings) > 0 ? reset($replication_settings) : NULL;
-    if ($replication_settings !== NULL) {
-      $task->setFilter($replication_settings->getFilterId());
-      $task->setParametersByArray($replication_settings->getParameters());
-    }
+    $task = $this->replicatorManager->getTask($workspace, 'push');
 
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */
     $result = $this->replicatorManager->replicate($source, $target, $task);
