@@ -79,7 +79,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * This can be used with a Workspace using the 'push_replication_settings'
    * and 'pull_replication_settings' fields.
    *
-   * @param \Drupal\multiversion\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to derive the replication task from.
    * @param string $field_name
    *   The field name that references a ReplicationSettings config entity.

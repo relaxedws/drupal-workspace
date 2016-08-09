@@ -20,9 +20,13 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
   /**
    * @var \Drupal\workspace\ReplicatorManager
+   *   The replicator manager service used to trigger replication.
    */
   protected $replicatorManager;
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = [
     'system',
     'node',

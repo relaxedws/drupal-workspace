@@ -110,7 +110,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  static public function getSubscribedEvents() {
+  public static function getSubscribedEvents() {
     $events = [];
     if (class_exists(WorkbenchModerationEvents::class)) {
       $events[WorkbenchModerationEvents::STATE_TRANSITION][] = ['onTransition'];
