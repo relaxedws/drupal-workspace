@@ -4,12 +4,10 @@ namespace Drupal\workspace\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\workbench_moderation\Entity\ModerationState;
 use Drupal\workbench_moderation\Event\WorkbenchModerationEvents;
 use Drupal\workbench_moderation\Event\WorkbenchModerationTransitionEvent;
 use Drupal\workspace\ReplicatorManager;
-use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -71,7 +69,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    */
   protected function mergeWorkspaceToParent(WorkspaceInterface $workspace) {
     // This may be insufficient for handling a missing parent.
-    /** @var WorkspacePointerInterface $parent_workspace */
+    /** @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
     $parent_workspace_pointer = $workspace->get('upstream')->entity;
     if (!$parent_workspace_pointer) {
       // @todo Should we silently ignore this, or throw an error, or...?
@@ -97,7 +95,8 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
-   * @return WorkspacePointerInterface
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
    *   The pointer to the provided workspace.
    */
   protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
@@ -111,11 +110,12 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  static function getSubscribedEvents() {
+  static public function getSubscribedEvents() {
     $events = [];
     if (class_exists(WorkbenchModerationEvents::class)) {
       $events[WorkbenchModerationEvents::STATE_TRANSITION][] = ['onTransition'];
     }
     return $events;
   }
+
 }
