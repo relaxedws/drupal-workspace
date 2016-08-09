@@ -2,8 +2,8 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
@@ -74,20 +74,22 @@ class ReplicatorManager implements ReplicatorInterface {
   }
 
   /**
-   * Derives a replication task from the workspace's replication settings.
+   * Derives a replication task from an entity with replication settings.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
-   *   The workspace to derive the replication task from.
+   * This can be used with a Workspace using the 'push_replication_settings'
+   * and 'pull_replication_settings' fields.
+   *
+   * @param \Drupal\multiversion\Entity\EntityInterface $entity
+   *   The entity to derive the replication task from.
    * @param string $field_name
-   *   The field name that references a ReplicationSettings config entity
-   *   ('push_replication_settings', 'pull_replication_settings').
+   *   The field name that references a ReplicationSettings config entity.
    *
    * @return \Drupal\replication\ReplicationTask\ReplicationTaskInterface
    *   A replication task that can be passed to a \Drupal\workspace\ReplicatorInterface.
    */
-  public function getTask(WorkspaceInterface $workspace, $field_name) {
+  public function getTask(EntityInterface $entity, $field_name) {
     $task = new ReplicationTask();
-    $items = $workspace->get($field_name);
+    $items = $entity->get($field_name);
     if ($items instanceof EntityReferenceFieldItemListInterface) {
       $referenced_entities = $items->referencedEntities();
       if (count($referenced_entities) > 0) {
