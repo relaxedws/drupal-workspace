@@ -59,7 +59,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $initial_conflicts = $this->conflictTracker->getAll();
 
     // Derive a replication task from the target Workspace for pulling.
-    $pull_task = $this->getTask($source->getWorkspace(), 'pull');
+    $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
 
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
@@ -74,17 +74,20 @@ class ReplicatorManager implements ReplicatorInterface {
   }
 
   /**
-   * Returns a replication task.
+   * Derives a replication task from the workspace's replication settings.
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
-   * @param string $type
-   *   The replication type ('pull' or 'push').
+   *   The workspace to derive the replication task from.
+   * @param string $field_name
+   *   The field name that references a ReplicationSettings config entity
+   *   ('push_replication_settings', 'pull_replication_settings').
    *
    * @return \Drupal\replication\ReplicationTask\ReplicationTaskInterface
+   *   A replication task that can be passed to a \Drupal\workspace\ReplicatorInterface.
    */
-  public function getTask(WorkspaceInterface $workspace, $type) {
+  public function getTask(WorkspaceInterface $workspace, $field_name) {
     $task = new ReplicationTask();
-    $items = $workspace->get($type . '_replication_settings');
+    $items = $workspace->get($field_name);
     if ($items instanceof EntityReferenceFieldItemListInterface) {
       $referenced_entities = $items->referencedEntities();
       if (count($referenced_entities) > 0) {

@@ -101,7 +101,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
     $target_pointer = $this->getPointerToWorkspace($target);
 
     // Derive a replication task from the target Workspace.
-    $task = $this->replicatorManager->getTask($target, 'pull');
+    $task = $this->replicatorManager->getTask($target, 'pull_replication_settings');
 
     // Replicate from Live to Target.
     $this->replicatorManager->replicate($source_pointer, $target_pointer, $task);
@@ -173,7 +173,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
     $this->assertTrue($this->isLabelInContentOverview('Unpublished node'));
 
     // Derive a replication task from the target Workspace.
-    $task = $this->replicatorManager->getTask($target, 'push');
+    $task = $this->replicatorManager->getTask($target, 'push_replication_settings');
 
     // Replicate from Target to Live.
     $this->replicatorManager->replicate($target_pointer, $source_pointer, $task);
