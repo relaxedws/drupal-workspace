@@ -90,7 +90,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
     // Create a target workspace with replication settings.
     $this->drupalGet('/admin/structure/workspace/add');
     $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
     $page = $session->getPage();
     $page->fillField('label', 'Target');
     $page->fillField('machine_name', 'target');
@@ -141,7 +141,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
     // Create a target workspace with replication settings.
     $this->drupalGet('/admin/structure/workspace/add');
     $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
     $page = $session->getPage();
     $page->fillField('label', 'Target');
     $page->fillField('machine_name', 'target');
