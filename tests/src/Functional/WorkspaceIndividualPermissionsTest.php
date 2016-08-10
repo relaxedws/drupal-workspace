@@ -4,16 +4,15 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BrowserTestBase;
 
-
 /**
  * Tests permission controls on workspaces.
  *
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
 
   public static $modules = ['workspace', 'multiversion'];
@@ -27,6 +26,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
       'administer site configuration',
       'create_workspace',
       'edit_own_workspace',
+      'view_own_workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);
@@ -48,7 +48,6 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
   }
-
 
   /**
    * Verifies that a user can view a specific workspace.
@@ -91,4 +90,5 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $this->drupalGet("admin/structure/workspace/{$packers->id()}/activate");
     $this->assertEquals(403, $session->getStatusCode());
   }
+
 }
