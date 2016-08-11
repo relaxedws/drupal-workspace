@@ -8,13 +8,18 @@ use Drupal\simpletest\BrowserTestBase;
  * Tests permission controls on workspaces.
  *
  * @group workspace
+ *
  * @runTestsInSeparateProcesses
+ *
  * @preserveGlobalState disabled
  */
 class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['workspace', 'multiversion'];
 
   /**
