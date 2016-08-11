@@ -8,6 +8,7 @@ use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
+use Symfony\Component\Console\Exception\LogicException;
 
 /**
  * Provides the Replicator manager.
@@ -15,20 +16,24 @@ use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 class ReplicatorManager implements ReplicatorInterface {
 
   /**
+   * The services available to perform replication.
+   *
    * @var ReplicatorInterface[]
-   *   The services available to perform replication.
    */
   protected $replicators = [];
 
   /**
+   * The injected service to track conflicts during replication.
+   *
    * @var ConflictTrackerInterface
-   *   The injected service to track conflicts during replication.
    */
   protected $conflictTracker;
 
   /**
+   * The injected service to track conflicts during replication.
+   *
    * @param ConflictTrackerInterface $conflict_tracker
-   *   The injected service to track conflicts during replication.
+   *   The confict tracking service.
    */
   public function __construct(ConflictTrackerInterface $conflict_tracker) {
     $this->conflictTracker = $conflict_tracker;
@@ -85,18 +90,25 @@ class ReplicatorManager implements ReplicatorInterface {
    *   The field name that references a ReplicationSettings config entity.
    *
    * @return \Drupal\replication\ReplicationTask\ReplicationTaskInterface
-   *   A replication task that can be passed to a \Drupal\workspace\ReplicatorInterface.
+   *   A replication task that can be passed to a replicator.
+   *
+   * @throws \Symfony\Component\Console\Exception\LogicException
+   *   The replication settings field does not exist on the entity.
    */
   public function getTask(EntityInterface $entity, $field_name) {
     $task = new ReplicationTask();
     $items = $entity->get($field_name);
-    if ($items instanceof EntityReferenceFieldItemListInterface) {
-      $referenced_entities = $items->referencedEntities();
-      if (count($referenced_entities) > 0) {
-        $task->setFilter($referenced_entities[0]->getFilterId());
-        $task->setParametersByArray($referenced_entities[0]->getParameters());
-      }
+
+    if (!$items instanceof EntityReferenceFieldItemListInterface) {
+      throw new LogicException('Replication settings field does not exist.');
     }
+
+    $referenced_entities = $items->referencedEntities();
+    if (count($referenced_entities) > 0) {
+      $task->setFilter($referenced_entities[0]->getFilterId());
+      $task->setParametersByArray($referenced_entities[0]->getParameters());
+    }
+
     return $task;
   }
 
