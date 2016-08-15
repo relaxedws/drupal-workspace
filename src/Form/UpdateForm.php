@@ -7,21 +7,85 @@ use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Drupal\replication\Entity\ReplicationLogInterface;
+use Drupal\workspace\ReplicatorInterface;
 
+/**
+ * The form to update the current workspace with its upstream.
+ */
 class UpdateForm extends ConfirmFormBase {
+
+  /**
+   * The workspace manager.
+   *
+   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The replicator manager.
+   *
+   * @var \Drupal\workspace\ReplicatorInterface
+   */
+  protected $replicatorManager;
+
+  /**
+   * The renderer service.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * Inject services needed by the form.
+   *
+   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\workspace\ReplicatorInterface $replicator_manager
+   *   Tthe replicator manager.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
+   */
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ReplicatorInterface $replicator_manager, RendererInterface $renderer) {
+    $this->workspaceManager = $workspace_manager;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->replicatorManager = $replicator_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('workspace.manager'),
+      $container->get('entity_type.manager'),
+      $container->get('workspace.replicator_manager'),
+      $container->get('renderer')
+    );
+  }
 
   /**
    * Get the current active workspace's pointer.
    *
    * @return \Drupal\workspace\WorkspacePointerInterface
+   *   The active workspace.
    */
   protected function getActive() {
     /** @var \Drupal\multiversion\Entity\WorkspaceInterface $workspace */
-    $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+    $workspace = $this->workspaceManager->getActiveWorkspace();
     /** @var \Drupal\workspace\WorkspacePointerInterface[] $pointers */
-    $pointers = \Drupal::service('entity_type.manager')
+    $pointers = $this->entityTypeManager
       ->getStorage('workspace_pointer')
       ->loadByProperties(['workspace_pointer' => $workspace->id()]);
     return reset($pointers);
@@ -31,9 +95,10 @@ class UpdateForm extends ConfirmFormBase {
    * Returns the upstream for the given workspace.
    *
    * @return \Drupal\multiversion\Entity\WorkspaceInterface
+   *   The upstream workspace.
    */
   protected function getUpstream() {
-    $workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
+    $workspace = $this->workspaceManager->getActiveWorkspace();
     if (isset($workspace->upstream)) {
       return $workspace->upstream->entity;
     }
@@ -86,14 +151,13 @@ class UpdateForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $replication_manager = \Drupal::service('workspace.replicator_manager');
     $upstream = $this->getUpstream();
     $active = $this->getActive();
     try {
       // Derive a replication task from the source Workspace.
-      $task = $replicator_manager->getTask($active->getWorkspace(), 'pull_replication_settings');
+      $task = $this->replicatorManager->getTask($active->getWorkspace(), 'pull_replication_settings');
 
-      $response = $replicator_manager->update($upstream, $active, $task);
+      $response = $this->replicatorManager->update($upstream, $active, $task);
 
       if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
         drupal_set_message($this->t('%workspace has been updated with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
@@ -102,16 +166,22 @@ class UpdateForm extends ConfirmFormBase {
         drupal_set_message($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]), 'error');
       }
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       watchdog_exception('Workspace', $e);
       drupal_set_message($e->getMessage(), 'error');
     }
   }
 
   /**
+   * Callback handler for the update form button.
+   *
    * @param array $form
+   *   The form object.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state data.
+   *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The ajax response.
    */
   public function update(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
@@ -130,4 +200,5 @@ class UpdateForm extends ConfirmFormBase {
     }
     return $this->t('Do you want to pull changes from %upstream to %workspace?', ['%upstream' => $this->getUpstream()->label(), '%workspace' => $this->getActive()->label()]);
   }
+
 }
