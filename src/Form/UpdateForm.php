@@ -61,6 +61,7 @@ class UpdateForm extends ConfirmFormBase {
     $this->workspaceManager = $workspace_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->replicatorManager = $replicator_manager;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -176,18 +177,18 @@ class UpdateForm extends ConfirmFormBase {
    * Callback handler for the update form button.
    *
    * @param array $form
-   *   The form object.
+   *   The form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state data.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
-   *   The ajax response.
+   *   The AJAX response.
    */
   public function update(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $response->addCommand(new CloseModalDialogCommand());
     $status_messages = ['#type' => 'status_messages'];
-    $response->addCommand(new PrependCommand('.region-highlighted', \Drupal::service('renderer')->renderRoot($status_messages)));
+    $response->addCommand(new PrependCommand('.region-highlighted', $this->renderer->renderRoot($status_messages)));
     return $response;
   }
 
