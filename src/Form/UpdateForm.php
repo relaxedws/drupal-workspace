@@ -86,13 +86,14 @@ class UpdateForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $replication_manager = \Drupal::service('workspace.replicator_manager');
     $upstream = $this->getUpstream();
     $active = $this->getActive();
     try {
       // Derive a replication task from the source Workspace.
-      $task = $this->replicatorManager->getTask($active->getWorkspace(), 'push_replication_settings');
+      $task = $replicator_manager->getTask($active->getWorkspace(), 'pull_replication_settings');
 
-      $response = $this->replicatorManager->update($upstream, $active, $task);
+      $response = $replicator_manager->update($upstream, $active, $task);
 
       if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
         drupal_set_message($this->t('%workspace has been updated with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
