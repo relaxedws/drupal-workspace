@@ -11,6 +11,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\ReplicatorInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The form to update the current workspace with its upstream.
@@ -53,7 +54,7 @@ class UpdateForm extends ConfirmFormBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\workspace\ReplicatorInterface $replicator_manager
-   *   Tthe replicator manager.
+   *   The replicator manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    */
