@@ -21,5 +21,5 @@ projects:
     type: module
     download:
       type: git
-      branch: replication-filters-ui
-      url: "https://github.com/josephdpurcell/drupal-replication.git"
+      branch: 8.x-1.x 
+      url: "https://github.com/relaxedws/drupal-replication.git"
