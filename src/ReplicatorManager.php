@@ -72,6 +72,11 @@ class ReplicatorManager implements ReplicatorInterface {
     // @todo use $post_conflicts in a conflict management workflow
     $post_conflicts = $this->conflictTracker->getAll();
 
+    if ($task === NULL) {
+      // Derive a replication task from the source Workspace for pushing.
+      $task = $this->getTask($source->getWorkspace(), 'push_replication_settings');
+    }
+
     // Push changes from $source to $target.
     $push_log = $this->doReplication($source, $target, $task);
 
