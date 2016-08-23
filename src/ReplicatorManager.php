@@ -64,7 +64,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $initial_conflicts = $this->conflictTracker->getAll();
 
     // Derive a replication task from the target Workspace for pulling.
-    $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
+    $pull_task = $this->getTask($target->getWorkspace(), 'pull_replication_settings');
 
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
@@ -73,8 +73,8 @@ class ReplicatorManager implements ReplicatorInterface {
     $post_conflicts = $this->conflictTracker->getAll();
 
     if ($task === NULL) {
-      // Derive a replication task from the source Workspace for pushing.
-      $task = $this->getTask($source->getWorkspace(), 'push_replication_settings');
+      // Derive a replication task from the target Workspace for pushing.
+      $task = $this->getTask($target->getWorkspace(), 'push_replication_settings');
     }
 
     // Push changes from $source to $target.
