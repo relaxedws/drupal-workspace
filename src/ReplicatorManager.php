@@ -72,6 +72,9 @@ class ReplicatorManager implements ReplicatorInterface {
     // @todo use $post_conflicts in a conflict management workflow
     $post_conflicts = $this->conflictTracker->getAll();
 
+    // Automatically derive settings from the workspace if no task sent.
+    // @todo Refactor to eliminate obscurity of having an optional parameter
+    // and automatically setting the parameter's value.
     if ($task === NULL) {
       // Derive a replication task from the target Workspace for pushing.
       $task = $this->getTask($target->getWorkspace(), 'push_replication_settings');
@@ -119,6 +122,9 @@ class ReplicatorManager implements ReplicatorInterface {
 
   /**
    * Update the target using the source before doing a replication.
+   *
+   * This is used primarily as a public facing method by the UpdateForm. It
+   * avoids the additional logic found in the replicate method.
    *
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
