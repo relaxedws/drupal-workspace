@@ -4,7 +4,6 @@ namespace Drupal\workspace\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\workbench_moderation\Entity\ModerationState;
 use Drupal\workbench_moderation\Event\WorkbenchModerationEvents;
 use Drupal\workbench_moderation\Event\WorkbenchModerationTransitionEvent;
 use Drupal\workspace\ReplicatorManager;
@@ -16,15 +15,27 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
   /**
+   * The entity type manager to use for checking moderation information.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The replicator manager to trigger replication on.
+   *
    * @var \Drupal\workspace\ReplicatorManager
    */
   protected $replicatorManager;
 
+  /**
+   * Inject dependencies.
+   *
+   * @param EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager to use for checking moderation information.
+   * @param ReplicatorManager $replicator_manager
+   *   The replicator manager to trigger replication on.
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ReplicatorManager $replicator_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->replicatorManager = $replicator_manager;
@@ -55,7 +66,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *   TRUE if the event is moving an entity to a default-revision state.
    */
   protected function wasDefaultRevision(WorkbenchModerationTransitionEvent $event) {
-    /** @var ModerationState $post_state */
+    /** @var Drupal\workbench_moderation\Entity\ModerationState $post_state */
     $post_state = $this->entityTypeManager->getStorage('moderation_state')->load($event->getStateAfter());
 
     return $post_state->isPublishedState();
@@ -78,7 +89,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
-    // Derive a replication task from the source Workspace.
+    // Derive a replication task from the Workspace we are acting on.
     $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
 
     $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);

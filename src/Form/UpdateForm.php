@@ -158,7 +158,7 @@ class UpdateForm extends ConfirmFormBase {
     $upstream = $this->getUpstream();
     $active = $this->getActive();
     try {
-      // Derive a replication task from the source Workspace.
+      // Derive a replication task from the Workspace we are acting on.
       $task = $this->replicatorManager->getTask($active->getWorkspace(), 'pull_replication_settings');
 
       $response = $this->replicatorManager->update($upstream, $active, $task);

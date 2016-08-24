@@ -63,8 +63,8 @@ class ReplicatorManager implements ReplicatorInterface {
     // @todo use $initial_conflicts in a conflict management workflow
     $initial_conflicts = $this->conflictTracker->getAll();
 
-    // Derive a replication task from the target Workspace for pulling.
-    $pull_task = $this->getTask($target->getWorkspace(), 'pull_replication_settings');
+    // Derive a pull replication task from the Workspace we are acting on.
+    $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
 
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
@@ -76,8 +76,8 @@ class ReplicatorManager implements ReplicatorInterface {
     // @todo Refactor to eliminate obscurity of having an optional parameter
     // and automatically setting the parameter's value.
     if ($task === NULL) {
-      // Derive a replication task from the target Workspace for pushing.
-      $task = $this->getTask($target->getWorkspace(), 'push_replication_settings');
+      // Derive a push replication task from the Workspace we are acting on.
+      $task = $this->getTask($source->getWorkspace(), 'push_replication_settings');
     }
 
     // Push changes from $source to $target.
