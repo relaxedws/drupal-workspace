@@ -5,13 +5,11 @@ namespace Drupal\workspace\Plugin\RulesAction;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\workspace\ReplicatorManager;
-use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -80,27 +78,30 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
       $container->get('multiversion.manager')
       );
   }
+
   /**
    * Replicate content from active Workspace to it's upstream.
    */
   protected function doExecute(EntityInterface $entity) {
-    /** @var Workspace $workspace */
+    /** @var \Drupal\multiversion\Entity\Workspace $workspace */
     $workspace = $this->multiversionManager->isSupportedEntityType($entity->getEntityType())
       ? $entity->get('workspace')->entity
       : $this->workspaceManager->getActiveWorkspace();
 
     $source = $this->getPointerToWorkspace($workspace);
 
-    /** @var WorkspacePointerInterface $upstream */
-    $target = $workspace->get('upstream')->entity;
+    /** @var \Drupal\workspace\WorkspacePointerInterface $upstream */
+    $upstream = $workspace->get('upstream')->entity;
 
-    // @todo pass a ReplicationTask to replicate(), but where would it come from?
+    // Derive a replication task from the source Workspace.
+    $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
+
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $result */
-    $result = $this->replicatorManager->replicate($source, $target);
+    $result = $this->replicatorManager->replicate($source, $upstream, $task);
 
     if ($result->get('ok') == TRUE) {
-      drupal_set_message($this->t('Content replicated from workspace @source to workspace @target.',
-        ['@source' => $workspace->label(), '@target' => $upstream->label()]));
+      drupal_set_message($this->t('Content replicated from workspace @source to workspace @upstream.',
+        ['@source' => $workspace->label(), '@upstream' => $upstream->label()]));
     }
     else {
       drupal_set_message($this->t('Error replicating content.'));
@@ -116,7 +117,8 @@ class ReplicateContent extends RulesActionBase implements ContainerFactoryPlugin
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
-   * @return WorkspacePointerInterface
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
    *   The pointer to the provided workspace.
    */
   protected function getPointerToWorkspace(WorkspaceInterface $workspace) {

@@ -2,9 +2,6 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
@@ -16,11 +13,16 @@ use Drupal\workspace\ReplicatorManager;
  * @group workspace
  */
 class ReplicatorTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
+
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['system', 'node', 'user', 'block', 'workspace', 'multiversion', 'taxonomy', 'entity_reference', 'field', 'field_ui', 'menu_link_content', 'menu_ui'];
 
   /**

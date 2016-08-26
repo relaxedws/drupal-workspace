@@ -4,11 +4,9 @@ namespace Drupal\workspace\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\workbench_moderation\Entity\ModerationState;
 use Drupal\workbench_moderation\Event\WorkbenchModerationEvents;
 use Drupal\workbench_moderation\Event\WorkbenchModerationTransitionEvent;
 use Drupal\workspace\ReplicatorManager;
-use Drupal\workspace\WorkspacePointerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -17,15 +15,27 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
   /**
+   * The entity type manager to use for checking moderation information.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The replicator manager to trigger replication on.
+   *
    * @var \Drupal\workspace\ReplicatorManager
    */
   protected $replicatorManager;
 
+  /**
+   * Inject dependencies.
+   *
+   * @param EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager to use for checking moderation information.
+   * @param ReplicatorManager $replicator_manager
+   *   The replicator manager to trigger replication on.
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ReplicatorManager $replicator_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->replicatorManager = $replicator_manager;
@@ -56,7 +66,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *   TRUE if the event is moving an entity to a default-revision state.
    */
   protected function wasDefaultRevision(WorkbenchModerationTransitionEvent $event) {
-    /** @var ModerationState $post_state */
+    /** @var Drupal\workbench_moderation\Entity\ModerationState $post_state */
     $post_state = $this->entityTypeManager->getStorage('moderation_state')->load($event->getStateAfter());
 
     return $post_state->isPublishedState();
@@ -70,7 +80,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    */
   protected function mergeWorkspaceToParent(WorkspaceInterface $workspace) {
     // This may be insufficient for handling a missing parent.
-    /** @var WorkspacePointerInterface $parent_workspace */
+    /** @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
     $parent_workspace_pointer = $workspace->get('upstream')->entity;
     if (!$parent_workspace_pointer) {
       // @todo Should we silently ignore this, or throw an error, or...?
@@ -79,8 +89,10 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
-    // @todo pass a ReplicationTask to replicate()
-    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer);
+    // Derive a replication task from the Workspace we are acting on.
+    $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
+
+    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
   }
 
   /**
@@ -94,7 +106,8 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
-   * @return WorkspacePointerInterface
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
    *   The pointer to the provided workspace.
    */
   protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
@@ -108,11 +121,12 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  static function getSubscribedEvents() {
+  public static function getSubscribedEvents() {
     $events = [];
     if (class_exists(WorkbenchModerationEvents::class)) {
       $events[WorkbenchModerationEvents::STATE_TRANSITION][] = ['onTransition'];
     }
     return $events;
   }
+
 }

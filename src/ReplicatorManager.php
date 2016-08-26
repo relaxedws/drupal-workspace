@@ -2,9 +2,13 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
+use Symfony\Component\Console\Exception\LogicException;
 
 /**
  * Provides the Replicator manager.
@@ -12,20 +16,24 @@ use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 class ReplicatorManager implements ReplicatorInterface {
 
   /**
+   * The services available to perform replication.
+   *
    * @var ReplicatorInterface[]
-   *   The services available to perform replication.
    */
   protected $replicators = [];
 
   /**
+   * The injected service to track conflicts during replication.
+   *
    * @var ConflictTrackerInterface
-   *   The injected service to track conflicts during replication.
    */
   protected $conflictTracker;
 
   /**
+   * The injected service to track conflicts during replication.
+   *
    * @param ConflictTrackerInterface $conflict_tracker
-   *   The injected service to track conflicts during replication.
+   *   The confict tracking service.
    */
   public function __construct(ConflictTrackerInterface $conflict_tracker) {
     $this->conflictTracker = $conflict_tracker;
@@ -52,18 +60,71 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
-    // @todo Utilize the following unused variables when we build out the
-    // conflict logic, e.g. a workflow to resolve conflicts.
+    // @todo use $initial_conflicts in a conflict management workflow
     $initial_conflicts = $this->conflictTracker->getAll();
+
+    // Derive a pull replication task from the Workspace we are acting on.
+    $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
+
     // Pull in changes from $target to $source to ensure a merge will complete.
-    $pull = $this->update($target, $source);
+    $this->update($target, $source, $pull_task);
+
+    // @todo use $post_conflicts in a conflict management workflow
     $post_conflicts = $this->conflictTracker->getAll();
-    $push = $this->doReplication($source, $target, $task);
-    return $push;
+
+    // Automatically derive settings from the workspace if no task sent.
+    // @todo Refactor to eliminate obscurity of having an optional parameter
+    // and automatically setting the parameter's value.
+    if ($task === NULL) {
+      // Derive a push replication task from the Workspace we are acting on.
+      $task = $this->getTask($source->getWorkspace(), 'push_replication_settings');
+    }
+
+    // Push changes from $source to $target.
+    $push_log = $this->doReplication($source, $target, $task);
+
+    return $push_log;
+  }
+
+  /**
+   * Derives a replication task from an entity with replication settings.
+   *
+   * This can be used with a Workspace using the 'push_replication_settings'
+   * and 'pull_replication_settings' fields.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to derive the replication task from.
+   * @param string $field_name
+   *   The field name that references a ReplicationSettings config entity.
+   *
+   * @return \Drupal\replication\ReplicationTask\ReplicationTaskInterface
+   *   A replication task that can be passed to a replicator.
+   *
+   * @throws \Symfony\Component\Console\Exception\LogicException
+   *   The replication settings field does not exist on the entity.
+   */
+  public function getTask(EntityInterface $entity, $field_name) {
+    $task = new ReplicationTask();
+    $items = $entity->get($field_name);
+
+    if (!$items instanceof EntityReferenceFieldItemListInterface) {
+      throw new LogicException('Replication settings field does not exist.');
+    }
+
+    $referenced_entities = $items->referencedEntities();
+    if (count($referenced_entities) > 0) {
+      $task->setFilter($referenced_entities[0]->getFilterId());
+      $task->setParameters($referenced_entities[0]->getParameters());
+    }
+
+    return $task;
   }
 
   /**
    * Update the target using the source before doing a replication.
+   *
+   * This is used primarily as a public facing method by the UpdateForm. It
+   * avoids the additional logic found in the replicate method.
    *
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
