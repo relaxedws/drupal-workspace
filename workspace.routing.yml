@@ -37,6 +37,16 @@ entity.workspace.activate_form:
   requirements:
     _workspace_view: 'TRUE'
 
+entity.workspace.conflicts:
+  path: '/admin/structure/workspace/{workspace_id}/conflicts'
+  defaults:
+    _controller: '\Drupal\workspace\Controller\WorkspaceController::viewConflicts'
+    _title_callback: '\Drupal\workspace\Controller\WorkspaceController::getViewConflictsTitle'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'view_any_workspace'
+
 # WorkspaceType routing definition
 entity.workspace_type.collection:
   path: '/admin/structure/workspace/types'

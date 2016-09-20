@@ -60,8 +60,19 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
-    // @todo use $initial_conflicts in a conflict management workflow
+    // @todo pull this from some shared state: how does
+    // WorkbenchModerationSubscriber set this? What about the ReplicateContent
+    // rules action? What about Deploy?
+    //$is_aborted_on_conflict = TRUE;
+
+    // @todo find a way besides session to pass this.
+    $is_aborted_on_conflict = isset($_SESSION['is_aborted_on_conflict']) ? (bool) $_SESSION['is_aborted_on_conflict'] : TRUE;
+
+    // Abort updating the Workspace if there are conflicts.
     $initial_conflicts = $this->conflictTracker->getAll();
+    if ($is_aborted_on_conflict && $initial_conflicts) {
+      return $this->failedReplicationLog($source, $target, $task);
+    }
 
     // Derive a pull replication task from the Workspace we are acting on.
     $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
@@ -69,8 +80,11 @@ class ReplicatorManager implements ReplicatorInterface {
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
 
-    // @todo use $post_conflicts in a conflict management workflow
+    // Abort replicating to target Workspace if there are conflicts.
     $post_conflicts = $this->conflictTracker->getAll();
+    if ($is_aborted_on_conflict && $post_conflicts) {
+      return $this->failedReplicationLog($source, $target, $task);
+    }
 
     // Automatically derive settings from the workspace if no task sent.
     // @todo Refactor to eliminate obscurity of having an optional parameter

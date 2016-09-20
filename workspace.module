@@ -106,6 +106,9 @@ function workspace_theme($existing, $type, $theme, $path) {
     'workspace_add_list' => [
       'variables' => ['content' => NULL],
     ],
+    'workspace_conflict_list' => [
+      'variables' => ['content' => NULL],
+    ],
     'workspace_rev' => [
       'render element' => 'elements',
     ],
@@ -123,6 +126,24 @@ function workspace_preprocess_workspace_add_list(&$variables) {
       $variables['types'][$type->id()]['url'] = Url::fromRoute('entity.workspace.add_form', array('workspace_type' => $type->id()), $options);
     }
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK
+ *
+ * Take the list of conflicts and get the entity labels and links for each.
+ */
+function workspace_preprocess_workspace_conflict_list(&$variables) {
+  $revisions = [];
+  if (!empty($variables['content'])) {
+    foreach ($variables['content'] as $entity_revision) {
+      $revisions[] = [
+        'label' => $entity_revision->label(),
+        'link' => Link::fromTextAndUrl($entity_revision->label(), $entity_revision->toUrl('revision')),
+      ];
+    }
+  }
+  $variables['revisions'] = $revisions;
 }
 
 /**
