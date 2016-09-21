@@ -66,7 +66,7 @@ class WorkspaceForm extends ContentEntityForm {
       $conflicts = $this->conflictTracker->getAll();
       if ($conflicts) {
         $form['message'] = $this->generateMessageRenderArray('error', $this->t(
-          'There are @count conflicts. See full list <a href=":link">here</a>.',
+          'There are @count conflicts. The replication logic has arbitrarily chosen the entity revision that should be used and it may not have been the one you desired. Proceeding with replication will push these conflicts upstream, which may cause a loss of data. See the full list of conflicts <a href=":link">here</a>.',
           [
             '@count' => count($conflicts),
             ':link' => \Drupal::url('entity.workspace.conflicts', ['workspace_id' => $workspace->id()]),
