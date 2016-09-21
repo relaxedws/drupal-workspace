@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -64,27 +65,26 @@ class WorkspaceForm extends ContentEntityForm {
       $this->conflictTracker->useWorkspace($workspace);
       $conflicts = $this->conflictTracker->getAll();
       if ($conflicts) {
-        // @todo change this to a render array
-        drupal_set_message(
-          $this->t(
-            'There are @count conflicts. See full list <a href=":link">here</a>.',
-            [
-              '@count' => count($conflicts),
-              ':link' => \Drupal::url('entity.workspace.conflicts', ['workspace_id' => $workspace->id()]),
-            ]
-          ),
-          'warning'
-        );
+        $form['message'] = $this->generateMessageRenderArray('error', $this->t(
+          'There are @count conflicts. See full list <a href=":link">here</a>.',
+          [
+            '@count' => count($conflicts),
+            ':link' => \Drupal::url('entity.workspace.conflicts', ['workspace_id' => $workspace->id()]),
+          ]
+        ));
         $form['is_aborted_on_conflict'] = [
-          '#type' => 'checkbox',
+          '#type' => 'radios',
           '#title' => $this->t('Abort if there are conflicts?'),
-          '#default_value' => TRUE,
-          '#description' => $this->t('If checked, prevent replicating conflicts to upstream.'),
+          '#default_value' => 'true',
+          '#options' => [
+            'true' => $this->t('Yes, if conflicts are found do not replicate to upstream.'),
+            'false' => $this->t('No, go ahead and push any conflicts to the upstream.'),
+          ],
+          '#weight' => 0,
         ];
       }
       else {
-        // @todo change this to a render array
-        drupal_set_message('There are no conflicts.', 'status');
+        $form['message'] = $this->generateMessageRenderArray('status', 'There are no conflicts.');
       }
 
       // Set the form title based on workspace.
@@ -133,7 +133,7 @@ class WorkspaceForm extends ContentEntityForm {
     // contained in the display.
     $field_names = array(
       'label',
-      'machine_name'
+      'machine_name',
     );
     foreach ($violations->getByFields($field_names) as $violation) {
       list($field_name) = explode('.', $violation->getPropertyPath(), 2);
@@ -146,9 +146,10 @@ class WorkspaceForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    // Pass the abort flag to the ReplicationManager.
-    // @todo avoid using $_SESSION to pass this state
-    $_SESSION['is_aborted_on_conflict'] = (bool) $form_state->getValue('is_aborted_on_conflict');
+    // Pass the abort flag to the ReplicationManager using runtime-only state,
+    // i.e. a static.
+    $is_aborted_on_conflict = !$form_state->hasValue('is_aborted_on_conflict') || $form_state->getValue('is_aborted_on_conflict') === 'true';
+    drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
     $workspace = $this->entity;
     $insert = $workspace->isNew();
@@ -176,6 +177,25 @@ class WorkspaceForm extends ContentEntityForm {
       drupal_set_message($this->t('The workspace could not be saved.'), 'error');
       $form_state->setRebuild();
     }
+  }
+
+  /**
+   * Generate a message render array with the given text.
+   *
+   * @param string $type
+   *   The type of message: status, warning, or error.
+   * @param string $message
+   *   The message to create with.
+   *
+   * @see \Drupal\Core\Render\Element\StatusMessages
+   */
+  protected function generateMessageRenderArray($type, $message) {
+    return [
+      '#theme' => 'status_messages',
+      '#message_list' => [
+        $type => [Markup::create($message)],
+      ],
+    ];
   }
 
 }

@@ -60,13 +60,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
-    // @todo pull this from some shared state: how does
-    // WorkbenchModerationSubscriber set this? What about the ReplicateContent
-    // rules action? What about Deploy?
-    //$is_aborted_on_conflict = TRUE;
-
-    // @todo find a way besides session to pass this.
-    $is_aborted_on_conflict = isset($_SESSION['is_aborted_on_conflict']) ? (bool) $_SESSION['is_aborted_on_conflict'] : TRUE;
+    $is_aborted_on_conflict = drupal_static('workspace_is_aborted_on_conflict', TRUE);
 
     // Abort updating the Workspace if there are conflicts.
     $initial_conflicts = $this->conflictTracker->getAll();
