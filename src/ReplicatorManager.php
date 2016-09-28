@@ -68,7 +68,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $is_aborted_on_conflict = drupal_static('workspace_is_aborted_on_conflict', TRUE);
 
     // Abort updating the Workspace if there are conflicts.
-    $initial_conflicts = $this->conflictTracker->getAll();
+    $initial_conflicts = $this->conflictTracker->useWorkspace($source->getWorkspace())->getAll();
     if ($is_aborted_on_conflict && $initial_conflicts) {
       return $this->failedReplicationLog($source, $target, $task);
     }
@@ -80,7 +80,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $this->update($target, $source, $pull_task);
 
     // Abort replicating to target Workspace if there are conflicts.
-    $post_conflicts = $this->conflictTracker->getAll();
+    $post_conflicts = $this->conflictTracker->useWorkspace($source->getWorkspace())->getAll();
     if ($is_aborted_on_conflict && $post_conflicts) {
       return $this->failedReplicationLog($source, $target, $task);
     }
