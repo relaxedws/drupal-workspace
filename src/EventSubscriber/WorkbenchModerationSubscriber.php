@@ -92,7 +92,24 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
     // Derive a replication task from the Workspace we are acting on.
     $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
 
-    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $log */
+    $log = $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
+
+    // Display a message to the user on what happened.
+    if ($log->get('ok')) {
+      drupal_set_message(t('Changes in :source were replicated to :target.', [
+        ':source' => $workspace->label(),
+        ':target' => $workspace->get('upstream')->entity->label(),
+      ]), 'status');
+    }
+    else {
+      // @todo Where do we get more info about why it failed? Should we add a
+      // description field to the replication log?
+      drupal_set_message(t('Publishing the :source workspace failed!', [
+        ':source' => $workspace->label(),
+        ':target' => $workspace->get('upstream')->entity->label(),
+      ]), 'error');
+    }
   }
 
   /**
