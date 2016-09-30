@@ -163,7 +163,7 @@ class UpdateForm extends ConfirmFormBase {
 
       $response = $this->replicatorManager->update($upstream, $active, $task);
 
-      if (($response instanceof ReplicationLogInterface) && $response->get('ok')) {
+      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value === TRUE)) {
         drupal_set_message($this->t('%workspace has been updated with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
       }
       else {

@@ -96,7 +96,7 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
     $log = $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
 
     // Display a message to the user on what happened.
-    if ($log->get('ok')) {
+    if ($log->get('ok')->value === TRUE) {
       drupal_set_message(t('Changes in :source were replicated to :target.', [
         ':source' => $workspace->label(),
         ':target' => $workspace->get('upstream')->entity->label(),
