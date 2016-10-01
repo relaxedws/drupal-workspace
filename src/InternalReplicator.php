@@ -93,6 +93,8 @@ class InternalReplicator implements ReplicatorInterface {
     $source_workspace = $source->getWorkspace();
     $target_workspace = $target->getWorkspace();
     // Set active workspace to source.
+    // @todo Avoid modifying the user's active workspace.
+    $current_active = $this->workspaceManager->getActiveWorkspace();
     try {
       $this->workspaceManager->setActiveWorkspace($source_workspace);
     }
@@ -177,6 +179,10 @@ class InternalReplicator implements ReplicatorInterface {
     $replication_log->setSourceLastSeq($source_workspace->getUpdateSeq());
     $replication_log->setHistory($history);
     $replication_log->save();
+
+    // Switch back to the workspace that was originally active.
+    $this->workspaceManager->setActiveWorkspace($current_active);
+
     return $replication_log;
   }
 
