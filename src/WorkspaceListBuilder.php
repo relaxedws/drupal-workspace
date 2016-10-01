@@ -47,6 +47,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
+    // @todo should we show conflicted state in this list?
     $header['label'] = t('Workspace');
     $header['uid'] = t('Owner');
     $header['type'] = t('Type');
@@ -88,6 +89,12 @@ class WorkspaceListBuilder extends EntityListBuilder {
         'url' => $entity->urlInfo('activate-form', ['query' => ['destination' => $entity->url('collection')]]),
       );
     }
+
+    $operations['conflicts'] = [
+      'title' => $this->t('View Conflicts'),
+      'weight' => 21,
+      'url' => $entity->urlInfo('conflicts', ['workspace' => $entity->id()]),
+    ];
 
     return $operations;
   }
