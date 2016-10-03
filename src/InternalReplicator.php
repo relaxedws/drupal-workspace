@@ -93,6 +93,7 @@ class InternalReplicator implements ReplicatorInterface {
     $source_workspace = $source->getWorkspace();
     $target_workspace = $target->getWorkspace();
     // Set active workspace to source.
+    $original_workspace = $this->workspaceManager->getActiveWorkspace();
     try {
       $this->workspaceManager->setActiveWorkspace($source_workspace);
     }
@@ -149,6 +150,16 @@ class InternalReplicator implements ReplicatorInterface {
     $replication_log->setSourceLastSeq($source_workspace->getUpdateSeq());
     $replication_log->setHistory($history);
     $replication_log->save();
+
+    // return to original active workspace
+    try {
+      $this->workspaceManager->setActiveWorkspace($original_workspace);
+    }
+    catch (\Exception $e) {
+      watchdog_exception('Workspace', $e);
+      drupal_set_message($e->getMessage(), 'error');
+    }
+
     return $replication_log;
   }
 
