@@ -103,46 +103,18 @@ class InternalReplicator implements ReplicatorInterface {
     // Fetch the site time.
     $start_time = new \DateTime();
 
-    // If no task sent, create an empty task for its defaults.
-    if ($task === NULL) {
-      $task = new ReplicationTask();
-    }
+    $entities = $this->diffWorkspaces($source_workspace, $target_workspace, $task);
 
-    // Get changes on the source workspace.
-    $source_changes = $this->changesFactory->get($source_workspace)
-        ->filter($task->getFilter())
-        ->parameters($task->getParameters())
-        ->getNormal();
-    $data = [];
-    foreach ($source_changes as $source_change) {
-      $data[$source_change['id']] = [];
-      foreach ($source_change['changes'] as $change) {
-        $data[$source_change['id']][] = $change['rev'];
-      }
-    }
-
-    // Get revisions the target workspace is missing.
-    $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($data)->getMissing();
-    $entities = [];
-    foreach ($revs_diff as $uuid => $revs) {
-      foreach ($revs['missing'] as $rev) {
-        $missing_found++;
-        $item = $this->revIndex->useWorkspace($source_workspace->id())->get("$uuid:$rev");
-        $entity_type_id = $item['entity_type_id'];
-        $revision_id = $item['revision_id'];
-
-        $storage = $this->entityTypeManager->getStorage($entity_type_id);
-        $entity = $storage->loadRevision($revision_id);
-        if ($entity instanceof ContentEntityInterface) {
-          $docs_read++;
-          $entities[] = $this->serializer->normalize($entity, 'json', ['new_revision_id' => TRUE]);
-        }
-      }
+    $normal_entities = [];
+    foreach ($entities as $entity) {
+      $docs_read++;
+      // Convert the entity object to json for BulkDocs
+      $normal_entities[] = $this->serializer->normalize($entity, 'json', ['new_revision_id' => TRUE]);
     }
 
     $data = [
       'new_edits' => FALSE,
-      'docs' => $entities,
+      'docs' => $normal_entities,
     ];
     // Save all entities in bulk.
     $bulk_docs = $this->serializer->denormalize($data, 'Drupal\replication\BulkDocs\BulkDocs', 'json', ['workspace' => $target_workspace]);
@@ -178,6 +150,57 @@ class InternalReplicator implements ReplicatorInterface {
     $replication_log->setHistory($history);
     $replication_log->save();
     return $replication_log;
+  }
+
+  /**
+   * List the changes on the source according to the task
+   */
+  public function listSourceChanges(WorkspaceInterface $source_workspace, ReplicationTaskInterface $task = NULL) {
+    // If no task sent, create an empty task for its defaults.
+    if ($task === NULL) {
+      $task = new ReplicationTask();
+    }
+
+    // Get changes on the source workspace.
+    $source_changes = $this->changesFactory->get($source_workspace)
+        ->filter($task->getFilter())
+        ->parameters($task->getParameters())
+        ->getNormal();
+    $data = [];
+    foreach ($source_changes as $source_change) {
+      $data[$source_change['id']] = [];
+      foreach ($source_change['changes'] as $change) {
+        $data[$source_change['id']][] = $change['rev'];
+      }
+    }
+
+    return $data;
+  }
+
+  /**
+   * List the entity revisions that need to be replicated
+   */
+  public function diffWorkspaces(WorkspaceInterface $source_workspace, WorkspaceInterface $target_workspace, ReplicationTaskInterface $task = NULL) {
+    $data = $this->listSourceChanges($source_workspace, $task);
+
+    // Get revisions the target workspace is missing.
+    $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($data)->getMissing();
+    $entities = [];
+    foreach ($revs_diff as $uuid => $revs) {
+      foreach ($revs['missing'] as $rev) {
+        $missing_found++;
+        $item = $this->revIndex->useWorkspace($source_workspace->id())->get("$uuid:$rev");
+        $entity_type_id = $item['entity_type_id'];
+        $revision_id = $item['revision_id'];
+
+        $storage = $this->entityTypeManager->getStorage($entity_type_id);
+        $entity = $storage->loadRevision($revision_id);
+        if ($entity instanceof ContentEntityInterface) {
+          $entities[] = $entity;
+        }
+      }
+    }
+    return $entities;
   }
 
 }
