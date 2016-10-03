@@ -104,7 +104,8 @@ class InternalReplicator implements ReplicatorInterface {
     // Fetch the site time.
     $start_time = new \DateTime();
 
-    $entities = $this->diffWorkspaces($source_workspace, $target_workspace, $task);
+    $source_data = $this->listSourceChanges($source_workspace, $task);
+    $entities = $this->diffWorkspaces($source_workspace, $target_workspace, $source_data);
 
     $normal_entities = [];
     foreach ($entities as $entity) {
@@ -191,11 +192,9 @@ class InternalReplicator implements ReplicatorInterface {
   /**
    * List the entity revisions that need to be replicated
    */
-  public function diffWorkspaces(WorkspaceInterface $source_workspace, WorkspaceInterface $target_workspace, ReplicationTaskInterface $task = NULL) {
-    $data = $this->listSourceChanges($source_workspace, $task);
-
+  public function diffWorkspaces(WorkspaceInterface $source_workspace, WorkspaceInterface $target_workspace, array $source_data) {
     // Get revisions the target workspace is missing.
-    $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($data)->getMissing();
+    $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($source_data)->getMissing();
     $entities = [];
     foreach ($revs_diff as $uuid => $revs) {
       foreach ($revs['missing'] as $rev) {
