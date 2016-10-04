@@ -152,29 +152,51 @@ class WorkspaceForm extends ContentEntityForm {
     drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
     $workspace = $this->entity;
-    $insert = $workspace->isNew();
+    $is_new = $workspace->isNew();
     $workspace->save();
+
+    // If the replication failed, we set a static variable to know that the
+    // moderation state of the Workspace should be reverted back to its previous
+    // state. The value of this variable is the state to revert back to.
+    // @see \Drupal\workspace\EventSubscriber\WorkbenchModerationSubscriber
+    // @todo Avoid using statics.
+    $state = drupal_static('workspace_revert_publish_workspace', NULL);
+    $is_replication_failed = FALSE;
+    if ($state !== NULL) {
+      // @todo Find a better way to determine if the replication failed.
+      $is_replication_failed = TRUE;
+      $workspace->moderation_state->target_id = $state;
+      $workspace->save();
+    }
+
     $info = ['%info' => $workspace->label()];
     $context = array('@type' => $workspace->bundle(), '%info' => $workspace->label());
     $logger = $this->logger('workspace');
 
-    if ($insert) {
-      $logger->notice('@type: added %info.', $context);
-      drupal_set_message($this->t('Workspace %info has been created.', $info));
+    // @todo Find a way to consolidate these messages with the ones the
+    // WorkbenchModerationSubscriber generates.
+    if ($is_new) {
+      if (!$workspace->id()) {
+        $logger->warning('@type: failed to add %info.', $context);
+        drupal_set_message($this->t('The workspace could not be saved.'), 'error');
+      } else {
+        $logger->notice('@type: added %info.', $context);
+        drupal_set_message($this->t('Workspace %info has been created.', $info));
+      }
     }
     else {
       $logger->notice('@type: updated %info.', $context);
       drupal_set_message($this->t('Workspace %info has been updated.', $info));
     }
 
-    if ($workspace->id()) {
+    // Direct the user to their next step.
+    if (!$is_replication_failed && $workspace->id()) {
       $form_state->setValue('id', $workspace->id());
       $form_state->set('id', $workspace->id());
       $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
       $form_state->setRedirectUrl($redirect);
     }
     else {
-      drupal_set_message($this->t('The workspace could not be saved.'), 'error');
       $form_state->setRebuild();
     }
   }

@@ -48,11 +48,46 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *   The transition event that just fired.
    */
   public function onTransition(WorkbenchModerationTransitionEvent $event) {
+    /* @var WorkspaceInterface $entity */
     $entity = $event->getEntity();
 
     if ($entity->getEntityTypeId() == 'workspace' && $this->wasDefaultRevision($event)) {
-      /** @var WorkspaceInterface $entity */
-      $this->mergeWorkspaceToParent($entity);
+
+      // If there is no upstream to replicate to, abort.
+      if (!$entity->get('upstream')->entity) {
+        drupal_set_message(t('The :source workspace does not have an upstream to replicate to!', [
+          ':source' => $entity->label(),
+        ]), 'error');
+
+        // @todo Should we revert the workspace to its previous state?
+
+        return;
+      }
+
+      $log = $this->mergeWorkspaceToParent($entity);
+
+      // Display a message to the user on what happened.
+      if ($log->get('ok')->value === TRUE) {
+        drupal_set_message(t('Changes in :source were replicated to :target.', [
+          ':source' => $entity->label(),
+          ':target' => $entity->get('upstream')->entity->label(),
+        ]), 'status');
+      }
+      else {
+        // @todo Where do we get more info about why it failed? Should we add a
+        // description field to the replication log?
+        drupal_set_message(t('Publishing the :source workspace failed!', [
+          ':source' => $entity->label(),
+          ':target' => $entity->get('upstream')->entity->label(),
+        ]), 'error');
+
+        // You cannot revert an entity to a previous moderation state inside a
+        // state transition subscriber. As such, use a runtime state like a static
+        // variable to pass the revert state back to the caller of this
+        // transition, such as the workspace edit form.
+        // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+        drupal_static('workspace_revert_publish_workspace', $event->getStateBefore());
+      }
     }
   }
 
@@ -77,39 +112,21 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace entity to merge.
+   *
+   * @return \Drupal\replication\Entity\ReplicationLog
+   *   The replication log entry.
    */
   protected function mergeWorkspaceToParent(WorkspaceInterface $workspace) {
-    // This may be insufficient for handling a missing parent.
-    /** @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
+    /* @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
     $parent_workspace_pointer = $workspace->get('upstream')->entity;
-    if (!$parent_workspace_pointer) {
-      // @todo Should we silently ignore this, or throw an error, or...?
-      return;
-    }
 
+    /* @var \Drupal\workspace\WorkspacePointerInterface $source_pointer */
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
     // Derive a replication task from the Workspace we are acting on.
     $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
 
-    /** @var \Drupal\replication\Entity\ReplicationLogInterface $log */
-    $log = $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
-
-    // Display a message to the user on what happened.
-    if ($log->get('ok')->value === TRUE) {
-      drupal_set_message(t('Changes in :source were replicated to :target.', [
-        ':source' => $workspace->label(),
-        ':target' => $workspace->get('upstream')->entity->label(),
-      ]), 'status');
-    }
-    else {
-      // @todo Where do we get more info about why it failed? Should we add a
-      // description field to the replication log?
-      drupal_set_message(t('Publishing the :source workspace failed!', [
-        ':source' => $workspace->label(),
-        ':target' => $workspace->get('upstream')->entity->label(),
-      ]), 'error');
-    }
+    return $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
   }
 
   /**
