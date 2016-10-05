@@ -66,28 +66,17 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
       $log = $this->mergeWorkspaceToParent($entity);
 
-      // Display a message to the user on what happened.
-      if ($log->get('ok')->value === TRUE) {
-        drupal_set_message(t('Changes in :source were replicated to :target.', [
-          ':source' => $entity->label(),
-          ':target' => $entity->get('upstream')->entity->label(),
-        ]), 'status');
-      }
-      else {
-        // @todo Where do we get more info about why it failed? Should we add a
-        // description field to the replication log?
-        drupal_set_message(t('Publishing the :source workspace failed!', [
-          ':source' => $entity->label(),
-          ':target' => $entity->get('upstream')->entity->label(),
-        ]), 'error');
+      // Pass the replication status to the logic that triggered the state
+      // change. This allows, for example, the caller to revert back the
+      // Workspace's workflow state.
+      // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+      drupal_static('publish_workspace_replication_status', (bool) $log->get('ok')->value);
 
-        // You cannot revert an entity to a previous moderation state inside a
-        // state transition subscriber. As such, use a runtime state like a static
-        // variable to pass the revert state back to the caller of this
-        // transition, such as the workspace edit form.
-        // @see \Drupal\workspace\Entity\Form\WorkspaceForm
-        drupal_static('workspace_revert_publish_workspace', $event->getStateBefore());
-      }
+      // Set the previous workflow state in case a revert needs to happen.
+      // Note: we would not be able to revert back the Workspace's moderation
+      // state here since the event is triggered within a presave hook.
+      // @todo Find a way to share the replication pass/fail status besides a static.
+      drupal_static('publish_workspace_previous_state', $event->getStateBefore());
     }
   }
 

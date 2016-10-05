@@ -61,7 +61,6 @@ class WorkspaceForm extends ContentEntityForm {
 
     if ($this->operation == 'edit') {
       // Allow the user to not abort on conflicts.
-      // @todo turn conflict management into an abstract pluggable system
       $this->conflictTracker->useWorkspace($workspace);
       $conflicts = $this->conflictTracker->getAll();
       if ($conflicts) {
@@ -155,49 +154,73 @@ class WorkspaceForm extends ContentEntityForm {
     $is_new = $workspace->isNew();
     $workspace->save();
 
-    // If the replication failed, we set a static variable to know that the
-    // moderation state of the Workspace should be reverted back to its previous
-    // state. The value of this variable is the state to revert back to.
-    // @see \Drupal\workspace\EventSubscriber\WorkbenchModerationSubscriber
-    // @todo Avoid using statics.
-    $state = drupal_static('workspace_revert_publish_workspace', NULL);
-    $is_replication_failed = FALSE;
-    if ($state !== NULL) {
-      // @todo Find a better way to determine if the replication failed.
-      $is_replication_failed = TRUE;
-      $workspace->moderation_state->target_id = $state;
-      $workspace->save();
-    }
-
     $info = ['%info' => $workspace->label()];
     $context = array('@type' => $workspace->bundle(), '%info' => $workspace->label());
     $logger = $this->logger('workspace');
 
-    // @todo Find a way to consolidate these messages with the ones the
-    // WorkbenchModerationSubscriber generates.
-    if ($is_new) {
-      if (!$workspace->id()) {
-        $logger->warning('@type: failed to add %info.', $context);
-        drupal_set_message($this->t('The workspace could not be saved.'), 'error');
-      } else {
-        $logger->notice('@type: added %info.', $context);
-        drupal_set_message($this->t('Workspace %info has been created.', $info));
+    // If Workbench Moderation is enabled, a publish of the Workspace should
+    // trigger a replication. We pass back the status of that replication using
+    // a static variable. If replication happened, we want to handle the case
+    // of failed replication, as well as modify the wording of the saved
+    // message.
+    // @see \Drupal\workspace\EventSubscriber\WorkbenchModerationSubscriber
+    // @todo Avoid using statics.
+    $replication_status = drupal_static('publish_workspace_replication_status', NULL);
+    if ($replication_status !== NULL) {
+      $logger->notice('@type: updated %info.', $context);
+
+      if ($replication_status == TRUE) {
+        // The replication succeeded, in addition to saving the workspace.
+        drupal_set_message($this->t('Workspace :source has been updated and changes were pushed to :target.', [
+          ':source' => $workspace->label(),
+          ':target' => $workspace->get('upstream')->entity->label(),
+        ]), 'status');
+
+        $form_state->setValue('id', $workspace->id());
+        $form_state->set('id', $workspace->id());
+        $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
+        $form_state->setRedirectUrl($redirect);
+      }
+      else {
+        // The replication failed, even though the Workspace was updated.
+        $previous_workflow_state = drupal_static('publish_workspace_previous_state', NULL);
+
+        // This variable should always be set, else there is an issue with
+        // the trigger logic.
+        if ($previous_workflow_state == NULL) {
+          throw new \Exception('The publish_workspace_replication_status should be set.');
+        }
+
+        // Revert the workspace back to its previous moderation state.
+        $workspace->moderation_state->target_id = $previous_workflow_state;
+        $workspace->save();
+
+        // Show the form again.
+        $form_state->setRebuild();
       }
     }
     else {
-      $logger->notice('@type: updated %info.', $context);
-      drupal_set_message($this->t('Workspace %info has been updated.', $info));
-    }
+      // Assume a replication did not happen OR that Workbench Moderation is not
+      // installed.
+      if ($is_new) {
+        $logger->notice('@type: added %info.', $context);
+        drupal_set_message($this->t('Workspace %info has been created.', $info));
+      }
+      else {
+        $logger->notice('@type: updated %info.', $context);
+        drupal_set_message($this->t('Workspace %info has been updated.', $info));
+      }
 
-    // Direct the user to their next step.
-    if (!$is_replication_failed && $workspace->id()) {
-      $form_state->setValue('id', $workspace->id());
-      $form_state->set('id', $workspace->id());
-      $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
-      $form_state->setRedirectUrl($redirect);
-    }
-    else {
-      $form_state->setRebuild();
+      if ($workspace->id()) {
+        $form_state->setValue('id', $workspace->id());
+        $form_state->set('id', $workspace->id());
+        $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
+        $form_state->setRedirectUrl($redirect);
+      }
+      else {
+        drupal_set_message($this->t('The workspace could not be saved.'), 'error');
+        $form_state->setRebuild();
+      }
     }
   }
 
