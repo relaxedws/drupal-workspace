@@ -4,7 +4,6 @@ namespace Drupal\workspace\Controller\Component;
 
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -17,8 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * A list builder for entity revision conflicts.
  *
- * @todo Is "Component" the correct place to put this class?
- * @todo Should we implement EntityListBuilderInterface? We don't need the getStorage method though.
+ * Note: this class does not implement EntityListBuilderInterface because we
+ * don't need the getStorage. We aren't showing just one entity type here, so we
+ * need the storage for each revision.
  */
 class ConflictListBuilder {
   use StringTranslationTrait;
@@ -76,7 +76,6 @@ class ConflictListBuilder {
    *   The header array used by table render arrays.
    */
   public function buildHeader() {
-    // Enable language column and filter if multiple languages are added.
     $header = array(
       'title' => $this->t('Title'),
       'type' => array(
@@ -93,28 +92,13 @@ class ConflictListBuilder {
         'class' => array(RESPONSIVE_PRIORITY_LOW),
       ),
     );
-    if (\Drupal::languageManager()->isMultilingual()) {
-      $header['language_name'] = array(
-        'data' => $this->t('Language'),
-        'class' => array(RESPONSIVE_PRIORITY_LOW),
-      );
-    }
-
-    $header['operations'] = $this->t('Operations');
-
     return $header;
   }
 
   /**
    * Build a row for the given entity.
    *
-   * @todo Should we use "mark" to show new vs old conflicts?
    * @todo Handle translations.
-   * @todo Handle 'Status' column for non-publishable entities
-   * @todo handle the case where the entity URI is on a different workspace
-   *   than active (currently goes to a 404)
-   * @todo Is there a better way to show entity type than "bundle"? @see node_get_type_label
-   * @todo Properly handle "author" column for non-owned entities.
    *
    * @see \Drupal\node\NodeListBuilder::buildRow
    *
@@ -125,16 +109,8 @@ class ConflictListBuilder {
    *   A row render array used by a table render array.
    */
   public function buildRow(EntityInterface $entity) {
-    // $langcode = $entity->language()->getId();
-    $uri = $entity->urlInfo();
-    $options = $uri->getOptions();
-    // $options += ($langcode != LanguageInterface::LANGCODE_NOT_SPECIFIED && isset($languages[$langcode]) ? ['language' => $languages[$langcode]] : []);
-    $uri->setOptions($options);
-    $row['title']['data'] = [
-      '#type' => 'link',
-      '#title' => $entity->label(),
-      '#url' => $uri,
-    ];
+    $row['title'] = $entity->label();
+    // @todo Is there a way to get the human readable name for the bundle?
     $row['type'] = $entity->bundle();
     if ($entity instanceof Node) {
       $row['author']['data'] = [
@@ -143,42 +119,18 @@ class ConflictListBuilder {
       ];
     }
     else {
-      $row['author']['data'] = [
-        '#markup' => $this->t('None'),
-      ];
+      // @todo Figure out how to handle other entities that have a "uid" entity key.
+      $row['author'] = $this->t('None');
     }
     if ($entity instanceof Node) {
       $row['status'] = $entity->isPublished() ? $this->t('published') : $this->t('not published');
     }
     else {
-      $row['status'] = 'published';
+      // @todo Figure out how to handle other entities that have a "status" entity key.
+      $row['status'] = $this->t('published');
     }
     $row['changed'] = $this->dateFormatter->format($entity->getChangedTime(), 'short');
-    $language_manager = \Drupal::languageManager();
-    if ($language_manager->isMultilingual()) {
-      // $row['language_name'] = $language_manager->getLanguageName($langcode);
-    }
-    $row['operations']['data'] = $this->buildOperations($entity);
     return $row;
-  }
-
-  /**
-   * Build the operations for an entity uesd in the Operations column.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to build the render array of operations for.
-   *
-   * @return array
-   *   A row render array used by a table render array.
-   */
-  public function buildOperations(EntityInterface $entity) {
-    $build = array(
-      '#type' => 'operations',
-      // @todo Get the operation links for a given entity.
-      '#links' => [],
-    );
-
-    return $build;
   }
 
   /**
@@ -243,13 +195,6 @@ class ConflictListBuilder {
       '#title' => $this->getTitle(),
       '#rows' => array(),
       '#empty' => 'There are no conflicts.',
-      /*
-      @todo cache this beast
-      '#cache' => [
-        'contexts' => $this->entityType->getListCacheContexts(),
-        'tags' => $this->entityType->getListCacheTags(),
-      ],
-      */
     );
     $entities = $this->load($workspace_id);
     foreach ($entities as $entity) {
