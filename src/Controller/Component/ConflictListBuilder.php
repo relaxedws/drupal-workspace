@@ -10,7 +10,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\multiversion\Entity\Index\EntityIndexInterface;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
-use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -109,27 +108,35 @@ class ConflictListBuilder {
    *   A row render array used by a table render array.
    */
   public function buildRow(EntityInterface $entity) {
+    $entity_type = $entity->getEntityType();
+
     $row['title'] = $entity->label();
+
     // @todo Is there a way to get the human readable name for the bundle?
     $row['type'] = $entity->bundle();
-    if ($entity instanceof Node) {
+
+    $uid_key = $entity_type->getKey('uid');
+    if ($uid_key) {
       $row['author']['data'] = [
         '#theme' => 'username',
-        '#account' => $entity->getOwner(),
+        '#account' => $entity->get($uid_key)->entity,
       ];
     }
     else {
-      // @todo Figure out how to handle other entities that have a "uid" entity key.
       $row['author'] = $this->t('None');
     }
-    if ($entity instanceof Node) {
-      $row['status'] = $entity->isPublished() ? $this->t('published') : $this->t('not published');
+
+    $status_key = $entity_type->getKey('status');
+    if ($status_key) {
+      $row['status'] = $entity->get($status_key)->value ? $this->t('published') : $this->t('not published');
     }
     else {
-      // @todo Figure out how to handle other entities that have a "status" entity key.
       $row['status'] = $this->t('published');
     }
+
+    // @todo Is there an entity key for changed time?
     $row['changed'] = $this->dateFormatter->format($entity->getChangedTime(), 'short');
+
     return $row;
   }
 
