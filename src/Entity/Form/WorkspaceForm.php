@@ -65,10 +65,11 @@ class WorkspaceForm extends ContentEntityForm {
       $conflicts = $this->conflictTracker->getAll();
       if ($conflicts) {
         $form['message'] = $this->generateMessageRenderArray('error', $this->t(
-          'There are @count conflicts. The replication logic has arbitrarily chosen the entity revision that should be used and it may not have been the one you desired. Proceeding with replication will push these conflicts upstream, which may cause a loss of data. See the full list of conflicts <a href=":link">here</a>.',
+          'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with caution.',
           [
             '@count' => count($conflicts),
             ':link' => \Drupal::url('entity.workspace.conflicts', ['workspace' => $workspace->id()]),
+            ':target' => $workspace->get('upstream')->entity->label(),
           ]
         ));
         $form['is_aborted_on_conflict'] = [
@@ -187,7 +188,7 @@ class WorkspaceForm extends ContentEntityForm {
 
         // This variable should always be set, else there is an issue with
         // the trigger logic.
-        if ($previous_workflow_state == NULL) {
+        if ($previous_workflow_state === NULL) {
           throw new \Exception('The publish_workspace_replication_status should be set.');
         }
 
