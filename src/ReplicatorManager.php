@@ -9,6 +9,7 @@ use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides the Replicator manager.
@@ -30,13 +31,23 @@ class ReplicatorManager implements ReplicatorInterface {
   protected $conflictTracker;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * The injected service to track conflicts during replication.
    *
    * @param ConflictTrackerInterface $conflict_tracker
    *   The confict tracking service.
+   * @param EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher.
    */
-  public function __construct(ConflictTrackerInterface $conflict_tracker) {
+  public function __construct(ConflictTrackerInterface $conflict_tracker, EventDispatcherInterface $event_dispatcher) {
     $this->conflictTracker = $conflict_tracker;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -169,7 +180,30 @@ class ReplicatorManager implements ReplicatorInterface {
   protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
-        return $replicator->replicate($source, $target, $task);
+        // @TODO: Get rid of this meta-programming once #2814055 lands in
+        // Replication.
+        $events_class = '\Drupal\replication\Events\ReplicationEvents';
+        $event_class = '\Drupal\replication\Event\ReplicationEvent';
+
+        if (class_exists($events_class) && class_exists($event_class)) {
+          $event = new $event_class($source->getWorkspace(), $target->getWorkspace());
+        }
+
+        // Dispatch the pre-replication event, if the event object exists.
+        if (isset($event)) {
+          $this->eventDispatcher->dispatch($events_class::PRE_REPLICATION, $event);
+        }
+
+        // Do the mysterious dance of replication...
+        $log = $replicator->replicate($source, $target, $task);
+
+        // ...and dispatch the post-replication event, if the event object
+        // exists.
+        if (isset($event)) {
+          $this->eventDispatcher->dispatch($events_class::POST_REPLICATION, $event);
+        }
+
+        return $log;
       }
     }
 

@@ -1,7 +1,7 @@
 services:
   workspace.replicator_manager:
     class: Drupal\workspace\ReplicatorManager
-    arguments: ['@workspace.conflict_tracker']
+    arguments: ['@workspace.conflict_tracker', '@event_dispatcher']
     tags:
       - { name: service_collector, tag: workspace_replicator, call: addReplicator}
   workspace.internal_replicator:
