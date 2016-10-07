@@ -4,7 +4,6 @@ namespace Drupal\workspace\Entity\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
@@ -33,13 +32,10 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * Constructs a ContentEntityForm object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
    * @param ConflictTrackerInterface $conflict_tracker
    *   The confict tracking service.
    */
-  public function __construct(EntityManagerInterface $entity_manager, ConflictTrackerInterface $conflict_tracker) {
-    $this->entityManager = $entity_manager;
+  public function __construct(ConflictTrackerInterface $conflict_tracker) {
     $this->conflictTracker = $conflict_tracker;
   }
 
@@ -48,7 +44,6 @@ class WorkspaceForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
       $container->get('workspace.conflict_tracker')
     );
   }
@@ -68,7 +63,7 @@ class WorkspaceForm extends ContentEntityForm {
           'There are <a href=":link">@count conflict(s) with the :target workspace</a>. Pushing changes to :target may result in unexpected behavior or data loss, and cannot be undone. Please proceed with caution.',
           [
             '@count' => count($conflicts),
-            ':link' => \Drupal::url('entity.workspace.conflicts', ['workspace' => $workspace->id()]),
+            ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $workspace->id()])->toString(),
             ':target' => $workspace->get('upstream')->entity->label(),
           ]
         ));
@@ -232,6 +227,9 @@ class WorkspaceForm extends ContentEntityForm {
    *   The type of message: status, warning, or error.
    * @param string $message
    *   The message to create with.
+   *
+   * @return array
+   *   The render array for a status message.
    *
    * @see \Drupal\Core\Render\Element\StatusMessages
    */

@@ -203,10 +203,9 @@ class ConflictListBuilder {
       '#rows' => array(),
       '#empty' => 'There are no conflicts.',
     );
+
     $entities = $this->load($workspace_id);
     foreach ($entities as $entity) {
-      $row = $this->buildRow($entity);
-
       if ($row = $this->buildRow($entity)) {
         $build['table']['#rows'][$entity->id()] = $row;
       }
