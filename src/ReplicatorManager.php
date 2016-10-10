@@ -73,10 +73,13 @@ class ReplicatorManager implements ReplicatorInterface {
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     // It is assumed a caller of replicate will set this static variable to
     // FALSE if they wish to proceed with replicating content upstream even in
-    // the presence of conflicts.
+    // the presence of conflicts. If the caller wants to make sure no conflicts
+    // are replicated to the upstream, set this value to TRUE.
+    // By default, the value is FALSE so as not to break the previous
+    // behavior.
     // @todo Use a sequence index instead of boolean? This will allow the
     // caller to know there haven't been additional conflicts.
-    $is_aborted_on_conflict = drupal_static('workspace_is_aborted_on_conflict', TRUE);
+    $is_aborted_on_conflict = drupal_static('workspace_is_aborted_on_conflict', FALSE);
 
     // Abort updating the Workspace if there are conflicts.
     $initial_conflicts = $this->conflictTracker->useWorkspace($source->getWorkspace())->getAll();

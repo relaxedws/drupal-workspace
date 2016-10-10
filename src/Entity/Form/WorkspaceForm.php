@@ -143,6 +143,7 @@ class WorkspaceForm extends ContentEntityForm {
   public function save(array $form, FormStateInterface $form_state) {
     // Pass the abort flag to the ReplicationManager using runtime-only state,
     // i.e. a static.
+    // @see \Drupal\workspace\ReplicatorManager
     $is_aborted_on_conflict = !$form_state->hasValue('is_aborted_on_conflict') || $form_state->getValue('is_aborted_on_conflict') === 'true';
     drupal_static('workspace_is_aborted_on_conflict', $is_aborted_on_conflict);
 
