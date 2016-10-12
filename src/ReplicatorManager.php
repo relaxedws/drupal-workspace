@@ -185,7 +185,7 @@ class ReplicatorManager implements ReplicatorInterface {
       if ($replicator->applies($source, $target)) {
         // @TODO: Get rid of this meta-programming once #2814055 lands in
         // Replication.
-        $events_class = '\Drupal\replication\Events\ReplicationEvents';
+        $events_class = '\Drupal\replication\Event\ReplicationEvents';
         $event_class = '\Drupal\replication\Event\ReplicationEvent';
 
         if (class_exists($events_class) && class_exists($event_class)) {
