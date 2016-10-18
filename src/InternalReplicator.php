@@ -86,7 +86,7 @@ class InternalReplicator implements ReplicatorInterface {
    * {@inheritdoc}
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
-    if (!$task !== NULL && !$task instanceof ReplicationTaskInterface) {
+    if ($task !== NULL && !$task instanceof ReplicationTaskInterface) {
       throw new UnexpectedTypeException($task, 'ReplicationTaskInterface');
     }
     
