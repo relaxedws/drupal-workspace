@@ -14,7 +14,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * The workspace content entity.
    *
-   * @var \Drupal\multiversion\Entity\WorkspaceInterface
+   * @var \Drupal\workspace\Entity\WorkspaceInterface
    */
   protected $entity;
 
@@ -42,7 +42,7 @@ class WorkspaceForm extends ContentEntityForm {
       '#maxlength' => 255,
       '#default_value' => $workspace->get('machine_name')->value,
       '#machine_name' => array(
-        'exists' => '\Drupal\multiversion\Entity\Workspace::load',
+        'exists' => '\Drupal\workspace\Entity\Workspace::load',
       ),
       '#element_validate' => array(),
     );

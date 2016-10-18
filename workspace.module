@@ -7,7 +7,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
  * Implements hook_entity_type_alter().
@@ -17,43 +17,16 @@ function workspace_entity_type_alter(array &$entity_types) {
 }
 
 /**
- * Implements hook_entity_type_build().
- */
-function workspace_entity_type_build(array &$entity_types) {
-  \Drupal::service('workspace.entity_type_info')->entityTypeBuild($entity_types);
-}
-
-/**
- * Implements hook_entity_base_field_info().
- */
-function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
-  return \Drupal::service('workspace.entity_type_info')->entityBaseFieldInfo($entity_type);
-}
-
-/**
  * Default value callback for 'upstream' base field definition.
  *
  * @return array
  */
 function workspace_active_id() {
-  /** @var \Drupal\multiversion\Entity\Workspace $active_workspace */
+  /** @var \Drupal\workspace\Entity\Workspace $active_workspace */
   $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
   if ($active_workspace instanceof WorkspaceInterface) {
     return [$active_workspace->id()];
   }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_insert()
- *
- * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
- */
-function workspace_workspace_insert(WorkspaceInterface $workspace) {
-  \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
-}
-
-function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
-  return \Drupal\workspace\Entity\Replication::getPointerAllowedValues($definition, $entity, $cacheable);
 }
 
 /**
@@ -132,7 +105,7 @@ function workspace_preprocess_workspace_rev(&$variables) {
   $uuid = $variables['elements']['#uuid'];
   $rev = $variables['elements']['#rev'];
   $rev_info = array_merge(
-    \Drupal::service('multiversion.entity_index.rev')->get("$uuid:$rev"),
+    \Drupal::service('workspace.entity_index.rev')->get("$uuid:$rev"),
     $variables['elements']['#rev_info']
   );
 

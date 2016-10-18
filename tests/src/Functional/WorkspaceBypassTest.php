@@ -20,7 +20,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     placeBlock as drupalPlaceBlock;
   }
 
-  public static $modules = ['node', 'user', 'block', 'workspace', 'multiversion'];
+  public static $modules = ['node', 'user', 'block', 'workspace', 'workspace'];
 
   /**
    * Verifies that a user can edit anything in a workspace with a specific perm.

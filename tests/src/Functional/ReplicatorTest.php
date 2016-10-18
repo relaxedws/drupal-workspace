@@ -23,7 +23,7 @@ class ReplicatorTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['system', 'node', 'user', 'block', 'workspace', 'multiversion', 'taxonomy', 'entity_reference', 'field', 'field_ui', 'menu_link_content', 'menu_ui'];
+  public static $modules = ['system', 'node', 'user', 'block', 'workspace', 'workspace', 'taxonomy', 'entity_reference', 'field', 'field_ui', 'menu_link_content', 'menu_ui'];
 
   /**
    * Verifies that a user can edit anything in a workspace with a specific perm.

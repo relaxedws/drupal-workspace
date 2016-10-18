@@ -15,7 +15,7 @@ use Drupal\Tests\workspace\Functional\WorkspaceTestUtilities;
 class EntityTypeAlterTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
-  public static $modules = ['node', 'user', 'workspace', 'multiversion'];
+  public static $modules = ['node', 'user', 'workspace', 'workspace'];
 
   public function testEntityTypeAlter() {
     $entity_types = \Drupal::service('entity_type.manager')->getDefinitions();
@@ -45,7 +45,7 @@ class EntityTypeAlterTest extends BrowserTestBase {
     $this->assertTrue($workspace->get('field_ui_base_route') !== null);
 
     foreach ($entity_types as $entity_type) {
-      if (\Drupal::service('multiversion.manager')->isSupportedEntityType($entity_type)) {
+      if (\Drupal::service('workspace.manager')->isSupportedEntityType($entity_type)) {
         if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
           $this->assertTrue($entity_type->getLinkTemplate('version-tree') !== null);
           $this->assertTrue($entity_type->getLinkTemplate('revision') !== null);

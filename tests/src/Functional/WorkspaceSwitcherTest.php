@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\multiversion\Entity\Workspace;
+use Drupal\workspace\Entity\Workspace;
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\simpletest\WebTestBase;

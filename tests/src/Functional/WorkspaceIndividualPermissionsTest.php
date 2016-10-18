@@ -20,7 +20,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['workspace', 'multiversion'];
+  public static $modules = ['workspace', 'workspace'];
 
   /**
    * Verifies that a user can create and edit only their own workspace.

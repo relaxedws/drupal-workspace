@@ -8,8 +8,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Form\WorkspaceSwitcherForm;
 
 /**
@@ -24,7 +23,7 @@ class Toolbar {
   protected $entityTypeManager;
 
   /**
-   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   * @var \Drupal\workspace\\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
@@ -43,7 +42,7 @@ class Toolbar {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder service.
@@ -113,41 +112,6 @@ class Toolbar {
         'class' => ['toolbar-menu'],
       ],
     ];
-
-    $user = \Drupal::currentUser();
-    $update_access = $user->hasPermission('update any workspace from upstream');
-    $has_upstream = isset($active->upstream) && !$active->upstream->isEmpty();
-    if ($update_access && $has_upstream) {
-      $items['workspace_update'] = [
-        '#type' => 'toolbar_item',
-        '#weight' => 124,
-        'tab' => [
-          '#type' => 'link',
-          '#title' => t('Update'),
-          '#url' => Url::fromRoute('workspace.update.form'),
-          '#attributes' => [
-            'title' => t('Update current workspace from upstream'),
-            'class' => [
-              'toolbar-icon',
-              'toolbar-icon-workspace-update',
-              'use-ajax'
-            ],
-            'data-dialog-type' => 'modal',
-            'data-dialog-options' => json_encode([
-              'width' => '50%',
-            ])
-          ],
-        ],
-        '#wrapper_attributes' => [
-          'class' => ['workspace-update-toolbar-tab'],
-        ],
-        '#attached' => [
-          'library' => [
-            'workspace/drupal.workspace.toolbar',
-          ],
-        ],
-      ];
-    }
 
     return $items;
   }

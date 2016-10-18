@@ -3,7 +3,7 @@
 namespace Drupal\workspace\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
  * Handle activation of a workspace on administrative pages.

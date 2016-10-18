@@ -3,7 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\simpletest\BrowserTestBase;
 
 
@@ -18,7 +18,7 @@ use Drupal\simpletest\BrowserTestBase;
 class WorkspacePermissionsTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
-  public static $modules = ['workspace', 'multiversion'];
+  public static $modules = ['workspace', 'workspace'];
 
   /**
    * Verifies that a user can create but not edit a workspace.

@@ -4,9 +4,9 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\Index\RevisionIndexInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class InternalReplicator implements ReplicatorInterface {
 
   /**
-   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   * @var \Drupal\workspace\Workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 

@@ -1,6 +1,6 @@
 <?php
 
-use Drupal\multiversion\Entity\Workspace;
+use Drupal\workspace\Entity\Workspace;
 
 /**
  * Implementation of hook_install().
@@ -15,7 +15,7 @@ function workspace_install() {
   }
 
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-  /** @var \Drupal\multiversion\Entity\WorkspaceInterface $stage */
+  /** @var \Drupal\workspace\Entity\WorkspaceInterface $stage */
   $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage', 'type' => 'basic']);
   $stage->set('upstream', $default_workspace_id);
   $stage->save();

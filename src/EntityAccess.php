@@ -7,8 +7,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
  * Service wrapper for hooks relating to entity access control.
@@ -29,7 +29,7 @@ class EntityAccess {
   protected $entityTypeManager;
 
   /**
-   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
@@ -193,7 +193,7 @@ class EntityAccess {
   /**
    * Derives the view permission for a specific workspace.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    * @return array
    *   A single-item array with the permission to define.
@@ -210,7 +210,7 @@ class EntityAccess {
   /**
    * Derives the edit permission for a specific workspace.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    * @return array
    *   A single-item array with the permission to define.
@@ -227,7 +227,7 @@ class EntityAccess {
   /**
    * Derives the delete permission for a specific workspace.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    * @return array
    *   A single-item array with the permission to define.
@@ -244,7 +244,7 @@ class EntityAccess {
   /**
    * Derives the delete permission for a specific workspace.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    * @return array
    *   A single-item array with the permission to define.

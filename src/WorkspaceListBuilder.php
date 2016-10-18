@@ -6,15 +6,14 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\multiversion\Entity\WorkspaceTypeInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines a class to build a listing of workspace entities.
  *
- * @see \Drupal\multiversion\Entity\Workspace
+ * @see \Drupal\workspace\Entity\Workspace
  */
 class WorkspaceListBuilder extends EntityListBuilder {
 
@@ -36,7 +35,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspace\Workspace\WorkspaceManagerInterface $workspace_manager
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager) {
     parent::__construct($entity_type, $storage);

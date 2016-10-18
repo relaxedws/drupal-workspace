@@ -4,9 +4,9 @@ namespace Drupal\workspace\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
-use Drupal\multiversion\Entity\Workspace;
-use Drupal\multiversion\Entity\WorkspaceType;
-use Drupal\multiversion\Entity\WorkspaceTypeInterface;
+use Drupal\workspace\Entity\Workspace;
+use Drupal\workspace\Entity\WorkspaceType;
+use Drupal\workspace\Entity\WorkspaceTypeInterface;
 
 class WorkspaceController extends ControllerBase {
 
@@ -19,7 +19,7 @@ class WorkspaceController extends ControllerBase {
     if (count($types) === 0) {
       return array(
         '#markup' => $this->t('You have not created any Workspace types yet. Go to the <a href=":url">Workspace type creation page</a> to add a new Workspace type.', [
-          ':url' => Url::fromRoute('entity.workspace_type.add')->toString(),
+          ':url' => Url::fromRoute('entity.workspace_type.add_form')->toString(),
         ]),
       );
     }

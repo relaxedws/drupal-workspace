@@ -31,7 +31,7 @@ class WorkspaceTypeForm extends BundleEntityFormBase {
       '#type' => 'machine_name',
       '#default_value' => $workspace_type->id(),
       '#machine_name' => array(
-        'exists' => '\Drupal\multiversion\Entity\WorkspaceType::load',
+        'exists' => '\Drupal\workspace\Entity\WorkspaceType::load',
       ),
       '#disabled' => !$workspace_type->isNew(),
     );

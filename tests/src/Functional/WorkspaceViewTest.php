@@ -16,7 +16,7 @@ use Drupal\simpletest\BrowserTestBase;
 class WorkspaceViewTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
-  public static $modules = ['workspace', 'multiversion'];
+  public static $modules = ['workspace', 'workspace'];
 
   /**
    * Verifies that a user can view their own workspace.

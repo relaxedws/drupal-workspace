@@ -3,7 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\node\Entity\NodeType;
 use Drupal\workspace\WorkspacePointerInterface;
 
@@ -151,7 +151,7 @@ trait WorkspaceTestUtilities {
    * @param string $label
    * @param string $bundle
    *
-   * @return \Drupal\multiversion\Entity\WorkspaceInterface
+   * @return \Drupal\workspace\Entity\WorkspaceInterface
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
@@ -175,7 +175,7 @@ trait WorkspaceTestUtilities {
    *
    * @todo Replace this with a common method in the module somewhere.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
    * @return WorkspacePointerInterface
    *   The pointer to the provided workspace.

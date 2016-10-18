@@ -5,7 +5,7 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
  * Provides an interface for defining Workspace pointer entities.
@@ -56,7 +56,7 @@ interface WorkspacePointerInterface extends ContentEntityInterface, EntityChange
   /**
    * Sets the Workspace this pointer references.
    *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *
    * @return $this
    *   The called Workspace pointer entity.
@@ -66,7 +66,7 @@ interface WorkspacePointerInterface extends ContentEntityInterface, EntityChange
   /**
    * Returns the referenced workspace entity.
    *
-   * @return \Drupal\multiversion\Entity\WorkspaceInterface
+   * @return \Drupal\workspace\Entity\WorkspaceInterface
    *   The workspace entity.
    */
   public function getWorkspace();

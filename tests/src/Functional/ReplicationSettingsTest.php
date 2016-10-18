@@ -35,7 +35,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
     'block',
     'block_content',
     'workspace',
-    'multiversion',
+    'workspace',
     'entity_reference',
   ];
 
