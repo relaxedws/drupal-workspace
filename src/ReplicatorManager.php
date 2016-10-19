@@ -9,6 +9,7 @@ use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Provides the Replicator manager.
@@ -59,7 +60,7 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
     // @todo use $initial_conflicts in a conflict management workflow
     $initial_conflicts = $this->conflictTracker->getAll();
 
@@ -130,13 +131,13 @@ class ReplicatorManager implements ReplicatorInterface {
    *   The workspace to replicate to.
    * @param \Drupal\workspace\WorkspacePointerInterface $source
    *   The workspace to replicate from.
-   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface $task
+   * @param mixed $task
    *   Optional information that defines the replication task to perform.
    *
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, ReplicationTaskInterface $task = NULL) {
+  public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, $task = NULL) {
     return $this->doReplication($target, $source, $task);
   }
 
@@ -147,20 +148,20 @@ class ReplicatorManager implements ReplicatorInterface {
    *   The workspace to replicate from.
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
-   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface $task
+   * @param mixed $task
    *   Optional information that defines the replication task to perform.
    *
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+  protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
         return $replicator->replicate($source, $target, $task);
       }
     }
 
-    return $this->failedReplicationLog($source, $target, $task);
+    return $this->failedReplicationLog($source, $target);
   }
 
   /**
@@ -170,13 +171,11 @@ class ReplicatorManager implements ReplicatorInterface {
    *   The workspace to replicate from.
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
-   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface $task
-   *   Optional information that defines the replication task to perform.
    *
    * @return ReplicationLog
    *   The log entry for this replication.
    */
-  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     $time = new \DateTime();
     $history = [
       'start_time' => $time->format('D, d M Y H:i:s e'),
