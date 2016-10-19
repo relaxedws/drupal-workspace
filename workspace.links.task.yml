@@ -15,5 +15,3 @@ entity.workspace_type.edit_form:
   title: 'Edit'
   route_name: entity.workspace_type.edit_form
   base_route: entity.workspace_type.edit_form
-workspace.revisions:
-  deriver: '\Drupal\workspace\Plugin\Derivative\RevisionsLocalTask'

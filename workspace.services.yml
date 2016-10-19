@@ -2,16 +2,9 @@ parameters:
   workspace.default: 1
 
 services:
-  workspace.entity_type_info:
-    class: Drupal\workspace\EntityTypeInfo
   workspace.toolbar:
     class: Drupal\workspace\Toolbar
     arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder', '@current_user']
-  workspace.route_subscriber:
-    class: Drupal\workspace\Routing\RouteSubscriber
-    arguments: ['@entity.manager']
-    tags:
-      - { name: event_subscriber }
   workspace.paramconverter.entity_revision:
     class: Drupal\workspace\ParamConverter\EntityRevisionConverter
     arguments: ['@entity.manager']

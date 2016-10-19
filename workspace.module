@@ -2,18 +2,40 @@
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
- * Implements hook_entity_type_alter().
+ * Implements hook_entity_base_field_info().
  */
-function workspace_entity_type_alter(array &$entity_types) {
-  \Drupal::service('workspace.entity_type_info')->entityTypeAlter($entity_types);
+function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->isRevisionable()) {
+    $fields['workspace'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Workspace'))
+      ->setDescription(t('The Workspace of this piece of content.'))
+      ->setComputed(TRUE)
+      ->setClass(WorkspaceFieldItemList::class)
+      ->setSetting('target_type', 'workspace')
+      ->setTranslatable(TRUE);
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function workspace_entity_insert(EntityInterface $entity) {
+
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function workspace_entity_update(EntityInterface $entity) {
+
 }
 
 /**
