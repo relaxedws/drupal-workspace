@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\simpletest\BrowserTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests permission controls on workspaces.
@@ -13,7 +13,7 @@ use Drupal\simpletest\BrowserTestBase;
  *
  * @preserveGlobalState disabled
  */
-class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
+class WorkspaceIndividualPermissionsTest extends BrowserTestBase  {
 
   use WorkspaceTestUtilities;
 

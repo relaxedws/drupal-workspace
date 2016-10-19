@@ -1,0 +1,10 @@
+workspace.type.*:
+  type: config_entity
+  label: 'Workspace type'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'

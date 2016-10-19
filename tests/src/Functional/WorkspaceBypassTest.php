@@ -3,8 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
-use Drupal\simpletest\BrowserTestBase;
-use Drupal\workspace\ReplicatorManager;
+use \Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests access bypass permission controls on workspaces.
@@ -43,13 +42,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
-
-    // Replicate all content from the default workspace to Bears.
-    $live = $this->getOneEntityByLabel('workspace', 'Live');
-    /** @var ReplicatorManager $rm */
-    $rm = \Drupal::service('workspace.replicator_manager');
-    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
-
     $this->switchToWorkspace($bears);
 
     // Now create a node in the Bears workspace, as the owner of that workspace.
@@ -120,13 +112,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
-
-    // Replicate all content from the default workspace to Bears.
-    $live = $this->getOneEntityByLabel('workspace', 'Live');
-    /** @var ReplicatorManager $rm */
-    $rm = \Drupal::service('workspace.replicator_manager');
-    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
-
     $this->switchToWorkspace($bears);
 
     // Now create a node in the Bears workspace, as the owner of that workspace.
