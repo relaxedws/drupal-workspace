@@ -40,12 +40,14 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->drupalLogin($ditka);
 
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
+    $this->assertEquals(1, $vanilla_node->workspace->target_id);
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
     $this->switchToWorkspace($bears);
 
     // Now create a node in the Bears workspace, as the owner of that workspace.
     $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
+    $this->assertEquals($bears->id(), $ditka_bears_node->workspace->entity->id());
     $ditka_bears_node_id = $ditka_bears_node->id();
 
     // Create a new user that should be able to edit anything in the Bears workspace.
@@ -66,6 +68,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
 
     $lombardi_bears_node = $this->createNodeThroughUI('Lombardi Bears node', 'test');
+    $this->assertEquals($bears->id(), $lombardi_bears_node->workspace->entity->id());
     $lombardi_bears_node_id = $lombardi_bears_node->id();
 
     $this->drupalLogin($ditka);
@@ -110,12 +113,14 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->drupalLogin($ditka);
 
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
+    $this->assertEquals(1, $vanilla_node->workspace->target_id);
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
     $this->switchToWorkspace($bears);
 
     // Now create a node in the Bears workspace, as the owner of that workspace.
     $ditka_bears_node = $this->createNodeThroughUI('Ditka Bears node', 'test');
+    $this->assertEquals($bears->id(), $ditka_bears_node->workspace->entity->id());
     $ditka_bears_node_id = $ditka_bears_node->id();
 
     // Editing both nodes should be possible.
