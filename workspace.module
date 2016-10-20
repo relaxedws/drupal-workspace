@@ -14,14 +14,14 @@ use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
  * Implements hook_entity_base_field_info().
  */
 function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if ($entity_type->isRevisionable()) {
-    $fields['workspace'] = BaseFieldDefinition::create('entity_reference')
+  if ($entity_type->isRevisionable() && !in_array($entity_type->id(), ['content_workspace', 'workspace'])) {
+    return ['workspace' => BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Workspace'))
       ->setDescription(t('The Workspace of this piece of content.'))
       ->setComputed(TRUE)
       ->setClass(WorkspaceFieldItemList::class)
       ->setSetting('target_type', 'workspace')
-      ->setTranslatable(TRUE);
+      ->setTranslatable(TRUE)];
   }
 }
 
