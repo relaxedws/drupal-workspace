@@ -2,9 +2,12 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\workspace\Entity\ContentWorkspace;
+use Drupal\workspace\Entity\ContentWorkspaceInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -128,6 +131,38 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     }
 
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateOrCreateFromEntity(EntityInterface $entity) {
+    if (!$entity->getEntityType()->isRevisionable() || in_array($entity->getEntityTypeId(), ['content_workspace', 'workspace'])) {
+      return;
+    }
+
+    $content_workspaces = $this->entityManager
+      ->getStorage('content_workspace')
+      ->loadByProperties([
+      'content_entity_type_id' => $entity->getEntityTypeId(),
+      'content_entity_id' => $entity->id(),
+    ]);
+
+    $content_workspace = reset($content_workspaces);
+    if (!$content_workspace instanceof ContentWorkspaceInterface) {
+      $content_workspace = ContentWorkspace::create([
+        'content_entity_type_id' => $entity->getEntityTypeId(),
+        'content_entity_id' => $entity->id()
+      ]);
+    }
+    else {
+      $content_workspace->setNewRevision(TRUE);
+    }
+
+    $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
+    $content_workspace->set('workspace', $this->getActiveWorkspace());
+    ContentWorkspace::updateOrCreateFromEntity($content_workspace);
+
   }
 
   /**

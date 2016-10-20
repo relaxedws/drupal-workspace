@@ -8,6 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -28,14 +29,14 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
  * Implements hook_entity_insert().
  */
 function workspace_entity_insert(EntityInterface $entity) {
-
+  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
 }
 
 /**
  * Implements hook_entity_update().
  */
 function workspace_entity_update(EntityInterface $entity) {
-
+  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
 }
 
 /**

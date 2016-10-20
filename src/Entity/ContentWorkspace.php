@@ -50,7 +50,7 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
       ->setLabel(t('User'))
       ->setDescription(t('The username of the entity creator.'))
       ->setSetting('target_type', 'user')
-      ->setDefaultValueCallback('Drupal\content_moderation\Entity\ContentWorkspace::getCurrentUserId')
+      ->setDefaultValueCallback('Drupal\workspace\Entity\ContentWorkspace::getCurrentUserId')
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 

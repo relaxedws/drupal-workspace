@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 interface WorkspaceManagerInterface {
@@ -44,4 +45,11 @@ interface WorkspaceManagerInterface {
    */
   public function setActiveWorkspace(WorkspaceInterface $workspace);
 
+  /**
+   * Update or create a ContentWorkspace entity from another entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to update or create from.
+   */
+  public function updateOrCreateFromEntity(EntityInterface $entity);
 }
