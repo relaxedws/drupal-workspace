@@ -48,11 +48,35 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *   The transition event that just fired.
    */
   public function onTransition(WorkbenchModerationTransitionEvent $event) {
+    /* @var WorkspaceInterface $entity */
     $entity = $event->getEntity();
 
     if ($entity->getEntityTypeId() == 'workspace' && $this->wasDefaultRevision($event)) {
-      /** @var WorkspaceInterface $entity */
-      $this->mergeWorkspaceToParent($entity);
+
+      // If there is no upstream to replicate to, abort.
+      if (!$entity->get('upstream')->entity) {
+        drupal_set_message(t('The :source workspace does not have an upstream to replicate to!', [
+          ':source' => $entity->label(),
+        ]), 'error');
+
+        // @todo Should we revert the workspace to its previous state?
+
+        return;
+      }
+
+      $log = $this->mergeWorkspaceToParent($entity);
+
+      // Pass the replication status to the logic that triggered the state
+      // change. This allows, for example, the caller to revert back the
+      // Workspace's workflow state.
+      // @see \Drupal\workspace\Entity\Form\WorkspaceForm
+      drupal_static('publish_workspace_replication_status', (bool) $log->get('ok')->value);
+
+      // Set the previous workflow state in case a revert needs to happen.
+      // Note: we would not be able to revert back the Workspace's moderation
+      // state here since the event is triggered within a presave hook.
+      // @todo Find a way to share the replication pass/fail status besides a static.
+      drupal_static('publish_workspace_previous_state', $event->getStateBefore());
     }
   }
 
@@ -77,22 +101,21 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace entity to merge.
+   *
+   * @return \Drupal\replication\Entity\ReplicationLog
+   *   The replication log entry.
    */
   protected function mergeWorkspaceToParent(WorkspaceInterface $workspace) {
-    // This may be insufficient for handling a missing parent.
-    /** @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
+    /* @var \Drupal\workspace\WorkspacePointerInterface $parent_workspace */
     $parent_workspace_pointer = $workspace->get('upstream')->entity;
-    if (!$parent_workspace_pointer) {
-      // @todo Should we silently ignore this, or throw an error, or...?
-      return;
-    }
 
+    /* @var \Drupal\workspace\WorkspacePointerInterface $source_pointer */
     $source_pointer = $this->getPointerToWorkspace($workspace);
 
     // Derive a replication task from the Workspace we are acting on.
     $task = $this->replicatorManager->getTask($workspace, 'push_replication_settings');
 
-    $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
+    return $this->replicatorManager->replicate($source_pointer, $parent_workspace_pointer, $task);
   }
 
   /**
