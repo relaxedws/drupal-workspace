@@ -5,10 +5,25 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Link;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
+
+/**
+ * Implements hook_help().
+ */
+function workspace_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the workspace module.
+    case 'help.page.workspace':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Workspace module allows workspaces to be defined and switched between. Content is then assigned to the active workspace when created. For more information, see the <a href=":workspace">online documentation for the Workspace module</a>.', [':workspace' => 'https://www.drupal.org/node/2824024']) . '</p>';
+      return $output;
+  }
+}
 
 /**
  * Implements hook_entity_base_field_info().
