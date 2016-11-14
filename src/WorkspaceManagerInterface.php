@@ -14,7 +14,7 @@ interface WorkspaceManagerInterface {
   public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority);
 
   /**
-   * @param string $workspace_id
+   * @param int $workspace_id
    */
   public function load($workspace_id);
 

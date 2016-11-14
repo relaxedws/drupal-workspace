@@ -46,7 +46,6 @@ trait WorkspaceTestUtilities {
 
     $property = $etm->getDefinition($type)->getKey('label');
 
-    /** @var WorkspaceInterface $bears */
     $entity_list = $etm->getStorage($type)->loadByProperties([$property => $label]);
 
     $entity = current($entity_list);

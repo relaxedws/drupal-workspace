@@ -41,6 +41,30 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
+ * Implements hook_query_TAG_alter().
+ */
+function workspace_query_entity_query_node_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+  $workspace_manager = \Drupal::service('workspace.manager');
+  $active_workspace = $workspace_manager->getActiveWorkspace();
+  $query->join('content_workspace_field_revision', 'cwfr', 'base_table.nid = cwfr.content_entity_id');
+  $query->condition('cwfr.content_entity_type_id', 'node');
+  $query->condition('cwfr.workspace', $active_workspace->id());
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function workspace_query_node_load_multiple_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+  $workspace_manager = \Drupal::service('workspace.manager');
+  $active_workspace = $workspace_manager->getActiveWorkspace();
+  $query->join('content_workspace_field_revision', 'cwfr', 'base.nid = cwfr.content_entity_id');
+  $query->condition('cwfr.content_entity_type_id', 'node');
+  $query->condition('cwfr.workspace', $active_workspace->id());
+}
+
+/**
  * Implements hook_entity_insert().
  */
 function workspace_entity_insert(EntityInterface $entity) {
@@ -101,7 +125,6 @@ function workspace_workspace_access(EntityInterface $entity, $operation, Account
 function workspace_workspace_create_access(AccountInterface $account, array $context, $entity_bundle) {
   return \Drupal::service('workspace.entity_access')->workspaceCreateAccess($account, $context, $entity_bundle);
 }
-
 
 /**
  * Implements hook_theme().

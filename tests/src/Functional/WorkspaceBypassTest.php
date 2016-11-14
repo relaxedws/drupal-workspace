@@ -19,7 +19,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     placeBlock as drupalPlaceBlock;
   }
 
-  public static $modules = ['node', 'user', 'block', 'workspace', 'workspace'];
+  public static $modules = ['node', 'user', 'block', 'workspace'];
 
   /**
    * Verifies that a user can edit anything in a workspace with a specific perm.
@@ -62,11 +62,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
-    $bears_vanilla_node = $this->getOneEntityByLabel('node', 'Vanilla node');
-    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-
     $lombardi_bears_node = $this->createNodeThroughUI('Lombardi Bears node', 'test');
     $this->assertEquals($bears->id(), $lombardi_bears_node->workspace->entity->id());
     $lombardi_bears_node_id = $lombardi_bears_node->id();
@@ -84,10 +79,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->switchToWorkspace($bears);
 
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
-
-    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
@@ -129,11 +120,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
 
-    $bears_vanilla_node = $this->getOneEntityByLabel('node', 'Vanilla node');
-    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-
     // Create a new user that should be able to edit anything in the Bears workspace.
     $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id()]));
     $this->drupalLogin($lombardi);
@@ -146,9 +132,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
 
-    $this->drupalGet('/node/' . $bears_vanilla_node->id() . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
   }
 
 
