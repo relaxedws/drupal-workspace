@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -43,25 +44,80 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
 /**
  * Implements hook_query_TAG_alter().
  */
-function workspace_query_entity_query_node_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+function workspace_query_entity_query_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  $query->join('content_workspace_field_revision', 'cwfr', 'base_table.nid = cwfr.content_entity_id');
-  $query->condition('cwfr.content_entity_type_id', 'node');
-  $query->condition('cwfr.workspace', $active_workspace->id());
+  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+  if ($active_workspace->id() != $default_workspace_id) {
+    if ($query->getMetaData('entity_type') == 'node') {
+      $query->join('content_workspace_field_revision', 'cwfr', 'base_table.nid = cwfr.content_entity_id');
+      $query->condition('cwfr.content_entity_type_id', 'node');
+      $query->condition('cwfr.workspace', $active_workspace->id());
+    }
+  }
 }
 
 /**
- * Implements hook_query_TAG_alter().
+ * Implements hook_entity_load().
  */
-function workspace_query_node_load_multiple_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
-  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-  $workspace_manager = \Drupal::service('workspace.manager');
-  $active_workspace = $workspace_manager->getActiveWorkspace();
-  $query->join('content_workspace_field_revision', 'cwfr', 'base.nid = cwfr.content_entity_id');
-  $query->condition('cwfr.content_entity_type_id', 'node');
-  $query->condition('cwfr.workspace', $active_workspace->id());
+function workspace_entity_load(array &$entities, $entity_type_id) {
+  if ($entity_type_id == 'node') {
+    /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+    $workspace_manager = \Drupal::service('workspace.manager');
+    $active_workspace = $workspace_manager->getActiveWorkspace();
+    $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+    if ($active_workspace->id() != $default_workspace_id) {
+      $keys = array_keys($entities);
+      $results = \Drupal::entityTypeManager()
+        ->getStorage('content_workspace')
+        ->getQuery()
+        ->allRevisions()
+        ->condition('content_entity_type_id', $entity_type_id)
+        ->condition('content_entity_id', $keys, 'IN')
+        ->condition('workspace', $active_workspace->id())
+        ->execute();
+      foreach ($results as $revision_id => $entity_id) {
+        $content_workspace = \Drupal::entityTypeManager()
+          ->getStorage('content_workspace')
+          ->loadRevision($revision_id);
+        $entity = $entities[$content_workspace->get('content_entity_id')->value];
+        if ($content_workspace->get('content_entity_revision_id')->value != $entity->getRevisionId()) {
+          $new_entity = \Drupal::entityTypeManager()
+            ->getStorage($entity_type_id)
+            ->loadRevision($content_workspace->get('content_entity_revision_id')->value);
+          $entities[$new_entity->getRevisionId()] = $new_entity;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function workspace_element_info_alter(array &$types) {
+  foreach ($types as &$type) {
+    if (!isset($type['#pre_render'])) {
+      $type['#pre_render'] = array();
+    }
+    $type['#pre_render'][] = 'workspace_element_pre_render';
+  }
+}
+
+/**
+ * Element pre-render callback.
+ */
+function workspace_element_pre_render($element) {
+  if (isset($element['#cache'])) {
+    if (!isset($element['#cache']['contexts'])) {
+      $element['#cache']['contexts'] = [];
+    }
+    $element['#cache']['contexts'] = Cache::mergeContexts(
+      $element['#cache']['contexts'], ['workspace']
+    );
+  }
+  return $element;
 }
 
 /**

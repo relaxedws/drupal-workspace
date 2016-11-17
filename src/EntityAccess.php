@@ -67,6 +67,23 @@ class EntityAccess {
       return AccessResult::neutral();
     }
 
+    if ($entity->getEntityType()->isRevisionable()) {
+      $workspace_manager = \Drupal::service('workspace.manager');
+      $active_workspace = $workspace_manager->getActiveWorkspace();
+      $result = \Drupal::entityTypeManager()
+        ->getStorage('content_workspace')
+        ->getQuery()
+        ->allRevisions()
+        ->condition('content_entity_type_id', $entity->getEntityTypeId())
+        ->condition('content_entity_id', $entity->id())
+        ->condition('content_entity_revision_id', $entity->getRevisionId())
+        ->condition('workspace', $active_workspace->id())
+        ->execute();
+      if (empty($result)) {
+        return AccessResult::forbidden();
+      }
+    }
+
     return $this->bypassAccessResult($account);
   }
 
