@@ -8,6 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Implements hook_entity_type_alter().
@@ -149,5 +150,17 @@ function workspace_preprocess_workspace_rev(&$variables) {
   }
   else {
     $variables['title'] = $title;
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function workspace_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.workspace':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The <a href="@link">Workspace module</a> Provides the ability to have multiple workspaces on a single site to facilitate things like full-site preview and content staging.', array('@link' => 'https://www.drupal.org/project/workspace')) . '</p>';
+      return $output;
   }
 }
