@@ -7,9 +7,7 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
-use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Symfony\Component\Console\Exception\LogicException;
-use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**

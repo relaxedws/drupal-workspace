@@ -1,7 +1,6 @@
 <?php
 
 use Drupal\Core\Database\Database;
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Psr\Log\LogLevel;
 
 /**
