@@ -42,11 +42,13 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    * @inheritDoc
    */
   public function label() {
-    if (!empty($this->getWorkspace())) {
-      return $this->getWorkspace()->label();
+    $label = parent::label();
+
+    if (empty($label) && !empty($this->getWorkspace())) {
+      $label = $this->getWorkspace()->label();
     }
 
-    return parent::label();
+    return $label;
   }
 
   /**
