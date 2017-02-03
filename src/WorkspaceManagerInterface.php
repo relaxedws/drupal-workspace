@@ -3,9 +3,27 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
+/**
+ * Interface WorkspaceManagerInterface
+ */
 interface WorkspaceManagerInterface {
+
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *
+   * @return boolean
+   */
+  public function entityCanBelongToWorkspaces(EntityInterface $entity);
+
+  /**
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *
+   * @return boolean
+   */
+  public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type);
 
   /**
    * @param \Drupal\workspace\WorkspaceNegotiatorInterface $negotiator

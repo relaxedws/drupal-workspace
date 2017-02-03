@@ -4,6 +4,8 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\ContentWorkspace;
@@ -13,8 +15,19 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * Provides the workspace manager.
+ */
 class WorkspaceManager implements WorkspaceManagerInterface {
   use StringTranslationTrait;
+
+  /**
+   * @var string[]
+   */
+  protected $blacklist = [
+    'content_workspace',
+    'workspace'
+  ];
 
   /**
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -34,7 +47,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * @var array
    */
-  protected $negotiators = array();
+  protected $negotiators = [];
 
   /**
    * @var array
@@ -58,6 +71,25 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     $this->entityManager = $entity_manager;
     $this->currentUser = $current_user;
     $this->logger = $logger ?: new NullLogger();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCanBelongToWorkspaces(EntityInterface $entity) {
+    return $this->entityTypeCanBelongToWorkspaces($entity->getEntityType());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
+    if (is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
+      && $entity_type->isRevisionable()
+      && !in_array($entity_type->id(), $this->blacklist)) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
@@ -137,32 +169,40 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function updateOrCreateFromEntity(EntityInterface $entity) {
-    if (!$entity->getEntityType()->isRevisionable() || in_array($entity->getEntityTypeId(), ['content_workspace', 'workspace'])) {
+    if (!$this->entityCanBelongToWorkspaces($entity)) {
       return;
     }
 
-    $content_workspaces = $this->entityManager
-      ->getStorage('content_workspace')
-      ->loadByProperties([
-      'content_entity_type_id' => $entity->getEntityTypeId(),
-      'content_entity_id' => $entity->id(),
-    ]);
+    // If the entity is not new there should be a ContentWorkspace entry for it.
+    if (!$entity->isNew()) {
+      $content_workspaces = $this->entityManager
+        ->getStorage('content_workspace')
+        ->loadByProperties([
+          'content_entity_type_id' => $entity->getEntityTypeId(),
+          'content_entity_id' => $entity->id(),
+        ]);
 
-    $content_workspace = reset($content_workspaces);
-    if (!$content_workspace instanceof ContentWorkspaceInterface) {
+      /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
+      $content_workspace = reset($content_workspaces);
+    }
+
+    // If there was a ContentWorkspace entry create a new revision, otherwise
+    // create a new entity with the type and ID.
+    if (!empty($content_workspace) && $content_workspace instanceof ContentWorkspaceInterface) {
+      $content_workspace->setNewRevision(TRUE);
+    }
+    else {
       $content_workspace = ContentWorkspace::create([
         'content_entity_type_id' => $entity->getEntityTypeId(),
         'content_entity_id' => $entity->id()
       ]);
     }
-    else {
-      $content_workspace->setNewRevision(TRUE);
-    }
 
+    // Add the revision ID, workspace, and publishing status.
     $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
     $content_workspace->set('workspace', $this->getActiveWorkspace());
+    $entity->initial_published ? $content_workspace->setPublished() : $content_workspace->setUnpublished();
     ContentWorkspace::updateOrCreateFromEntity($content_workspace);
-
   }
 
   /**

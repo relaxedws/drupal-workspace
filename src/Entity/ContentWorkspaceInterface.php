@@ -3,6 +3,7 @@
 namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -10,6 +11,6 @@ use Drupal\user\EntityOwnerInterface;
  *
  * Content workspace entities track the workspace of other content entities.
  */
-interface ContentWorkspaceInterface extends ContentEntityInterface, EntityOwnerInterface {
+interface ContentWorkspaceInterface extends ContentEntityInterface, EntityOwnerInterface, EntityPublishedInterface {
 
 }

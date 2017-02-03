@@ -3,6 +3,7 @@
 namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\TranslatableInterface;
@@ -35,16 +36,19 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid",
  *     "uid" = "uid",
  *     "langcode" = "langcode",
+ *     "published" = "published",
  *   }
  * )
  */
 class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInterface  {
 
+  use EntityPublishedTrait;
+
   /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
+    $fields = parent::baseFieldDefinitions($entity_type) + self::publishedBaseFieldDefinitions($entity_type);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('User'))
