@@ -156,10 +156,6 @@ class EntityTypeInfo {
       return [];
     }
 
-    if (!$this->multiversionManager->isSupportedEntityType($entity_type)) {
-      return [];
-    }
-
     $fields['upstream'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Assign default target workspace'))
       ->setDescription(t('The workspace to push to and pull from.'))

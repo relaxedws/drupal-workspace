@@ -20,7 +20,7 @@ services:
     arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder', '@current_user']
   workspace.route_subscriber:
     class: Drupal\workspace\Routing\RouteSubscriber
-    arguments: ['@entity.manager']
+    arguments: ['@multiversion.manager']
     tags:
       - { name: event_subscriber }
   workspace.paramconverter.entity_revision:
