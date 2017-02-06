@@ -62,7 +62,7 @@ class RouteSubscriber extends RouteSubscriberBase {
 
         if (($link_template = $entity_type->getLinkTemplate('revision')) && empty($collection->get("entity.$entity_type_id.revision"))) {
           unset($options['_admin_route']);
-          $options['parameters'][$entity_type_id . '_revision'] = [
+          $options['parameters']['entity_revision'] = [
             'type' => 'entity_revision:' . $entity_type_id
           ];
           $route = new Route(
