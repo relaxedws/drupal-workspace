@@ -34,7 +34,6 @@ class ReplicatorTest extends BrowserTestBase {
     'entity_reference',
     'field',
     'field_ui',
-    'field_test',
     'menu_link_content',
     'menu_ui'
   ];

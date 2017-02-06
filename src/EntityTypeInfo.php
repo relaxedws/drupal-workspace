@@ -63,8 +63,8 @@ class EntityTypeInfo {
    *   Just the entities that we care about.
    */
   protected function selectMultiversionedUiEntityTypes(array $entity_types) {
-    return array_filter($entity_types, function (EntityTypeInterface $type) use ($entity_types) {
-      return $this->multiversionManager->isSupportedEntityType($type)
+    return array_filter($entity_types, function (EntityTypeInterface $type) {
+      return $this->multiversionManager->isEnabledEntityType($type)
       && $type->hasViewBuilderClass()
       && $type->hasLinkTemplate('canonical');
     });
@@ -132,7 +132,7 @@ class EntityTypeInfo {
       }
 
       if (!$entity_type->hasLinkTemplate('revision')) {
-        $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
+        $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{entity_revision}/view');
       }
     }
 
