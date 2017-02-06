@@ -50,9 +50,7 @@ class EntityTypeInfo {
    */
   public function entityTypeAlter(array &$entity_types) {
     foreach ($this->selectMultiversionedUiEntityTypes($entity_types) as $type_name => $entity_type) {
-      if ($this->multiversionManager->isSupportedEntityType($entity_type)) {
-        $entity_types[$type_name] = $this->addRevisionLinks($entity_type);
-      }
+      $entity_types[$type_name] = $this->addRevisionLinks($entity_type);
     }
   }
 
@@ -128,8 +126,7 @@ class EntityTypeInfo {
    *   The modified type definition.
    */
   protected function addRevisionLinks(EntityTypeInterface $entity_type) {
-    if ($entity_type->hasLinkTemplate('canonical')
-      && $this->multiversionManager->isSupportedEntityType($entity_type)) {
+    if ($entity_type->hasLinkTemplate('canonical')) {
       if (!$entity_type->hasLinkTemplate('version-tree')) {
         $entity_type->setLinkTemplate('version-tree', $entity_type->getLinkTemplate('canonical') . '/tree');
       }
