@@ -209,6 +209,11 @@ function workspace_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $workspace_manager->updateOrCreateFromEntity($entity);
+  if ($workspace_manager->entityCanBelongToWorkspaces($entity)) {
+    \Drupal::service('workspace.index.sequence')
+      ->useWorkspace($workspace_manager->getActiveWorkspace())
+      ->add($entity);
+  }
 }
 
 /**
@@ -218,6 +223,11 @@ function workspace_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $workspace_manager->updateOrCreateFromEntity($entity);
+  if ($workspace_manager->entityCanBelongToWorkspaces($entity)) {
+    \Drupal::service('workspace.index.sequence')
+      ->useWorkspace($workspace_manager->getActiveWorkspace())
+      ->add($entity);
+  }
 }
 
 /**
