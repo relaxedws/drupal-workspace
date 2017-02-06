@@ -39,7 +39,6 @@ class DatabaseStorageSortedSetTest extends KernelTestBase {
    */
   public function setUp() {
     parent::setUp();
-    $this->installSchema('system', ['key_value_sorted']);
 
     $this->collection = $this->randomMachineName();
     $this->serializer = \Drupal::service('serialization.phpserialize');

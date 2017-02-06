@@ -4,7 +4,8 @@ namespace Drupal\workspace\Changes;
 
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Index\SequenceIndexInterface;
 
 /**
  * {@inheritdoc}
@@ -25,6 +26,11 @@ class Changes implements ChangesInterface {
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\workspace\Index\SequenceIndex
+   */
+  protected $sequenceIndex;
+
+  /**
    * Whether to include entities in the changeset.
    *
    * @var boolean
@@ -39,12 +45,14 @@ class Changes implements ChangesInterface {
   protected $lastSeq = 0;
 
   /**
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Workspace\Index\SequenceIndexInterface
    */
-  public function __construct(WorkspaceInterface $workspace, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(WorkspaceInterface $workspace, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceId = $workspace->id();
     $this->entityTypeManager = $entity_type_manager;
+    $this->sequenceIndex = $sequence_index;
   }
 
   /**
@@ -72,41 +80,29 @@ class Changes implements ChangesInterface {
       ->getRange($this->lastSeq, NULL);
 
     // Format the result array.
-    $changes = array();
+    $changes = [];
     foreach ($sequences as $sequence) {
-      if (!empty($sequence['local']) || !empty($sequence['is_stub'])) {
-        continue;
-      }
-
       // Get the document.
       $revision = NULL;
-      if ($this->includeDocs == TRUE || $filter !== NULL) {
+      if ($this->includeDocs == TRUE) {
         /** @var \Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface $storage */
         $storage = $this->entityTypeManager->getStorage($sequence['entity_type_id']);
         $storage->useWorkspace($this->workspaceId);
         $revision = $storage->loadRevision($sequence['revision_id']);
       }
 
-      // Filter the document.
-      if ($filter !== NULL && !$filter->filter($revision)) {
-        continue;
-      }
-
-      $uuid = $sequence['entity_uuid'];
-      $changes[$uuid] = array(
-        'changes' => array(
-          array('rev' => $sequence['rev']),
-        ),
-        'id' => $uuid,
+      $changes[$sequence['entity_uuid']] = [
+        'changes' => [
+          ['rev' => $sequence['revision_id']],
+        ],
+        'id' => $sequence['entity_id'],
+        'type' => $sequence['entity_type_id'],
         'seq' => $sequence['seq'],
-      );
-      if ($sequence['deleted']) {
-        $changes[$uuid]['deleted'] = TRUE;
-      }
+      ];
 
       // Include the document.
       if ($this->includeDocs == TRUE) {
-        $changes[$uuid]['doc'] = $this->serializer->normalize($revision);
+        $changes[$sequence['entity_uuid']]['doc'] = $revision;
       }
     }
 

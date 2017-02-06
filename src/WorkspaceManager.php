@@ -125,7 +125,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   public function loadMultiple(array $workspace_ids = NULL) {
     return $this->entityTypeManager->getStorage('workspace')->loadMultiple($workspace_ids);
   }
-
+    
   /**
    * {@inheritdoc}
    */

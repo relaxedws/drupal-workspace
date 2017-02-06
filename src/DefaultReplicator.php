@@ -2,12 +2,14 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\workspace\Changes\ChangesFactoryInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
- * Class DefaultReplication
+ * Class DefaultReplicator
  */
-class DefaultReplication {
+class DefaultReplicator {
 
   /**
    * @var WorkspaceManagerInterface
@@ -15,12 +17,26 @@ class DefaultReplication {
   protected $workspaceManager;
 
   /**
+   * @var \Drupal\workspace\Changes\ChangesFactoryInterface
+   */
+  protected $changesFactory;
+
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * DefaultReplication constructor.
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspace\Changes\ChangesFactoryInterface $changes_factory
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager) {
     $this->workspaceManager = $workspace_manager;
+    $this->changesFactory = $changes_factory;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -32,10 +48,41 @@ class DefaultReplication {
     $this->workspaceManager->setActiveWorkspace($source);
 
     // Get changes for the current workspace.
+    $changes = $this->changesFactory->get($source)->getNormal();
+    $rev_diffs = [];
+    foreach ($changes as $change) {
+      $rev_diffs[$change['type']] = [];
+      foreach ($change['changes'] as $change_item) {
+        $rev_diffs[$change['type']][] = $change_item['rev'];
+      }
+    }
 
     // Get revision diff between source and target
+    $content_workspace_ids = [];
+    foreach ($rev_diffs as $entity_type_id => $revs) {
+      $content_workspace_ids[$entity_type_id] = $this->entityTypeManager
+        ->getStorage('content_workspace')
+        ->getQuery()
+        ->allRevisions()
+        ->condition('content_entity_type_id', $entity_type_id)
+        ->condition('content_entity_revision_id', $revs, 'IN')
+        ->condition('workspace', $target->id())
+        ->execute();
+    }
+    foreach ($content_workspace_ids as $entity_type_id => $ids) {
+
+    }
 
     // Load each missing revision
+    foreach ($rev_diffs as $entity_type_id => $revs) {
+      foreach ($revs as $rev) {
+        $entity = $this->entityTypeManager
+          ->getStorage($entity_type_id)
+          ->loadRevision($rev);
+        $entity->workspace->target_id = $target->id();
+        $entity->save();
+      }
+    }
 
     // Save each revision on the target workspace
 
