@@ -45,6 +45,28 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
+ * Implements hook_query_alter().
+ */
+function workspace_query_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+  $workspace_manager = \Drupal::service('workspace.manager');
+  $active_workspace = $workspace_manager->getActiveWorkspace();
+  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+  if ($active_workspace == $default_workspace_id) {
+    return;
+  }
+  foreach ($workspace_manager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
+    if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity_type) && $query->hasTag($entity_type_id . '_load_multiple')) {
+      $entity_type_id = $entity_type->id();
+      $entity_type_id_key = $entity_type->getKey('id');
+      $query->join('content_workspace_field_revision', 'cwfr', 'base.' . $entity_type_id_key . ' = cwfr.content_entity_id');
+      $query->condition('cwfr.content_entity_type_id', $entity_type_id);
+      $query->condition('cwfr.workspace', $active_workspace);
+    }
+  }
+}
+
+/**
  * Implements hook_query_TAG_alter().
  */
 function workspace_query_entity_query_alter(AlterableInterface $query) {
@@ -52,12 +74,17 @@ function workspace_query_entity_query_alter(AlterableInterface $query) {
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-  if ($active_workspace->id() != $default_workspace_id) {
-    if ($query->getMetaData('entity_type') == 'node') {
-      $query->join('content_workspace_field_revision', 'cwfr', 'base_table.nid = cwfr.content_entity_id');
-      $query->condition('cwfr.content_entity_type_id', 'node');
-      $query->condition('cwfr.workspace', $active_workspace->id());
-    }
+  if ($active_workspace == $default_workspace_id) {
+    return;
+  }
+
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($query->getMetaData('entity_type'));
+  if (!empty($entity_type) && $workspace_manager->entityTypeCanBelongToWorkspaces($entity_type)) {
+    $entity_type_id = $entity_type->id();
+    $entity_type_id_key = $entity_type->getKey('id');
+    $query->join('content_workspace_field_revision', 'cwfr', 'base_table.' . $entity_type_id_key . ' = cwfr.content_entity_id');
+    $query->condition('cwfr.content_entity_type_id', $entity_type_id);
+    $query->condition('cwfr.workspace', $active_workspace);
   }
 }
 
@@ -69,7 +96,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-  if ($active_workspace->id() != $default_workspace_id) {
+  if ($active_workspace != $default_workspace_id) {
     $configuration = array(
       'table' => 'content_workspace_field_revision',
       'field' => 'content_entity_id',
@@ -80,7 +107,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
     $join = \Drupal\views\Views::pluginManager('join')
       ->createInstance('standard', $configuration);
     $query->addRelationship('cwrf', $join);
-    $query->addWhere($query->options['group'], 'cwrf.workspace', $active_workspace->id());
+    $query->addWhere($query->options['group'], 'cwrf.workspace', $active_workspace);
   }
 }
 
@@ -94,14 +121,14 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
   if ($workspace_manager->entityTypeCanBelongToWorkspaces(\Drupal::entityTypeManager()->getDefinition($entity_type_id))) {
     $active_workspace = $workspace_manager->getActiveWorkspace();
     $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-    if ($active_workspace->id() != $default_workspace_id) {
+    if ($active_workspace != $default_workspace_id) {
       $keys = array_keys($entities);
       $results = \Drupal::entityTypeManager()
         ->getStorage('content_workspace')
         ->getQuery()
         ->condition('content_entity_type_id', $entity_type_id)
         ->condition('content_entity_id', $keys, 'IN')
-        ->condition('workspace', $active_workspace->id())
+        ->condition('workspace', $active_workspace)
         ->execute();
       foreach ($results as $revision_id => $entity_id) {
         $content_workspace = \Drupal::entityTypeManager()
@@ -157,7 +184,7 @@ function workspace_entity_presave(EntityInterface $entity) {
   // Only modify the entity if the active workspace isn't the default, and
   // and the entity can belong to a workspace.
   if (!empty($workspace_manager->getActiveWorkspace())
-    && \Drupal::getContainer()->getParameter('workspace.default') != $workspace_manager->getActiveWorkspace()->id()
+    && \Drupal::getContainer()->getParameter('workspace.default') != $workspace_manager->getActiveWorkspace()
     && $workspace_manager->entityCanBelongToWorkspaces($entity)) {
 
     // We always want to create a new revision.
@@ -199,11 +226,7 @@ function workspace_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
  * @return array
  */
 function workspace_active_id() {
-  /** @var \Drupal\workspace\Entity\Workspace $active_workspace */
-  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
-  if ($active_workspace instanceof WorkspaceInterface) {
-    return [$active_workspace->id()];
-  }
+  return \Drupal::service('workspace.manager')->getActiveWorkspace();
 }
 
 /**

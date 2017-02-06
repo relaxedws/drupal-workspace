@@ -77,7 +77,7 @@ class EntityAccess {
         ->condition('content_entity_type_id', $entity->getEntityTypeId())
         ->condition('content_entity_id', $entity->id())
         ->condition('content_entity_revision_id', $entity->getRevisionId())
-        ->condition('workspace', $active_workspace->id())
+        ->condition('workspace', $active_workspace)
         ->execute();
       if (empty($result)) {
         return AccessResult::forbidden();
@@ -116,7 +116,7 @@ class EntityAccess {
     // This approach assumes that the current "global" active workspace is
     // correct, ie, if you're "in" a given workspace then you get ALL THE PERMS
     // to ALL THE THINGS! That's why this is a dangerous permission.
-    $active_workspace = $this->workspaceManager->getActiveWorkspace();
+    $active_workspace = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     return AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_workspace_' . $active_workspace->id())
       ->orIf(

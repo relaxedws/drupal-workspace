@@ -19,9 +19,12 @@ services:
       - { name: access_check, applies_to: _workspace_view }
   workspace.manager:
     class: Drupal\workspace\WorkspaceManager
-    arguments: ['@request_stack', '@entity.manager', '@current_user', '@logger.channel.workspace']
+    arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@logger.channel.workspace']
     tags:
       - { name: service_collector, tag: workspace_negotiator, call: addNegotiator }
+  workspace.replicator:
+    class: Drupal\workspace\DefaultReplicator
+    arguments: ['@workspace.manager']
   cache_context.workspace:
     class: Drupal\workspace\WorkspaceCacheContext
     arguments: ['@workspace.manager']

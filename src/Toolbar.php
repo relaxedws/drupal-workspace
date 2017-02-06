@@ -64,7 +64,7 @@ class Toolbar {
   public function toolbar() {
     $items = [];
 
-    $active = $this->workspaceManager->getActiveWorkspace();
+    $active_workspace = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     $items['workspace_switcher'] = [
       // Include the toolbar_tab_wrapper to style the link like a toolbar tab.
@@ -83,7 +83,7 @@ class Toolbar {
 
     $items['workspace_switcher']['tab'] = [
       '#type' => 'link',
-      '#title' => $this->t('@active', ['@active' => $active->label()]),
+      '#title' => $this->t('@active', ['@active' => $active_workspace->label()]),
       '#url' => Url::fromRoute('entity.workspace.collection'),
       '#attributes' => [
         'title' => $this->t('Switch workspaces'),
@@ -95,7 +95,7 @@ class Toolbar {
       '#type' => 'link',
       '#title' => t('Add workspace'),
       '#url' => Url::fromRoute('entity.workspace.add'),
-      '#options' => array('attributes' => array('class' => array('add-workspace'))),
+      '#options' => ['attributes' => ['class' => ['add-workspace']]],
     ];
 
     $items['workspace_switcher']['tray'] = [

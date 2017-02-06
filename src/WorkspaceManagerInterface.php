@@ -26,6 +26,11 @@ interface WorkspaceManagerInterface {
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type);
 
   /**
+   * @return \Drupal\Core\Entity\EntityTypeInterface[]
+   */
+  public function getSupportedEntityTypes();
+
+  /**
    * @param \Drupal\workspace\WorkspaceNegotiatorInterface $negotiator
    * @param int $priority
    */
@@ -47,9 +52,12 @@ interface WorkspaceManagerInterface {
   public function loadByMachineName($machine_name);
 
   /**
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
+   * @param bool $object
+   *   Should the active workspace be returned as an object.
+   *
+   * @return \Drupal\workspace\Entity\WorkspaceInterface | int
    */
-  public function getActiveWorkspace();
+  public function getActiveWorkspace($object = FALSE);
 
   /**
    * Sets the active workspace for the site/session.

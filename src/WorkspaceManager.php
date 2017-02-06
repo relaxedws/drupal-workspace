@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\ContentWorkspace;
@@ -35,9 +36,9 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   protected $requestStack;
 
   /**
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -62,13 +63,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    * @param \Psr\Log\LoggerInterface $logger
    */
-  public function __construct(RequestStack $request_stack, EntityManagerInterface $entity_manager, AccountProxyInterface $current_user, LoggerInterface $logger = NULL) {
+  public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerInterface $logger = NULL) {
     $this->requestStack = $request_stack;
-    $this->entityManager = $entity_manager;
+    $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->logger = $logger ?: new NullLogger();
   }
@@ -84,12 +85,23 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
-    if (is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
-      && $entity_type->isRevisionable()
-      && !in_array($entity_type->id(), $this->blacklist)) {
+    if (!in_array($entity_type->id(), $this->blacklist)
+      &&is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
+      && $entity_type->isRevisionable()) {
       return TRUE;
     }
+    $this->blacklist[] = $entity_type->id();
     return FALSE;
+  }
+  
+  public function getSupportedEntityTypes() {
+    $entity_types = [];
+    foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
+      if ($this->entityTypeCanBelongToWorkspaces($entity_type)) {
+        $entity_types[$entity_type_id] = $entity_type;
+      }
+    }
+    return $entity_types;
   }
 
   /**
@@ -104,21 +116,21 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function load($workspace_id) {
-    return $this->entityManager->getStorage('workspace')->load($workspace_id);
+    return $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadMultiple(array $workspace_ids = NULL) {
-    return $this->entityManager->getStorage('workspace')->loadMultiple($workspace_ids);
+    return $this->entityTypeManager->getStorage('workspace')->loadMultiple($workspace_ids);
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadByMachineName($machine_name) {
-    $workspaces = $this->entityManager->getStorage('workspace')->loadByProperties(['machine_name' => $machine_name]);
+    $workspaces = $this->entityTypeManager->getStorage('workspace')->loadByProperties(['machine_name' => $machine_name]);
     return current($workspaces);
   }
 
@@ -127,13 +139,16 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    *
    * @todo {@link https://www.drupal.org/node/2600382 Access check.}
    */
-  public function getActiveWorkspace() {
+  public function getActiveWorkspace($object = FALSE) {
     $request = $this->requestStack->getCurrentRequest();
     foreach ($this->getSortedNegotiators() as $negotiator) {
       if ($negotiator->applies($request)) {
         if ($workspace_id = $negotiator->getWorkspaceId($request)) {
-          if ($workspace = $this->load($workspace_id)) {
+          if ($object && $workspace = $this->load($workspace_id)) {
             return $workspace;
+          }
+          else {
+            return $workspace_id;
           }
         }
       }
@@ -175,7 +190,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
     // If the entity is not new there should be a ContentWorkspace entry for it.
     if (!$entity->isNew()) {
-      $content_workspaces = $this->entityManager
+      $content_workspaces = $this->entityTypeManager
         ->getStorage('content_workspace')
         ->loadByProperties([
           'content_entity_type_id' => $entity->getEntityTypeId(),

@@ -18,6 +18,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceListBuilder extends EntityListBuilder {
 
   /**
+   * @var \Drupal\workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
@@ -35,7 +40,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\workspace\Workspace\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager) {
     parent::__construct($entity_type, $storage);
@@ -64,7 +69,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var WorkspaceTypeInterface $type */
     $type = $entity->get('type')->first()->entity;
     $row['type'] = $type ? $type->label() : '';
-    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
     $row['status'] = $active_workspace == $entity->id() ? 'Active' : 'Inactive';
     return $row + parent::buildRow($entity);
   }
@@ -79,13 +84,13 @@ class WorkspaceListBuilder extends EntityListBuilder {
       $operations['edit']['query']['destination'] = $entity->url('collection');
     }
 
-    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
     if ($entity->id() != $active_workspace) {
-      $operations['activate'] = array(
+      $operations['activate'] =[
         'title' => $this->t('Set Active'),
         'weight' => 20,
         'url' => $entity->urlInfo('activate-form', ['query' => ['destination' => $entity->url('collection')]]),
-      );
+      ];
     }
 
     return $operations;

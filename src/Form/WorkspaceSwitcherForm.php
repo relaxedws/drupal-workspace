@@ -48,7 +48,7 @@ class WorkspaceSwitcherForm extends WorkspaceActivateFormBase {
     ];
 
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
-    if ($active_workspace->id() === $workspace->id()) {
+    if ($active_workspace === $workspace->id()) {
       $form['submit']['#attributes']['class'] = ['is-active'];
     }
 
