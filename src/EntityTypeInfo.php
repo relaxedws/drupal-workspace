@@ -63,7 +63,7 @@ class EntityTypeInfo {
    *   Just the entities that we care about.
    */
   protected function selectMultiversionedUiEntityTypes(array $entity_types) {
-    return array_filter($entity_types, function (EntityTypeInterface $type) use ($entity_types) {
+    return array_filter($entity_types, function (EntityTypeInterface $type) {
       return $this->multiversionManager->isEnabledEntityType($type)
       && $type->hasViewBuilderClass()
       && $type->hasLinkTemplate('canonical');
