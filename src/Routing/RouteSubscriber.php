@@ -2,9 +2,9 @@
 
 namespace Drupal\workspace\Routing;
 
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
+use Drupal\multiversion\MultiversionManagerInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -14,30 +14,25 @@ use Symfony\Component\Routing\RouteCollection;
 class RouteSubscriber extends RouteSubscriberBase {
 
   /**
-   * The entity manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\multiversion\MultiversionManagerInterface
    */
-  protected $entityManager;
+  protected $multiversionManager;
 
   /**
    * Constructs a new RouteSubscriber object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity type manager.
+   * @param \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager
    */
-  public function __construct(EntityManagerInterface $entity_manager) {
-    $this->entityManager = $entity_manager;
+  public function __construct(MultiversionManagerInterface $multiversion_manager) {
+    $this->multiversionManager = $multiversion_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
-
+    foreach ($this->multiversionManager->getEnabledEntityTypes() as $entity_type_id => $entity_type) {
       if ($entity_type->hasLinkTemplate('version-tree')) {
-
         $options = [
           '_admin_route' => TRUE,
           '_entity_type_id' => $entity_type_id,
