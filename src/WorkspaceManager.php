@@ -215,7 +215,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
     // Add the revision ID, workspace, and publishing status.
     $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
-    $content_workspace->set('workspace', $this->getActiveWorkspace());
+    $content_workspace->set('workspace', $entity->workspace->target_id ?: $this->getActiveWorkspace());
     $entity->initial_published ? $content_workspace->setPublished() : $content_workspace->setUnpublished();
     ContentWorkspace::updateOrCreateFromEntity($content_workspace);
   }

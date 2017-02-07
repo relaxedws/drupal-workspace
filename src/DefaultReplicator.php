@@ -44,6 +44,8 @@ class DefaultReplicator {
    * @param \Drupal\workspace\Entity\WorkspaceInterface $target
    */
   public function replication(WorkspaceInterface $source, WorkspaceInterface $target) {
+    $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
+
     // Set the source as the active workspace.
     $this->workspaceManager->setActiveWorkspace($source);
 
@@ -73,13 +75,18 @@ class DefaultReplicator {
 
     }
 
-    // Load each missing revision
+    // Before saving set the active workspace to the target.
+    $this->workspaceManager->setActiveWorkspace($target);
+
+    // Load each missing revision.
     foreach ($rev_diffs as $entity_type_id => $revs) {
       foreach ($revs as $rev) {
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
         $entity = $this->entityTypeManager
           ->getStorage($entity_type_id)
           ->loadRevision($rev);
         $entity->workspace->target_id = $target->id();
+        $entity->isDefaultRevision(($target->id() == \Drupal::getContainer()->getParameter('workspace.default')));
         $entity->save();
       }
     }
@@ -87,7 +94,7 @@ class DefaultReplicator {
     // Save each revision on the target workspace
 
     // Log
-
+    $this->workspaceManager->setActiveWorkspace($current_active);
   }
 
 }

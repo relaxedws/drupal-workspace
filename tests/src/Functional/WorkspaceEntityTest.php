@@ -50,6 +50,15 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $this->assertSame(FALSE, reset($node_list));
     $node = \Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($vanilla_node->id());
     $this->assertSame($vanilla_node->id(), $node->id());
+
+    $bark = $this->createWorkspaceThroughUI('Bark', 'bark');
+    $this->assertEquals($leaf->id(), \Drupal::service('workspace.manager')->getActiveWorkspace());
+    $vanilla_node->workspace->target_id = $bark->id();
+    $vanilla_node->save();
+
+    $this->switchToWorkspace($bark);
+    $reloaded_vanilla_node = \Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($vanilla_node->id());
+    $this->assertEquals($bark->id(), $reloaded_vanilla_node->workspace->target_id);
   }
 
 }

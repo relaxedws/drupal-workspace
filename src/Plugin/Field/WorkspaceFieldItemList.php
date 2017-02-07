@@ -35,7 +35,8 @@ class WorkspaceFieldItemList extends EntityReferenceFieldItemList {
         ->sort('revision_id', 'DESC')
         ->execute();
 
-      if ($revision_to_load = key($revisions)) {
+      $revision_to_load = key($revisions);
+      if (!empty($revision_to_load)) {
         /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
         $content_workspace = \Drupal::entityTypeManager()
           ->getStorage('content_workspace')
@@ -53,7 +54,6 @@ class WorkspaceFieldItemList extends EntityReferenceFieldItemList {
         return $content_workspace->get('workspace')->entity;
       }
     }
-    return \Drupal::getContainer()->getParameter('workspace.default');
   }
 
   /**
