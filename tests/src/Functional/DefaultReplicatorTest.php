@@ -40,6 +40,7 @@ class DefaultReplicatorTest extends BrowserTestBase {
     $this->createNodeType('Test', 'test');
 
     $permissions = [
+      'create_workspace',
       'view_any_workspace',
       'create test content',
       'access administration pages',
@@ -58,9 +59,10 @@ class DefaultReplicatorTest extends BrowserTestBase {
   }
 
   public function testNodeReplication() {
+    $dev = $this->createWorkspaceThroughUI('Dev', 'dev');
     $stage = $this->getOneWorkspaceByLabel('Stage');
     $live = $this->getOneWorkspaceByLabel('Live');
-    $this->switchToWorkspace($stage);
+    $this->switchToWorkspace($dev);
 
     $this->drupalGet('/node/add/test');
     $session = $this->getSession();
@@ -71,10 +73,15 @@ class DefaultReplicatorTest extends BrowserTestBase {
     $page = $session->getPage();
     $page->hasContent("Test node has been created");
 
-    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
+    $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
 
     /** @var \Drupal\workspace\DefaultReplicator $replicator */
     $replicator = \Drupal::service('workspace.replicator');
+    $replicator->replication($dev, $stage);
+
+    $this->switchToWorkspace($stage);
+    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
+
     $replicator->replication($stage, $live);
 
     $this->switchToWorkspace($live);

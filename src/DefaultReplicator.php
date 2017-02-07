@@ -75,9 +75,7 @@ class DefaultReplicator {
 
     }
 
-    // Before saving set the active workspace to the target.
-    $this->workspaceManager->setActiveWorkspace($target);
-
+    $entities = [];
     // Load each missing revision.
     foreach ($rev_diffs as $entity_type_id => $revs) {
       foreach ($revs as $rev) {
@@ -87,11 +85,17 @@ class DefaultReplicator {
           ->loadRevision($rev);
         $entity->workspace->target_id = $target->id();
         $entity->isDefaultRevision(($target->id() == \Drupal::getContainer()->getParameter('workspace.default')));
-        $entity->save();
+        $entities[] = $entity;
       }
     }
 
+    // Before saving set the active workspace to the target.
+    $this->workspaceManager->setActiveWorkspace($target);
+
     // Save each revision on the target workspace
+    foreach ($entities as $entity) {
+      $entity->save();
+    }
 
     // Log
     $this->workspaceManager->setActiveWorkspace($current_active);
