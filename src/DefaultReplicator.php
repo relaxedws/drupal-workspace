@@ -53,7 +53,6 @@ class DefaultReplicator {
     $changes = $this->changesFactory->get($source)->getNormal();
     $rev_diffs = [];
     foreach ($changes as $change) {
-      $rev_diffs[$change['type']] = [];
       foreach ($change['changes'] as $change_item) {
         $rev_diffs[$change['type']][] = $change_item['rev'];
       }

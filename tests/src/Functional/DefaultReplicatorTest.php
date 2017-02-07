@@ -43,6 +43,7 @@ class DefaultReplicatorTest extends BrowserTestBase {
       'create_workspace',
       'view_any_workspace',
       'create test content',
+      'edit own test content',
       'access administration pages',
       'administer taxonomy',
       'administer menu',
@@ -72,6 +73,10 @@ class DefaultReplicatorTest extends BrowserTestBase {
     $page->findButton(t('Save'))->click();
     $page = $session->getPage();
     $page->hasContent("Test node has been created");
+    $this->drupalGet('/node/1/edit');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $page->findButton(t('Save'))->click();
 
     $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
 
@@ -82,9 +87,21 @@ class DefaultReplicatorTest extends BrowserTestBase {
     $this->switchToWorkspace($stage);
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
 
+    $this->drupalGet('/node/add/test');
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $page = $session->getPage();
+    $page->fillField('Title', 'Test stage node');
+    $page->findButton(t('Save'))->click();
+    $page = $session->getPage();
+    $page->hasContent("Test stage node has been created");
+
+    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->entity->id());
+
     $replicator->replication($stage, $live);
 
     $this->switchToWorkspace($live);
     $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
+    $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->entity->id());
   }
 }
