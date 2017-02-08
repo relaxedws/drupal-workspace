@@ -1,11 +1,14 @@
 <?php
 
-namespace Drupal\workspace;
+namespace Drupal\workspace\Negotiator;
 
 use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\user\PrivateTempStoreFactory;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class SessionWorkspaceNegotiator
+ */
 class SessionWorkspaceNegotiator extends WorkspaceNegotiatorBase {
 
   /**

@@ -1,9 +1,12 @@
 <?php
 
-namespace Drupal\workspace;
+namespace Drupal\workspace\Negotiator;
 
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class DefaultWorkspaceNegotiator
+ */
 class DefaultWorkspaceNegotiator extends WorkspaceNegotiatorBase {
 
   /**

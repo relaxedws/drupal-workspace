@@ -1,12 +1,16 @@
 <?php
 
-namespace Drupal\workspace;
+namespace Drupal\workspace\Negotiator;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
+/**
+ * Class WorkspaceNegotiatorBase
+ */
 abstract class WorkspaceNegotiatorBase implements WorkspaceNegotiatorInterface, ContainerAwareInterface {
 
   use ContainerAwareTrait;

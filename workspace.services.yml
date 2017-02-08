@@ -49,10 +49,8 @@ services:
     parent: logger.channel_base
     arguments: ['cron']
 
-  # @todo: {@link https://www.drupal.org/node/2597414 Simplify the container
-  # definition for negotiators.}
   workspace.negotiator.default:
-    class: Drupal\workspace\DefaultWorkspaceNegotiator
+    class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
     calls:
       - [setContainer, ['@service_container']]
       - [setCurrentUser, ['@current_user']]
@@ -60,7 +58,7 @@ services:
     tags:
       - { name: workspace_negotiator, priority: 0 }
   workspace.negotiator.session:
-    class: Drupal\workspace\SessionWorkspaceNegotiator
+    class: Drupal\workspace\Negotiator\SessionWorkspaceNegotiator
     arguments: ['@user.private_tempstore']
     calls:
       - [setContainer, ['@service_container']]

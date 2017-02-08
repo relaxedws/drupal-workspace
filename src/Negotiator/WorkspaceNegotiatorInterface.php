@@ -1,11 +1,15 @@
 <?php
 
-namespace Drupal\workspace;
+namespace Drupal\workspace\Negotiator;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Interface WorkspaceNegotiatorInterface
+ */
 interface WorkspaceNegotiatorInterface {
 
   /**
