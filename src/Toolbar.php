@@ -94,7 +94,7 @@ class Toolbar {
     $create_link = [
       '#type' => 'link',
       '#title' => t('Add workspace'),
-      '#url' => Url::fromRoute('entity.workspace.add'),
+      '#url' => Url::fromRoute('entity.workspace.add_form'),
       '#options' => ['attributes' => ['class' => ['add-workspace']]],
     ];
 

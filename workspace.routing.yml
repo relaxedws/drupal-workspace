@@ -1,24 +1,3 @@
-# Workspace routing definition
-entity.workspace.add:
-  path: '/admin/structure/workspace/add'
-  defaults:
-    _controller: '\Drupal\workspace\Controller\WorkspaceController::add'
-    _title: 'Add workspace'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'administer workspaces+create_workspace'
-
-entity.workspace.add_form:
-  path: '/admin/structure/workspace/add/{workspace_type}'
-  defaults:
-    _controller: '\Drupal\workspace\Controller\WorkspaceController::addForm'
-    _title_callback: '\Drupal\workspace\Controller\WorkspaceController::getAddFormTitle'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'administer workspaces'
-
 entity.workspace.collection:
   path: '/admin/structure/workspace'
   defaults:
@@ -36,24 +15,3 @@ entity.workspace.activate_form:
     _admin_route: TRUE
   requirements:
     _workspace_view: 'TRUE'
-
-# WorkspaceType routing definition
-entity.workspace_type.collection:
-  path: '/admin/structure/workspace/types'
-  defaults:
-    _entity_list: 'workspace_type'
-    _title: 'Workspace types'
-  requirements:
-    _permission: 'administer site configuration'
-  options:
-    _admin_route: TRUE
-
-entity.workspace_type.add_form:
-  path: '/admin/structure/workspace/types/add'
-  defaults:
-    _entity_form: 'workspace_type.add'
-    _title: 'Add Workspace type'
-  requirements:
-    _permission: 'administer site configuration'
-  options:
-    _admin_route: TRUE

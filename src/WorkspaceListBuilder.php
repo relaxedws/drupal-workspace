@@ -53,7 +53,6 @@ class WorkspaceListBuilder extends EntityListBuilder {
   public function buildHeader() {
     $header['label'] = t('Workspace');
     $header['uid'] = t('Owner');
-    $header['type'] = t('Type');
     $header['status'] = t('Status');
 
     return $header + parent::buildHeader();
@@ -66,9 +65,6 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var WorkspaceInterface $entity */
     $row['label'] = $entity->label() . ' (' . $entity->getMachineName() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
-    /** @var WorkspaceTypeInterface $type */
-    $type = $entity->get('type')->first()->entity;
-    $row['type'] = $type ? $type->label() : '';
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
     $row['status'] = $active_workspace == $entity->id() ? 'Active' : 'Inactive';
     return $row + parent::buildRow($entity);

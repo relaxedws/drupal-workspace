@@ -33,12 +33,9 @@ use Drupal\user\UserInterface;
  *   revision_table = "workspace_revision",
  *   data_table = "workspace_field_data",
  *   revision_data_table = "workspace_field_revision",
- *   bundle_entity_type = "workspace_type",
- *   field_ui_base_route = "entity.workspace_type.edit_form",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",
- *     "bundle" = "type",
  *     "uuid" = "uuid",
  *     "label" = "label",
  *     "machine_name" = "machine_name",
@@ -46,7 +43,7 @@ use Drupal\user\UserInterface;
  *     "created" = "created"
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/workspace/{workspace}",
+ *     "add-form" = "/admin/structure/workspace/add",
  *     "edit-form" = "/admin/structure/workspace/{workspace}/edit",
  *     "activate-form" = "/admin/structure/workspace/{workspace}/activate",
  *     "collection" = "/admin/structure/workspace",
@@ -99,12 +96,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getCurrentUserId');
-
-    $fields['type'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Type'))
-      ->setDescription(t('The workspace type.'))
-      ->setSetting('target_type', 'workspace_type')
-      ->setReadOnly(TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
