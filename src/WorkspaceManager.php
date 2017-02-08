@@ -5,6 +5,7 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ContentWorkspaceInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -116,7 +118,11 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function load($workspace_id) {
-    return $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+    $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+    if ($workspace instanceof WorkspaceInterface) {
+      return $workspace;
+    }
+    throw new EntityStorageException("Workspace not found");
   }
 
   /**
@@ -144,8 +150,8 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     foreach ($this->getSortedNegotiators() as $negotiator) {
       if ($negotiator->applies($request)) {
         if ($workspace_id = $negotiator->getWorkspaceId($request)) {
-          if ($object && $workspace = $this->load($workspace_id)) {
-            return $workspace;
+          if ($object) {
+            return $this->load($workspace_id);
           }
           else {
             return $workspace_id;
@@ -221,7 +227,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   }
 
   /**
-   * @return \Drupal\workspace\WorkspaceNegotiatorInterface[]
+   * @return \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
    */
   protected function getSortedNegotiators() {
     if (!isset($this->sortedNegotiators)) {
@@ -229,7 +235,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
       krsort($this->negotiators);
       // Merge nested negotiators from $this->negotiators into
       // $this->sortedNegotiators.
-      $this->sortedNegotiators = array();
+      $this->sortedNegotiators = [];
       foreach ($this->negotiators as $builders) {
         $this->sortedNegotiators = array_merge($this->sortedNegotiators, $builders);
       }

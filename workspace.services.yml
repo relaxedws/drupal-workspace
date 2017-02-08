@@ -66,3 +66,11 @@ services:
       - [setWorkspaceManager, ['@workspace.manager']]
     tags:
       - { name: workspace_negotiator, priority: 100 }
+  workspace.negotiator.param:
+    class: Drupal\workspace\Negotiator\ParamWorkspaceNegotiator
+    calls:
+      - [setContainer, ['@service_container']]
+      - [setCurrentUser, ['@current_user']]
+      - [setWorkspaceManager, ['@workspace.manager']]
+    tags:
+      - { name: workspace_negotiator, priority: 200 }

@@ -5,6 +5,7 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface;
 
 /**
  * Interface WorkspaceManagerInterface
@@ -31,7 +32,7 @@ interface WorkspaceManagerInterface {
   public function getSupportedEntityTypes();
 
   /**
-   * @param \Drupal\workspace\WorkspaceNegotiatorInterface $negotiator
+   * @param \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface $negotiator
    * @param int $priority
    */
   public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority);
