@@ -288,8 +288,9 @@ function workspace_theme($existing, $type, $theme, $path) {
   return [
     'workspace_deployment' => [
       'variables' => [
-        'active_workspace_id' => NULL,
-        'content' => NULL
+        'active_workspace' => NULL,
+        'workspaces' => NULL,
+        'deploy' => NULL,
       ],
     ],
   ];

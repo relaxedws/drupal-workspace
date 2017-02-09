@@ -9,9 +9,23 @@
  */
 #}
 
-<div>
-    {% for workspace in content %}
-      {{ workspace.label.value }}
+<div id="tabs">
+  <ul>
+    {% for workspace in workspaces %}
+      <li><a href="#tabs-{{ workspace.id.value }}">{{ workspace.label.value }}</a></li>
     {% endfor %}
-    <iframe width="100%" height="100%" frameborder="0" src="/?workspace={{active_workspace_id}}"></iframe>
+    <li>
+      Current workspace: <a href="#tabs-{{ active_workspace.id.value }}">{{ active_workspace.label.value }}</a>
+      {{ deploy }}
+    </li>
+  </ul>
+
+  {% for workspace in workspaces %}
+  <div id="tabs-{{workspace.id.value}}">
+    <iframe src="/?workspace={{workspace.id.value}}" scrolling="no"></iframe>
+  </div>
+  {% endfor %}
+  <div id="tabs-{{ active_workspace.id.value }}">
+    <iframe src="/?workspace={{active_workspace.id.value}}" scrolling="no"></iframe>
+  </div>
 </div>

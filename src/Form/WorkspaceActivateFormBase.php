@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class WorkspaceActivateFormBase extends FormBase {
 
   /**
-   * @var \Drupal\workspace\WorkspaceManagerInterface
+   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
