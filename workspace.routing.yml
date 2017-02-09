@@ -15,3 +15,10 @@ entity.workspace.activate_form:
     _admin_route: TRUE
   requirements:
     _workspace_view: 'TRUE'
+
+workspace.deployment:
+  path: '/admin/config/workflow/deployment'
+  defaults:
+    _controller: '\Drupal\workspace\Controller\DeploymentController::workspaces'
+  requirements:
+    _permission: 'administer workspaces'

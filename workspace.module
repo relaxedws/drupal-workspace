@@ -274,6 +274,7 @@ function workspace_workspace_create_access(AccountInterface $account, array $con
   return \Drupal::service('workspace.entity_access')->workspaceCreateAccess($account, $context, $entity_bundle);
 }
 
+
 /**
  * Implements hook_theme().
  *
@@ -285,38 +286,31 @@ function workspace_workspace_create_access(AccountInterface $account, array $con
  */
 function workspace_theme($existing, $type, $theme, $path) {
   return [
-    'workspace_add_list' => [
-      'variables' => ['content' => NULL],
-    ],
-    'workspace_rev' => [
-      'render element' => 'elements',
+    'workspace_deployment' => [
+      'variables' => [
+        'active_workspace_id' => NULL,
+        'content' => NULL
+      ],
     ],
   ];
 }
 
 /**
- * Prepares variables for revision templates.
+ * Implements hook_theme_registry_alter().
  */
-function workspace_preprocess_workspace_rev(&$variables) {
-  $uuid = $variables['elements']['#uuid'];
-  $rev = $variables['elements']['#rev'];
-  $rev_info = array_merge(
-    \Drupal::service('workspace.entity_index.rev')->get("$uuid:$rev"),
-    $variables['elements']['#rev_info']
-  );
+function workspace_theme_registry_alter(&$theme_registry) {
+  $theme_registry['page__admin__config__workflow__deployment'] = [
+    'path' => drupal_get_path('module', 'workspace') . '/templates',
+    'template' => 'page--admin--config--workflow--deployment',
+  ];
+}
 
-  $variables = array_merge($variables, $rev_info);
-
-  list($i) = explode('-', $rev);
-  // Apart from the index length, we want 7 characters plus dash and ellipsis.
-  $length = strlen($i) + 9;
-  $title = Unicode::truncate($rev, $length, FALSE, TRUE);
-
-  if (!empty($rev_info['revision_id'])) {
-    $entity_revision = \Drupal::entityTypeManager()->getStorage($rev_info['entity_type_id'])->loadRevision($rev_info['revision_id']);
-    $variables['title'] = Link::fromTextAndUrl($title, $entity_revision->toUrl('revision'));
-  }
-  else {
-    $variables['title'] = $title;
+/**
+ * Implements hook_page_top().
+ */
+function workspace_page_top(array &$page_top) {
+  $route = \Drupal::request()->attributes->get('_route');
+  if ($route == 'workspace.deployment') {
+    unset($page_top['toolbar']);
   }
 }

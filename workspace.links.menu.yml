@@ -3,3 +3,8 @@ entity.workspace.collection:
   parent: system.admin_structure
   description: 'Create and manage workspaces.'
   route_name: entity.workspace.collection
+workspace.deployment:
+  title: 'Deployment'
+  route_name: workspace.deployment
+  description: 'Deploy workspaces.'
+  parent: system.admin_config_workflow
