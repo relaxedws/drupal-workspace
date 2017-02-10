@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Changes\ChangesFactoryInterface;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Index\SequenceIndexInterface;
 
 /**
  * Class DefaultReplicator
@@ -28,24 +29,34 @@ class DefaultReplicator {
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\workspace\Index\SequenceIndexInterface
+   */
+  protected $sequenceIndex;
+
+  /**
    * DefaultReplication constructor.
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    * @param \Drupal\workspace\Changes\ChangesFactoryInterface $changes_factory
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceManager = $workspace_manager;
     $this->changesFactory = $changes_factory;
     $this->entityTypeManager = $entity_type_manager;
+    $this->sequenceIndex = $sequence_index;
   }
 
   /**
    * @param \Drupal\workspace\Entity\WorkspaceInterface $source
    * @param \Drupal\workspace\Entity\WorkspaceInterface $target
+   *
+   * @return \Drupal\workspace\Entity\ReplicationLogInterface
    */
   public function replication(WorkspaceInterface $source, WorkspaceInterface $target) {
     $replication_id = \md5($source->id() . $target->id());
+    $start_time = new \DateTime();
+    $sessionId = \md5((\microtime(true) * 1000000));
     $replication_log = ReplicationLog::loadOrCreate($replication_id);
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 
@@ -53,7 +64,9 @@ class DefaultReplicator {
     $this->workspaceManager->setActiveWorkspace($source);
 
     // Get changes for the current workspace.
-    $changes = $this->changesFactory->get($source)->getNormal();
+    $history = $replication_log->getHistory();
+    $last_seq = isset($history[0]['recorded_seq']) ? $history[0]['recorded_seq'] : 0;
+    $changes = $this->changesFactory->get($source)->lastSeq($last_seq)->getNormal();
     $rev_diffs = [];
     foreach ($changes as $change) {
       foreach ($change['changes'] as $change_item) {
@@ -77,7 +90,7 @@ class DefaultReplicator {
 
     }
 
-    $entities = [];
+    $entities = []; 
     // Load each missing revision.
     foreach ($rev_diffs as $entity_type_id => $revs) {
       foreach ($revs as $rev) {
@@ -101,6 +114,12 @@ class DefaultReplicator {
 
     // Log
     $this->workspaceManager->setActiveWorkspace($current_active);
+
+    $replication_log->setHistory([
+      'recorded_seq' => $this->sequenceIndex->useWorkspace($source->id())->getLastSequenceId(),
+      'start_time' => $start_time->format('D, d M Y H:i:s e'),
+      'session_id' => $sessionId,
+    ]);
     $replication_log->save();
     return $replication_log;
   }

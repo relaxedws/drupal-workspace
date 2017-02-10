@@ -76,11 +76,11 @@ class SequenceIndex implements SequenceIndexInterface {
    * {@inheritdoc}
    */
   public function getLastSequenceId() {
-    $max_score = $this->sortedSetStore()->getMaxScore();
-    if (empty($max_score)) {
-      $max_score = $this->sortedSetStore(0)->getMaxScore();
+    $max_key = $this->sortedSetStore()->getMaxKey();
+    if (empty($max_key)) {
+      $max_key = $this->sortedSetStore(0)->getMaxKey();
     }
-    return $max_score;
+    return $max_key;
   }
 
   /**
