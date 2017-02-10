@@ -42,6 +42,7 @@ class WorkspaceForm extends ContentEntityForm {
       '#title' => $this->t('Workspace ID'),
       '#maxlength' => 255,
       '#default_value' => $workspace->get('machine_name')->value,
+      '#disabled' => !$workspace->isNew(),
       '#machine_name' => array(
         'exists' => '\Drupal\workspace\Entity\Workspace::load',
       ),

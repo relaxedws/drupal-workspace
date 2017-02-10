@@ -4,6 +4,7 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Changes\ChangesFactoryInterface;
+use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
@@ -45,6 +46,7 @@ class DefaultReplicator {
    */
   public function replication(WorkspaceInterface $source, WorkspaceInterface $target) {
     $replication_id = \md5($source->id() . $target->id());
+    $replication_log = ReplicationLog::loadOrCreate($replication_id);
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     // Set the source as the active workspace.
@@ -99,6 +101,8 @@ class DefaultReplicator {
 
     // Log
     $this->workspaceManager->setActiveWorkspace($current_active);
+    $replication_log->save();
+    return $replication_log;
   }
 
 }
