@@ -40,7 +40,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->drupalLogin($ditka);
 
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
-    $this->assertEquals(1, $vanilla_node->workspace->target_id);
+    $this->assertEquals('live', $vanilla_node->workspace->target_id);
 
     $bears = $this->createWorkspaceThroughUI('Bears', 'bears');
     $this->switchToWorkspace($bears);

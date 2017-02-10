@@ -34,11 +34,10 @@ use Drupal\user\UserInterface;
  *   data_table = "workspace_field_data",
  *   revision_data_table = "workspace_field_revision",
  *   entity_keys = {
- *     "id" = "id",
+ *     "id" = "machine_name",
  *     "revision" = "revision_id",
  *     "uuid" = "uuid",
  *     "label" = "label",
- *     "machine_name" = "machine_name",
  *     "uid" = "uid",
  *     "created" = "created"
  *   },
@@ -58,11 +57,13 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields['id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Workspace ID'))
-      ->setDescription(t('The workspace ID.'))
-      ->setReadOnly(TRUE)
-      ->setSetting('unsigned', TRUE);
+
+    $fields['machine_name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Workaspace ID'))
+      ->setDescription(t('The workspace machine name.'))
+      ->setSetting('max_length', 128)
+      ->setRequired(TRUE)
+      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[\da-z_$()+-\/]*$/']]);
 
     $fields['uuid'] = BaseFieldDefinition::create('uuid')
       ->setLabel(t('UUID'))
@@ -81,14 +82,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 128)
       ->setRequired(TRUE);
-
-    $fields['machine_name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Workaspace ID'))
-      ->setDescription(t('The workspace machine name.'))
-      ->setRevisionable(TRUE)
-      ->setSetting('max_length', 128)
-      ->setRequired(TRUE)
-      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[\da-z_$()+-\/]*$/']]);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Owner'))

@@ -41,7 +41,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $this->drupalLogin($buster);
 
     $vanilla_node = $this->createNodeThroughUI('Vanilla node', 'test');
-    $this->assertEquals(1, $vanilla_node->workspace->target_id);
+    $this->assertEquals('live', $vanilla_node->workspace->target_id);
 
     $leaf = $this->createWorkspaceThroughUI('Leaf', 'leaf');
     $this->switchToWorkspace($leaf);

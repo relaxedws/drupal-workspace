@@ -44,6 +44,7 @@ class DefaultReplicator {
    * @param \Drupal\workspace\Entity\WorkspaceInterface $target
    */
   public function replication(WorkspaceInterface $source, WorkspaceInterface $target) {
+    $replication_id = \md5($source->id() . $target->id());
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     // Set the source as the active workspace.

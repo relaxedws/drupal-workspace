@@ -7,13 +7,12 @@ use Drupal\workspace\Entity\Workspace;
  */
 function workspace_install() {
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $live */
-  $live = Workspace::create(['machine_name' => 'live', 'label' => 'Live', 'type' => 'basic']);
+  $live = Workspace::create(['machine_name' => 'live', 'label' => 'Live']);
   $live->save();
 
-  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $stage */
-  $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage', 'type' => 'basic']);
-  $stage->set('upstream', $default_workspace_id);
+  $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage']);
+  $stage->set('upstream', $live->id());
   $stage->save();
 
   // allow workspace entity route alterations

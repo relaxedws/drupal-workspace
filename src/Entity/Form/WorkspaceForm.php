@@ -5,6 +5,7 @@ namespace Drupal\workspace\Entity\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Form controller for the workspace edit forms.
@@ -101,7 +102,7 @@ class WorkspaceForm extends ContentEntityForm {
     if ($workspace->id()) {
       $form_state->setValue('id', $workspace->id());
       $form_state->set('id', $workspace->id());
-      $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : $workspace->toUrl('canonical');
+      $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : Url::fromRoute('<front>');
       $form_state->setRedirectUrl($redirect);
     }
     else {
