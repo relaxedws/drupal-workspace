@@ -87,7 +87,12 @@ class DefaultReplicator {
         ->execute();
     }
     foreach ($content_workspace_ids as $entity_type_id => $ids) {
-
+      foreach ($ids as $id) {
+        $key = array_search($id, $rev_diffs[$entity_type_id]);
+        if (isset($key)) {
+          unset($rev_diffs[$entity_type_id][$key]);
+        }
+      }
     }
 
     $entities = []; 
