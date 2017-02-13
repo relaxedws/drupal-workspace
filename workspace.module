@@ -92,18 +92,26 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+  $entity_type = $view->getBaseEntityType();
   if ($active_workspace != $default_workspace_id) {
     $configuration = array(
       'table' => 'content_workspace_field_revision',
       'field' => 'content_entity_id',
-      'left_table' => 'node_field_data',
-      'left_field' => 'nid',
+      'left_table' => $entity_type->getDataTable(),
+      'left_field' => $entity_type->getKey('id'),
       'operator' => '=',
     );
     $join = \Drupal\views\Views::pluginManager('join')
       ->createInstance('standard', $configuration);
     $query->addRelationship('cwrf', $join);
     $query->addWhere($query->options['group'], 'cwrf.workspace', $active_workspace);
+    foreach ($query->where as $where_id => $where) {
+      foreach ($where['conditions'] as $condition_id => $condition) {
+        if ($condition['field']  == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
+          $query->where[$where_id]['conditions'][$condition_id]['field'] = 'cwrf.published';
+        }
+      }
+    }
   }
 }
 
