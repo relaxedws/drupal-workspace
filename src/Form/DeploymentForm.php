@@ -25,6 +25,10 @@ class DeploymentForm extends FormBase {
    * @inheritDoc
    */
   public function buildForm(array $form, FormStateInterface $form_state, WorkspaceInterface $workspace = NULL) {
+    if ($workspace->id() == $workspace->upstream->entity->id()) {
+      return [];
+    }
+
     $form['workspace_id'] = [
       '#type' => 'hidden',
       '#value' => $workspace->id(),
