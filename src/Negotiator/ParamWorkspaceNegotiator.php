@@ -13,7 +13,7 @@ class ParamWorkspaceNegotiator extends WorkspaceNegotiatorBase {
    * {@inheritdoc}
    */
   public function applies(Request $request) {
-    return is_numeric($request->query->get('workspace'));
+    return is_string($request->query->get('workspace'));
   }
 
   /**
