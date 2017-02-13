@@ -12,20 +12,20 @@
 <div id="tabs">
   <ul>
     {% for workspace in workspaces %}
-      <li><a href="#tabs-{{ workspace.id.value }}">{{ workspace.label.value }}</a></li>
+      <li><a href="#tabs-{{ workspace.machine_name.value }}">{{ workspace.label.value }}</a></li>
     {% endfor %}
     <li>
-      Current workspace: <a href="#tabs-{{ active_workspace.id.value }}">{{ active_workspace.label.value }}</a>
+      Current workspace: <a href="#tabs-{{ active_workspace.machine_name.value }}">{{ active_workspace.label.value }}</a>
       {{ deploy }}
     </li>
   </ul>
 
   {% for workspace in workspaces %}
-  <div id="tabs-{{workspace.id.value}}">
-    <iframe src="/?workspace={{workspace.id.value}}" scrolling="no"></iframe>
+  <div id="tabs-{{workspace.machine_name.value}}">
+    <iframe src="/?workspace={{workspace.machine_name.value}}" scrolling="no"></iframe>
   </div>
   {% endfor %}
-  <div id="tabs-{{ active_workspace.id.value }}">
-    <iframe src="/?workspace={{active_workspace.id.value}}" scrolling="no"></iframe>
+  <div id="tabs-{{ active_workspace.machine_name.value }}">
+    <iframe src="/?workspace={{active_workspace.machine_name.value}}" scrolling="no"></iframe>
   </div>
 </div>
