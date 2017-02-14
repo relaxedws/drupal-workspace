@@ -99,18 +99,12 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setLabel(t('Created'))
       ->setDescription(t('The UNIX timestamp of when the workspace has been created.'));
 
-    $fields['upstream'] = BaseFieldDefinition::create('entity_reference')
+    $fields['upstream'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Assign default target workspace'))
       ->setDescription(t('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setSetting('target_type', 'workspace')
-      ->setDefaultValueCallback('workspace_active_id')
-      ->setDisplayOptions('form', [
-        'type' => 'options_buttons',
-        'weight' => 0
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+      ->setDefaultValueCallback('workspace_active_id');
 
     return $fields;
   }

@@ -3,7 +3,6 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -95,7 +94,10 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     $this->blacklist[] = $entity_type->id();
     return FALSE;
   }
-  
+
+  /**
+   * {@inheritdoc}
+   */
   public function getSupportedEntityTypes() {
     $entity_types = [];
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {

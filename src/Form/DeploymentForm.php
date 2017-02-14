@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Replication\ReplicationManager;
 
 /**
  * Class DeploymentForm
@@ -25,10 +26,11 @@ class DeploymentForm extends FormBase {
    * @inheritDoc
    */
   public function buildForm(array $form, FormStateInterface $form_state, WorkspaceInterface $workspace = NULL) {
-    if ($workspace->id() == $workspace->upstream->entity->id()) {
+    if ('workspace:' . $workspace->id() == $workspace->get('upstream')->value) {
       return [];
     }
 
+    $upstream_plugin = \Drupal::service('workspace.upstream_manager')->createInstance($workspace->get('upstream')->value);
     $form['workspace_id'] = [
       '#type' => 'hidden',
       '#value' => $workspace->id(),
@@ -36,12 +38,12 @@ class DeploymentForm extends FormBase {
 
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => 'Deploy to ' . $workspace->upstream->entity->label(),
+      '#value' => 'Deploy to ' . $upstream_plugin->getLabel(),
       '#ajax' => [
         'callback' => [self::class, 'ajaxResponse'],
         'progress' => [
           'type' => 'bar',
-          'message' => 'Deploying from ' . $workspace->label() . ' to ' . $workspace->upstream->entity->label(),
+          'message' => 'Deploying from ' . $workspace->label() . ' to ' . $upstream_plugin->getLabel(),
         ]
       ],
     ];
@@ -58,10 +60,11 @@ class DeploymentForm extends FormBase {
    */
   public function ajaxResponse(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
+    $upstream_plugin = \Drupal::service('workspace.upstream_manager')->createInstance($workspace->get('upstream')->value);
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand(
       '#workspace-deployment-form',
-      'Deployed to ' . $workspace->upstream->entity->label()
+      'Deployed to ' . $upstream_plugin->getLabel()
     ));
     return $response;
   }
@@ -71,7 +74,11 @@ class DeploymentForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
-    \Drupal::service('workspace.replicator')->replication($workspace, $workspace->upstream->entity);
+    $upstream_manager = \Drupal::service('workspace.upstream_manager');
+    \Drupal::service('workspace.replication_manager')->replicate(
+      $upstream_manager->createInstance('workspace:' . $workspace->id()),
+      $upstream_manager->createInstance($workspace->get('upstream')->value)
+    );
   }
 
 }

@@ -30,24 +30,25 @@ services:
   workspace.changes_factory:
     class: Drupal\workspace\Changes\ChangesFactory
     arguments: ['@entity_type.manager', '@workspace.index.sequence']
-  workspace.replicator:
-    class: Drupal\workspace\DefaultReplicator
-    arguments: ['@workspace.manager', '@workspace.changes_factory', '@entity_type.manager', '@workspace.index.sequence']
   workspace.keyvalue.sorted_set:
     class: Drupal\workspace\KeyValueStore\KeyValueSortedSetFactory
     arguments: ['@service_container', '%workspace.factory.keyvalue.sorted_set%']
   workspace.keyvalue.sorted_set.database:
     class: Drupal\workspace\KeyValueStore\KeyValueDatabaseSortedSetFactory
     arguments: ['@serialization.phpserialize', '@database']
+  workspace.upstream_manager:
+    class: Drupal\workspace\UpstreamManager
+    parent: default_plugin_manager
 
-  cache_context.workspace:
-    class: Drupal\workspace\WorkspaceCacheContext
-    arguments: ['@workspace.manager']
+  workspace.replication_manager:
+    class: Drupal\workspace\Replication\ReplicationManager
     tags:
-      - { name: cache.context }
-  logger.channel.workspace:
-    parent: logger.channel_base
-    arguments: ['cron']
+      - { name: service_collector, tag: workspace_replicator, call: addReplicator }
+  workspace.default_replicator:
+    class: Drupal\workspace\Replication\DefaultReplicator
+    arguments: ['@workspace.manager', '@workspace.changes_factory', '@entity_type.manager', '@workspace.index.sequence']
+    tags:
+      - { name: workspace_replicator, priority: 0 }
 
   workspace.negotiator.default:
     class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
@@ -74,3 +75,12 @@ services:
       - [setWorkspaceManager, ['@workspace.manager']]
     tags:
       - { name: workspace_negotiator, priority: 200 }
+
+  cache_context.workspace:
+    class: Drupal\workspace\WorkspaceCacheContext
+    arguments: ['@workspace.manager']
+    tags:
+      - { name: cache.context }
+  logger.channel.workspace:
+    parent: logger.channel_base
+    arguments: ['cron']

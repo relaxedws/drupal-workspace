@@ -1,20 +1,23 @@
 <?php
 
-namespace Drupal\workspace;
+namespace Drupal\workspace\Replication;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Changes\ChangesFactoryInterface;
 use Drupal\workspace\Entity\ReplicationLog;
+use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Index\SequenceIndexInterface;
+use Drupal\workspace\UpstreamInterface;
+use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
  * Class DefaultReplicator
  */
-class DefaultReplicator {
+class DefaultReplicator implements ReplicationInterface {
 
   /**
-   * @var WorkspaceManagerInterface
+   * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
@@ -39,6 +42,7 @@ class DefaultReplicator {
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    * @param \Drupal\workspace\Changes\ChangesFactoryInterface $changes_factory
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\workspace\Index\SequenceIndexInterface $sequence_index
    */
   public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceManager = $workspace_manager;
@@ -46,14 +50,25 @@ class DefaultReplicator {
     $this->entityTypeManager = $entity_type_manager;
     $this->sequenceIndex = $sequence_index;
   }
+  
+  public function applies(UpstreamInterface $source, UpstreamInterface $target) {
+    list($source_plugin, $source_id) = explode(':', $source->getPluginId());
+    list($target_plugin, $target_id) = explode(':', $target->getPluginId());
+    if ($source_plugin == 'workspace' && $target_plugin == 'workspace'
+    && !empty($source_id) && !empty($target_id)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
 
   /**
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $source
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $target
-   *
-   * @return \Drupal\workspace\Entity\ReplicationLogInterface
+   * {@inheritdoc}
    */
-  public function replication(WorkspaceInterface $source, WorkspaceInterface $target) {
+  public function replicate(UpstreamInterface $source, UpstreamInterface $target) {
+    list($source_plugin, $source_id) = explode(':', $source->getPluginId());
+    list($target_plugin, $target_id) = explode(':', $target->getPluginId());
+    $source = Workspace::load($source_id);
+    $target = Workspace::load($target_id);
     $replication_id = \md5($source->id() . $target->id());
     $start_time = new \DateTime();
     $sessionId = \md5((\microtime(true) * 1000000));
