@@ -247,11 +247,9 @@ function workspace_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
  * Default value callback for 'upstream' base field definition.
  *
  * @return array
- *
- * @see workspace_entity_base_field_info()
  */
 function workspace_active_id() {
-  return \Drupal::service('workspace.manager')->getActiveWorkspace();
+  return 'workspace:' . \Drupal::service('workspace.manager')->getActiveWorkspace();
 }
 
 /**

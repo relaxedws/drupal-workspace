@@ -50,7 +50,13 @@ class DefaultReplicator implements ReplicationInterface {
     $this->entityTypeManager = $entity_type_manager;
     $this->sequenceIndex = $sequence_index;
   }
-  
+
+  /**
+   * @param \Drupal\workspace\UpstreamInterface $source
+   * @param \Drupal\workspace\UpstreamInterface $target
+   *q
+   * @return bool
+   */
   public function applies(UpstreamInterface $source, UpstreamInterface $target) {
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());

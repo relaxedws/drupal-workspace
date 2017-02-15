@@ -14,7 +14,7 @@ class ReplicationManager {
    * @param \Drupal\workspace\Replication\ReplicationInterface $replicator
    */
   public function addReplicator(ReplicationInterface $replicator, $priority) {
-    $replicators[$priority][] = $replicator;
+    $this->replicators[$priority][] = $replicator;
   }
 
   /**
@@ -23,9 +23,11 @@ class ReplicationManager {
    * @return mixed
    */
   public function replicate(UpstreamInterface $source, UpstreamInterface $target) {
-    foreach ($this->replicators as $replicator) {
-      if ($replicator->applies($source, $target)) {
-        return $replicator->replicate($source, $target);
+    foreach ($this->replicators as $replicators) {
+      foreach ($replicators as $replicator) {
+        if ($replicator->applies($source, $target)) {
+          return $replicator->replicate($source, $target);
+        }
       }
     }
   }

@@ -6,11 +6,11 @@ use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**
- * Class DefaultReplicatorTest
+ * Class ReplicationTest
  * 
  * @group workspace
  */
-class DefaultReplicatorTest extends BrowserTestBase {
+class ReplicationTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
 
@@ -80,9 +80,14 @@ class DefaultReplicatorTest extends BrowserTestBase {
 
     $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
 
-    /** @var \Drupal\workspace\DefaultReplicator $replicator */
-    $replicator = \Drupal::service('workspace.replicator');
-    $replicator->replication($dev, $stage);
+    /** @var \Drupal\workspace\Replication\ReplicationManager $replicator */
+    $replicator = \Drupal::service('workspace.replication_manager');
+    /** @var \Drupal\workspace\UpstreamManager $upstream */
+    $upstream = \Drupal::service('workspace.upstream_manager');
+    $replicator->replicate(
+      $upstream->createInstance('workspace:' . $dev->id()),
+      $upstream->createInstance('workspace:' . $stage->id())
+    );
 
     $this->switchToWorkspace($stage);
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
@@ -98,7 +103,10 @@ class DefaultReplicatorTest extends BrowserTestBase {
 
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->entity->id());
 
-    $replicator->replication($stage, $live);
+    $replicator->replicate(
+      $upstream->createInstance('workspace:' . $stage->id()),
+      $upstream->createInstance('workspace:' . $live->id())
+    );
 
     $this->switchToWorkspace($live);
     $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());

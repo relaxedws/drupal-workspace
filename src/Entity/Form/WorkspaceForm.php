@@ -102,6 +102,7 @@ class WorkspaceForm extends ContentEntityForm {
     $workspace = $this->entity;
     $insert = $workspace->isNew();
     $workspace->save();
+    \Drupal::service('workspace.upstream_manager')->clearCachedDefinitions();
     $info = ['%info' => $workspace->label()];
     $context = ['@type' => $workspace->bundle(), '%info' => $workspace->label()];
     $logger = $this->logger('workspace');
