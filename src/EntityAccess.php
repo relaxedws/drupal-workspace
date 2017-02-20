@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
  * Service wrapper for hooks relating to entity access control.
@@ -67,8 +66,10 @@ class EntityAccess {
       return AccessResult::neutral();
     }
 
-    if ($entity->getEntityType()->isRevisionable()) {
-      $workspace_manager = \Drupal::service('workspace.manager');
+    /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+    $workspace_manager = \Drupal::service('workspace.manager');
+    if ($workspace_manager->entityCanBelongToWorkspaces($entity)
+      && $entity->workspace->target_id != \Drupal::getContainer()->getParameter('workspace.default')) {
       $active_workspace = $workspace_manager->getActiveWorkspace();
       $result = \Drupal::entityTypeManager()
         ->getStorage('content_workspace')

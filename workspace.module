@@ -57,9 +57,9 @@ function workspace_query_alter(Drupal\Core\Database\Query\AlterableInterface $qu
     if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity_type) && $query->hasTag($entity_type_id . '_load_multiple')) {
       $entity_type_id = $entity_type->id();
       $entity_type_id_key = $entity_type->getKey('id');
-      $query->join('content_workspace_field_revision', 'cwfr', 'base.' . $entity_type_id_key . ' = cwfr.content_entity_id');
-      $query->condition('cwfr.content_entity_type_id', $entity_type_id);
-      $query->condition('cwfr.workspace', $active_workspace);
+      //$query->join('content_workspace_field_revision', 'cwfr', 'base.' . $entity_type_id_key . ' = cwfr.content_entity_id');
+      //$query->condition('cwfr.content_entity_type_id', $entity_type_id);
+      //$query->condition('cwfr.workspace', $active_workspace);
     }
   }
 }
@@ -99,11 +99,15 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   }
 
   $entity_type = $view->getBaseEntityType();
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity_type)) {
+    return;
+  }
+
   $configuration = [
     'table' => 'content_workspace_field_revision',
-    'field' => 'content_entity_id',
+    'field' => 'content_entity_revision_id',
     'left_table' => $entity_type->getDataTable(),
-    'left_field' => $entity_type->getKey('id'),
+    'left_field' => $entity_type->getKey('revision'),
     'operator' => '=',
   ];
   /** @var \Drupal\views\Plugin\views\join\JoinPluginBase $join */
@@ -111,11 +115,15 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
     ->createInstance('standard', $configuration);
   /** @var \Drupal\views\Plugin\views\query\Sql $query */
   $query->addRelationship('cwrf', $join, 'content_workspace_field_revision');
-  $query->addWhere($query->options['group'], 'cwrf.workspace', $active_workspace);
   foreach ($query->where as $where_id => $where) {
     foreach ($where['conditions'] as $condition_id => $condition) {
       if ($condition['field']  == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
-        $query->where[$where_id]['conditions'][$condition_id]['field'] = 'cwrf.published';
+        //$query->where[$where_id]['conditions'][$condition_id]['field'] = 'cwrf.published';
+        $value = $query->where[$where_id]['conditions'][$condition_id]['value'];
+        $query->setWhereGroup('OR', 'published');
+        $query->addWhere('published', 'cwrf.published', $value);
+        $query->addWhere('published', $entity_type->getDataTable() . '.' . $entity_type->getKey('published'), $value);
+        unset($query->where[$where_id]['conditions'][$condition_id]);
       }
     }
   }
@@ -139,6 +147,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     $results = \Drupal::entityTypeManager()
       ->getStorage('content_workspace')
       ->getQuery()
+      ->allRevisions()
       ->condition('content_entity_type_id', $entity_type_id)
       ->condition('content_entity_id', $keys, 'IN')
       ->condition('workspace', $active_workspace)
