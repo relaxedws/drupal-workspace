@@ -185,6 +185,11 @@ class WorkspaceManager implements WorkspaceManagerInterface {
       }
     }
 
+    $supported_entity_types = $this->getSupportedEntityTypes();
+    foreach ($supported_entity_types as $supported_entity_type) {
+      $this->entityTypeManager->getStorage($supported_entity_type->id())->resetCache();
+    }
+
     return $this;
   }
 
