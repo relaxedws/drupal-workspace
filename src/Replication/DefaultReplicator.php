@@ -4,6 +4,7 @@ namespace Drupal\workspace\Replication;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Changes\ChangesFactoryInterface;
+use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\Entity\WorkspaceInterface;
@@ -124,8 +125,6 @@ class DefaultReplicator implements ReplicationInterface {
         $entity = $this->entityTypeManager
           ->getStorage($entity_type_id)
           ->loadRevision($rev);
-        $entity->workspace->target_id = $target->id();
-        $entity->isDefaultRevision(($target->id() == \Drupal::getContainer()->getParameter('workspace.default')));
         $entities[] = $entity;
       }
     }
@@ -135,7 +134,7 @@ class DefaultReplicator implements ReplicationInterface {
 
     // Save each revision on the target workspace
     foreach ($entities as $entity) {
-      $entity->save();
+      $this->workspaceManager->updateOrCreateFromEntity($entity);
     }
 
     // Log

@@ -148,7 +148,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     $results = \Drupal::entityTypeManager()
       ->getStorage('content_workspace')
       ->getQuery()
-      ->allRevisions()
+      //->allRevisions()
       ->condition('content_entity_type_id', $entity_type_id)
       ->condition('content_entity_id', $keys, 'IN')
       ->condition('workspace', [$active_workspace, $default_workspace_id], 'IN')
@@ -209,9 +209,16 @@ function workspace_entity_presave(EntityInterface $entity) {
   if (!empty($workspace_manager->getActiveWorkspace())
     && $workspace_manager->entityCanBelongToWorkspaces($entity)) {
 
-    // We always want to create a new revision.
-    /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
-    $entity->setNewRevision(TRUE);
+    if (!$entity->isNew()) {
+      $original_workspace_id = $entity->original->workspace->target_id;
+      $workspace_id = $entity->workspace->target_id;
+      /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
+      if ($original_workspace_id == $workspace_id) {
+        // Force a new revision is the entity is not new and the workspace
+        // is the same as the previous revision.
+        $entity->setNewRevision(TRUE);
+      }
+    }
 
     // The publishing status can be stored in a property for safe keeping
     $entity->initial_published = $entity->isPublished();

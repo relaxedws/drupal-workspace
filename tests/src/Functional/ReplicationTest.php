@@ -78,7 +78,7 @@ class ReplicationTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page->findButton(t('Save'))->click();
 
-    $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
+    $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
 
     /** @var \Drupal\workspace\Replication\ReplicationManager $replicator */
     $replicator = \Drupal::service('workspace.replication_manager');
@@ -90,7 +90,7 @@ class ReplicationTest extends BrowserTestBase {
     );
 
     $this->switchToWorkspace($stage);
-    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
+    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
 
     $this->drupalGet('/node/add/test');
     $session = $this->getSession();
@@ -101,7 +101,7 @@ class ReplicationTest extends BrowserTestBase {
     $page = $session->getPage();
     $page->hasContent("Test stage node has been created");
 
-    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->entity->id());
+    $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
 
     $replicator->replicate(
       $upstream->createInstance('workspace:' . $stage->id()),
@@ -109,7 +109,7 @@ class ReplicationTest extends BrowserTestBase {
     );
 
     $this->switchToWorkspace($live);
-    $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->entity->id());
-    $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->entity->id());
+    $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
+    $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
   }
 }
