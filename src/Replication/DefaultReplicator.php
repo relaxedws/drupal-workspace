@@ -125,6 +125,7 @@ class DefaultReplicator implements ReplicationInterface {
         $entity = $this->entityTypeManager
           ->getStorage($entity_type_id)
           ->loadRevision($rev);
+        $entity->isDefaultRevision(TRUE);
         $entities[] = $entity;
       }
     }
@@ -134,7 +135,7 @@ class DefaultReplicator implements ReplicationInterface {
 
     // Save each revision on the target workspace
     foreach ($entities as $entity) {
-      $this->workspaceManager->updateOrCreateFromEntity($entity);
+      $entity->save();
     }
 
     // Log

@@ -70,38 +70,33 @@ class WorkspaceEntityTest extends BrowserTestBase {
 
         if ($initial_workspace == $default || $workspace_id == $default) {
           // When the node started on the default workspace, or the current
-          // workspace is default the node should always load the correct
-          // revision from the storage.
+          // workspace is default, entity queries should return the correct
+          // revision.
           $node_list = \Drupal::entityTypeManager()
             ->getStorage('node')
             ->loadByProperties(['title' => $vanilla_node->label()]);
           $this->assertSame($vanilla_node->getRevisionId(), reset($node_list)->getRevisionId());
-          $node_load = \Drupal::entityTypeManager()
-            ->getStorage('node')
-            ->load($vanilla_node->id());
-          $this->assertSame($vanilla_node->getRevisionId(), $node_load->getRevisionId());
-          $node = \Drupal::entityTypeManager()
-            ->getStorage('node')
-            ->loadUnchanged($vanilla_node->id());
-          $this->assertSame($vanilla_node->getRevisionId(), $node->getRevisionId());
         }
         else {
           // When the node was created on a non-default workspace and the
-          // current workspace is not the default loading the node should return
+          // current workspace is not the default, entity queries should return
           // nothing.
           $node_list = \Drupal::entityTypeManager()
             ->getStorage('node')
             ->loadByProperties(['title' => $vanilla_node->label()]);
           $this->assertSame(FALSE, reset($node_list));
-          $node_load = \Drupal::entityTypeManager()
-            ->getStorage('node')
-            ->load($vanilla_node->id());
-          $this->assertNull($node_load);
-          $node = \Drupal::entityTypeManager()
-            ->getStorage('node')
-            ->loadUnchanged($vanilla_node->id());
-          $this->assertNull($node);
         }
+
+        // Entity load and load_multiple should always return the default
+        // revision.
+        $node_load = \Drupal::entityTypeManager()
+          ->getStorage('node')
+          ->load($vanilla_node->id());
+        $this->assertSame($vanilla_node->getRevisionId(), $node_load->getRevisionId());
+        $node = \Drupal::entityTypeManager()
+          ->getStorage('node')
+          ->loadUnchanged($vanilla_node->id());
+        $this->assertSame($vanilla_node->getRevisionId(), $node->getRevisionId());
 
         if ($initial_workspace == $default) {
           // Then the node was created on the default workspace it should
@@ -120,12 +115,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
           $this->assertSession()->statusCodeEquals(200);
           $this->assertSession()->pageTextNotContains('Vanilla node');
           $this->drupalGet('/node/' . $vanilla_node->id());
-          if ($workspace_id == $default) {
-            $this->assertSession()->statusCodeEquals(403);
-          }
-          else {
-            $this->assertSession()->statusCodeEquals(404);
-          }
+          $this->assertSession()->statusCodeEquals(403);
           $this->assertSession()->pageTextNotContains('Vanilla node');
         }
       }
