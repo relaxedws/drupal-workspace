@@ -103,6 +103,7 @@ class WorkspaceForm extends ContentEntityForm {
       '#default_value' => $workspace->label(),
       '#description' => $this->t("Label for the Workspace."),
       '#required' => TRUE,
+      '#weight' => 1,
     );
 
     $form['machine_name'] = array(
@@ -116,7 +117,7 @@ class WorkspaceForm extends ContentEntityForm {
       '#element_validate' => array(),
     );
 
-    return parent::form($form, $form_state, $workspace);;
+    return parent::form($form, $form_state, $workspace);
   }
 
   /**

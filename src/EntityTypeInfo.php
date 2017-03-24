@@ -161,10 +161,9 @@ class EntityTypeInfo {
       ->setSetting('target_type', 'workspace_pointer')
       ->setDefaultValueCallback('workspace_active_id')
       ->setDisplayOptions('form', [
-        'type' => 'options_buttons',
-        'weight' => 0
-      ])
-      ->setDisplayConfigurable('form', TRUE);
+        'type' => 'options_upstream_buttons',
+        'weight' => 5
+      ]);
 
     $fields['pull_replication_settings'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Replication settings on update'))
@@ -173,7 +172,7 @@ class EntityTypeInfo {
       ->setSetting('target_type', 'replication_settings')
       ->setDisplayOptions('form', [
         'type' => 'options_select',
-        'weight' => 1
+        'weight' => 6
       ]);
 
     $fields['push_replication_settings'] = BaseFieldDefinition::create('entity_reference')
@@ -183,7 +182,7 @@ class EntityTypeInfo {
       ->setSetting('target_type', 'replication_settings')
       ->setDisplayOptions('form', [
         'type' => 'options_select',
-        'weight' => 2
+        'weight' => 7
       ]);
 
     return $fields;
