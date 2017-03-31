@@ -15,7 +15,7 @@ class RevisionsContextual extends RevisionsLocalTask implements ContainerDeriver
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = array();
 
-    foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+    foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
       if ($entity_type->hasLinkTemplate('version-tree')) {
         $this->derivatives[$entity_type_id] = array(
           'route_name' => "entity.$entity_type_id.version_tree",

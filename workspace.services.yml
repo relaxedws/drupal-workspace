@@ -25,7 +25,7 @@ services:
       - { name: event_subscriber }
   workspace.paramconverter.entity_revision:
     class: Drupal\workspace\ParamConverter\EntityRevisionConverter
-    arguments: ['@entity.manager']
+    arguments: ['@entity_type.manager', '@entity.repository']
     tags:
       - { name: paramconverter, priority: 30 }
   workspace.workbench_moderation_subscriber:

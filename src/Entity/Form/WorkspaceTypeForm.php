@@ -58,7 +58,7 @@ class WorkspaceTypeForm extends BundleEntityFormBase {
           '%label' => $workspace_type->label(),
         ]));
     }
-    $form_state->setRedirectUrl($workspace_type->urlInfo('collection'));
+    $form_state->setRedirectUrl($workspace_type->toUrl('collection'));
   }
 
 }
