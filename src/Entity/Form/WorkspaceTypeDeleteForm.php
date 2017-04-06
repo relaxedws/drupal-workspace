@@ -44,8 +44,8 @@ class WorkspaceTypeDeleteForm extends EntityDeleteForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $workspaces = $this->queryFactory->get('workspace')->condition('type', $this->entity->id())->execute();
     if (!empty($workspaces)) {
-      $caption = '<p>' . $this->formatPlural(count($workspaces), '%label is used by 1 workspace on your site. You can not remove this workspace type until you have removed all of the %label workspaces.', '%label is used by @count workspaces on your site. You may not remove %label until you have removed all of the %label custom workspaces.', array('%label' => $this->entity->label())) . '</p>';
-      $form['description'] = array('#markup' => $caption);
+      $caption = '<p>' . $this->formatPlural(count($workspaces), '%label is used by 1 workspace on your site. You can not remove this workspace type until you have removed all of the %label workspaces.', '%label is used by @count workspaces on your site. You may not remove %label until you have removed all of the %label custom workspaces.', ['%label' => $this->entity->label()]) . '</p>';
+      $form['description'] = ['#markup' => $caption];
       return $form;
     }
     else {

@@ -147,10 +147,10 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
       ->setDescription(t('The name of the Workspace pointer entity.'))
-      ->setSettings(array(
+      ->setSettings([
         'max_length' => 50,
         'text_processing' => 0,
-      ))
+      ])
       ->setRevisionable(TRUE)
       ->setDefaultValue('')
       ->setDisplayConfigurable('form', FALSE)

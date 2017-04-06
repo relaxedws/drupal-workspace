@@ -95,22 +95,22 @@ class ConflictListBuilder {
    *   The header array used by table render arrays.
    */
   public function buildHeader() {
-    $header = array(
+    $header = [
       'title' => $this->t('Title'),
-      'type' => array(
+      'type' => [
         'data' => $this->t('Content type'),
-        'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-      ),
-      'author' => array(
+        'class' => [RESPONSIVE_PRIORITY_MEDIUM],
+      ],
+      'author' => [
         'data' => $this->t('Author'),
-        'class' => array(RESPONSIVE_PRIORITY_LOW),
-      ),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+      ],
       'status' => $this->t('Status'),
-      'changed' => array(
+      'changed' => [
         'data' => $this->t('Updated'),
-        'class' => array(RESPONSIVE_PRIORITY_LOW),
-      ),
-    );
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+      ],
+    ];
     return $header;
   }
 
@@ -220,13 +220,13 @@ class ConflictListBuilder {
    *   A table render array to show on the page.
    */
   public function buildList($workspace_id) {
-    $build['table'] = array(
+    $build['table'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
       '#title' => $this->getTitle(),
-      '#rows' => array(),
+      '#rows' => [],
       '#empty' => 'There are no conflicts.',
-    );
+    ];
 
     $entities = $this->load($workspace_id);
     foreach ($entities as $entity) {
@@ -237,9 +237,9 @@ class ConflictListBuilder {
 
     // Only add the pager if a limit is specified.
     if (!empty($this->limit)) {
-      $build['pager'] = array(
+      $build['pager'] = [
         '#type' => 'pager',
-      );
+      ];
     }
 
     return $build;

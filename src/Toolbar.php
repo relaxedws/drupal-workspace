@@ -96,7 +96,7 @@ class Toolbar {
       '#type' => 'link',
       '#title' => t('Add workspace'),
       '#url' => Url::fromRoute('entity.workspace.add'),
-      '#options' => array('attributes' => array('class' => array('add-workspace'))),
+      '#options' => ['attributes' => ['class' => ['add-workspace']]],
     ];
 
     $items['workspace_switcher']['tray'] = [

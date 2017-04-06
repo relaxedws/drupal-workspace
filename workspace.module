@@ -120,8 +120,8 @@ function workspace_preprocess_workspace_add_list(&$variables) {
   if (!empty($variables['content'])) {
     foreach ($variables['content'] as $type) {
       $variables['types'][$type->id()]['label'] = $type->label();
-      $options = array('query' => \Drupal::request()->query->all());
-      $variables['types'][$type->id()]['url'] = Url::fromRoute('entity.workspace.add_form', array('workspace_type' => $type->id()), $options);
+      $options = ['query' => \Drupal::request()->query->all()];
+      $variables['types'][$type->id()]['url'] = Url::fromRoute('entity.workspace.add_form', ['workspace_type' => $type->id()], $options);
     }
   }
 }
@@ -160,7 +160,7 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.workspace':
       $output = '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The <a href="@link">Workspace module</a> Provides the ability to have multiple workspaces on a single site to facilitate things like full-site preview and content staging.', array('@link' => 'https://www.drupal.org/project/workspace')) . '</p>';
+      $output .= '<p>' . t('The <a href="@link">Workspace module</a> Provides the ability to have multiple workspaces on a single site to facilitate things like full-site preview and content staging.', ['@link' => 'https://www.drupal.org/project/workspace']) . '</p>';
       return $output;
   }
 }

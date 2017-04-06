@@ -93,10 +93,10 @@ class WorkspaceForm extends ContentEntityForm {
       }
 
       // Set the form title based on workspace.
-      $form['#title'] = $this->t('Edit workspace %label', array('%label' => $workspace->label()));
+      $form['#title'] = $this->t('Edit workspace %label', ['%label' => $workspace->label()]);
     }
 
-    $form['label'] = array(
+    $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
@@ -104,18 +104,18 @@ class WorkspaceForm extends ContentEntityForm {
       '#description' => $this->t("Label for the Workspace."),
       '#required' => TRUE,
       '#weight' => 1,
-    );
+    ];
 
-    $form['machine_name'] = array(
+    $form['machine_name'] = [
       '#type' => 'machine_name',
       '#title' => $this->t('Workspace ID'),
       '#maxlength' => 255,
       '#default_value' => $workspace->get('machine_name')->value,
-      '#machine_name' => array(
+      '#machine_name' => [
         'exists' => '\Drupal\multiversion\Entity\Workspace::load',
-      ),
-      '#element_validate' => array(),
-    );
+      ],
+      '#element_validate' => [],
+    ];
 
     return parent::form($form, $form_state, $workspace);
   }
@@ -124,10 +124,10 @@ class WorkspaceForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   protected function getEditedFieldNames(FormStateInterface $form_state) {
-    return array_merge(array(
+    return array_merge([
       'label',
       'machine_name',
-    ), parent::getEditedFieldNames($form_state));
+    ], parent::getEditedFieldNames($form_state));
   }
 
   /**
@@ -137,10 +137,10 @@ class WorkspaceForm extends ContentEntityForm {
     // Manually flag violations of fields not handled by the form display. This
     // is necessary as entity form displays only flag violations for fields
     // contained in the display.
-    $field_names = array(
+    $field_names = [
       'label',
       'machine_name',
-    );
+    ];
     foreach ($violations->getByFields($field_names) as $violation) {
       list($field_name) = explode('.', $violation->getPropertyPath(), 2);
       $form_state->setErrorByName($field_name, $violation->getMessage());
@@ -163,7 +163,7 @@ class WorkspaceForm extends ContentEntityForm {
     $workspace->save();
 
     $info = ['%info' => $workspace->label()];
-    $context = array('@type' => $workspace->bundle(), '%info' => $workspace->label());
+    $context = ['@type' => $workspace->bundle(), '%info' => $workspace->label()];
     $logger = $this->logger('workspace');
 
     // If Workbench Moderation is enabled, a publish of the Workspace should

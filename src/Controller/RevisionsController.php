@@ -18,20 +18,20 @@ class RevisionsController extends ControllerBase {
    *    Array of page elements to render.
    */
   public function revisions(RouteMatchInterface $route_match) {
-    $output = array();
+    $output = [];
 
     $parameter_name = $route_match->getRouteObject()->getOption('_entity_type_id');
     $entity = $route_match->getParameter($parameter_name);
 
     if ($entity && $entity instanceof ContentEntityInterface) {
       $tree = \Drupal::service('multiversion.entity_index.rev.tree')->getTree($entity->uuid());
-      $output = array(
+      $output = [
         '#theme' => 'item_list',
-        '#attributes' => array('class' => array('workspace')),
-        '#attached' => array('library' => array('workspace/drupal.workspace.admin')),
+        '#attributes' => ['class' => ['workspace']],
+        '#attached' => ['library' => ['workspace/drupal.workspace.admin']],
         '#items' => $tree,
         '#list_type' => 'ul',
-      );
+      ];
     }
     return $output;
   }

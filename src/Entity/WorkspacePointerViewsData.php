@@ -15,11 +15,11 @@ class WorkspacePointerViewsData extends EntityViewsData implements EntityViewsDa
   public function getViewsData() {
     $data = parent::getViewsData();
 
-    $data['workspace_pointer']['table']['base'] = array(
+    $data['workspace_pointer']['table']['base'] = [
       'field' => 'id',
       'title' => $this->t('Workspace pointer'),
       'help' => $this->t('The Workspace pointer ID.'),
-    );
+    ];
 
     return $data;
   }

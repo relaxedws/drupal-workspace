@@ -82,11 +82,11 @@ class WorkspaceListBuilder extends EntityListBuilder {
 
     $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
     if ($entity->id() != $active_workspace) {
-      $operations['activate'] = array(
+      $operations['activate'] = [
         'title' => $this->t('Set Active'),
         'weight' => 20,
         'url' => $entity->toUrl('activate-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
-      );
+      ];
     }
 
     $operations['conflicts'] = [

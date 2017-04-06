@@ -18,23 +18,23 @@ class WorkspaceTypeForm extends BundleEntityFormBase {
     $form = parent::form($form, $form_state);
 
     $workspace_type = $this->entity;
-    $form['label'] = array(
+    $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
       '#default_value' => $workspace_type->label(),
       '#description' => $this->t("Label for the Workspace type."),
       '#required' => TRUE,
-    );
+    ];
 
-    $form['id'] = array(
+    $form['id'] = [
       '#type' => 'machine_name',
       '#default_value' => $workspace_type->id(),
-      '#machine_name' => array(
+      '#machine_name' => [
         'exists' => '\Drupal\multiversion\Entity\WorkspaceType::load',
-      ),
+      ],
       '#disabled' => !$workspace_type->isNew(),
-    );
+    ];
 
     return $this->protectBundleIdElement($form);
   }
