@@ -3,16 +3,18 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\WorkspaceInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Service wrapper for hooks relating to entity access control.
  */
-class EntityAccess {
+class EntityAccess implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
@@ -47,6 +49,19 @@ class EntityAccess {
     $this->workspaceManager = $workspace_manager;
     $this->defaultWorkspaceId = $default_workspace;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('workspace.manager'),
+      $container->getParameter('workspace.default')
+
+    );
+  }
+
 
   /**
    * Hook bridge;

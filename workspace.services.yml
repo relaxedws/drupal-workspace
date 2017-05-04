@@ -9,9 +9,6 @@ services:
     arguments: ['@entity.manager']
     tags:
       - { name: paramconverter, priority: 30 }
-  workspace.entity_access:
-    class: Drupal\workspace\EntityAccess
-    arguments: ['@entity_type.manager', '@workspace.manager', '%workspace.default%']
   access_check.workspace_view:
     class: Drupal\workspace\Access\WorkspaceViewCheck
     tags:

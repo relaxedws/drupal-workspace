@@ -39,34 +39,9 @@ class DeploymentForm extends FormBase {
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => 'Deploy to ' . $upstream_plugin->getLabel(),
-      '#ajax' => [
-        'callback' => [self::class, 'ajaxResponse'],
-        'progress' => [
-          'type' => 'bar',
-          'message' => 'Deploying from ' . $workspace->label() . ' to ' . $upstream_plugin->getLabel(),
-        ]
-      ],
     ];
 
     return $form;
-  }
-
-  /**
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
-   */
-  public function ajaxResponse(array &$form, FormStateInterface $form_state) {
-    $workspace = Workspace::load($form_state->getValue('workspace_id'));
-    $upstream_plugin = \Drupal::service('workspace.upstream_manager')->createInstance($workspace->get('upstream')->value);
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand(
-      '#workspace-deployment-form',
-      'Deployed to ' . $upstream_plugin->getLabel()
-    ));
-    return $response;
   }
 
   /**
@@ -75,10 +50,17 @@ class DeploymentForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
     $upstream_manager = \Drupal::service('workspace.upstream_manager');
-    \Drupal::service('workspace.replication_manager')->replicate(
-      $upstream_manager->createInstance('workspace:' . $workspace->id()),
-      $upstream_manager->createInstance($workspace->get('upstream')->value)
-    );
+    try {
+      \Drupal::service('workspace.replication_manager')->replicate(
+        $upstream_manager->createInstance('workspace:' . $workspace->id()),
+        $upstream_manager->createInstance($workspace->get('upstream')->value)
+      );
+      drupal_set_message('Successful deployment.');
+    }
+    catch (\Exception $e) {
+      drupal_set_message('Deployment error', 'error');
+    }
+
   }
 
 }

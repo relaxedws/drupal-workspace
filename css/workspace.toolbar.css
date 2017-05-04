@@ -20,21 +20,34 @@
 }
 
 .toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab,
-.toolbar .toolbar-bar .workspace-update-toolbar-tab.toolbar-tab{
+.toolbar .toolbar-bar .workspace-update-toolbar-tab.toolbar-tab,
+.toolbar .toolbar-bar .workspace-deploy-toolbar-tab.toolbar-tab {
   float: right;
 }
 
-.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"] {
+.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"],
+.workspace-deploy-toolbar-tab input[type="submit"] {
   display: block;
   background: transparent;
   border: 0;
   border-radius: 0;
   margin: 0;
   padding: 1em 1.3333em;
-  font-weight: normal;
+  font-weight: bold;
   font-size: 1em;
   line-height: 1;
+  color: #DDDDDD;
+}
+
+.workspace-deploy-toolbar-tab input[type="submit"]:hover,
+.workspace-deploy-toolbar-tab input[type="submit"]:focus {
+  background-image: linear-gradient(rgba(255,255,255,0.125) 20%,transparent 200%);
+  background-color: transparent;
+}
+
+.toolbar #toolbar-item-workspace-switcher-tray input[type="submit"] {
   color: #565656;
+  font-weight: normal;
 }
 
 .toolbar #toolbar-item-workspace-switcher-tray input[type="submit"]:hover {

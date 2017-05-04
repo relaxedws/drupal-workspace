@@ -11,7 +11,7 @@ use Drupal\Core\Url;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\EntityAccess;
 use Drupal\workspace\Form\WorkspaceSwitcherForm;
 use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
 
@@ -278,6 +278,17 @@ function workspace_toolbar() {
     ],
   ];
 
+  $items['deploy'] = [
+    '#type' => 'toolbar_item',
+    '#weight' => 130,
+    '#wrapper_attributes' => [
+      'class' => ['workspace-deploy-toolbar-tab'],
+    ],
+    'tab' => [
+      \Drupal::formBuilder()->getForm(\Drupal\workspace\Form\DeploymentForm::class, $active_workspace),
+    ],
+  ];
+
   $items['workspace_switcher']['tab'] = [
     '#type' => 'link',
     '#title' => t('@active', ['@active' => $active_workspace->label()]),
@@ -338,7 +349,9 @@ function workspace_switcher_toolbar_pre_render(array $element) {
  * @see \Drupal\workspace\EntityAccess
  */
 function workspace_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
-  return \Drupal::service('workspace.entity_access')->entityAccess($entity, $operation, $account);
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityAccess::class)
+    ->entityAccess($entity, $operation, $account);
 }
 
 /**
@@ -347,7 +360,9 @@ function workspace_entity_access(EntityInterface $entity, $operation, AccountInt
  * @see \Drupal\workspace\EntityAccess
  */
 function workspace_entity_create_access(AccountInterface $account, array $context, $entity_bundle) {
-  return \Drupal::service('workspace.entity_access')->entityCreateAccess($account, $context, $entity_bundle);
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityAccess::class)
+    ->entityCreateAccess($account, $context, $entity_bundle);
 }
 
 /**
@@ -356,7 +371,9 @@ function workspace_entity_create_access(AccountInterface $account, array $contex
  * @see \Drupal\workspace\EntityAccess
  */
 function workspace_workspace_access(EntityInterface $entity, $operation, AccountInterface $account) {
-  return \Drupal::service('workspace.entity_access')->workspaceAccess($entity, $operation, $account);
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityAccess::class)
+    ->workspaceAccess($entity, $operation, $account);
 }
 
 /**
@@ -365,7 +382,9 @@ function workspace_workspace_access(EntityInterface $entity, $operation, Account
  * @see \Drupal\workspace\EntityAccess
  */
 function workspace_workspace_create_access(AccountInterface $account, array $context, $entity_bundle) {
-  return \Drupal::service('workspace.entity_access')->workspaceCreateAccess($account, $context, $entity_bundle);
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityAccess::class)
+    ->workspaceCreateAccess($account, $context, $entity_bundle);
 }
 
 
