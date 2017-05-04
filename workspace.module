@@ -7,10 +7,14 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\Form\WorkspaceSwitcherForm;
 use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
+
 
 /**
  * Implements hook_help().
@@ -38,29 +42,6 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setClass(WorkspaceFieldItemList::class)
       ->setSetting('target_type', 'workspace')
       ->setTranslatable(TRUE)];
-  }
-}
-
-/**
- * Implements hook_query_alter().
- */
-function workspace_query_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
-  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-  $workspace_manager = \Drupal::service('workspace.manager');
-  $active_workspace = $workspace_manager->getActiveWorkspace();
-  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-  if ($active_workspace == $default_workspace_id) {
-    return;
-  }
-
-  foreach ($workspace_manager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
-    if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity_type) && $query->hasTag($entity_type_id . '_load_multiple')) {
-      $entity_type_id = $entity_type->id();
-      $entity_type_id_key = $entity_type->getKey('id');
-      //$query->leftJoin('content_workspace_field_revision', 'cwfr', 'base.' . $entity_type_id_key . ' = cwfr.content_entity_id');
-      //$query->condition('cwfr.content_entity_type_id', $entity_type_id);
-      //$query->condition('cwfr.workspace', [$active_workspace, $default_workspace_id], 'IN');
-    }
   }
 }
 
@@ -277,7 +258,78 @@ function workspace_active_id() {
  * @see \Drupal\workspace\Toolbar
  */
 function workspace_toolbar() {
-  return \Drupal::service('workspace.toolbar')->toolbar();
+  $items = [];
+
+  /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
+
+  $items['workspace_switcher'] = [
+    // Include the toolbar_tab_wrapper to style the link like a toolbar tab.
+    // Exclude the theme wrapper if custom styling is desired.
+    '#type' => 'toolbar_item',
+    '#weight' => 125,
+    '#wrapper_attributes' => [
+      'class' => ['workspace-toolbar-tab'],
+    ],
+    '#attached' => [
+      'library' => [
+        'workspace/drupal.workspace.toolbar',
+      ],
+    ],
+  ];
+
+  $items['workspace_switcher']['tab'] = [
+    '#type' => 'link',
+    '#title' => t('@active', ['@active' => $active_workspace->label()]),
+    '#url' => Url::fromRoute('entity.workspace.collection'),
+    '#attributes' => [
+      'title' => t('Switch workspaces'),
+      'class' => ['toolbar-icon', 'toolbar-icon-workspace'],
+    ],
+  ];
+
+  $create_link = [
+    '#type' => 'link',
+    '#title' => t('Add workspace'),
+    '#url' => Url::fromRoute('entity.workspace.add_form'),
+    '#options' => ['attributes' => ['class' => ['add-workspace']]],
+  ];
+
+  $items['workspace_switcher']['tray'] = [
+    '#heading' => t('Switch to workspace'),
+    '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
+    // This wil get filled in via pre-render.
+    'workspace_forms' => [],
+    'create_link' => $create_link,
+    '#cache' => [
+      'contexts' => \Drupal::entityTypeManager()->getDefinition('workspace')->getListCacheContexts(),
+      'tags' => \Drupal::entityTypeManager()->getDefinition('workspace')->getListCacheTags(),
+    ],
+    '#attributes' => [
+      'class' => ['toolbar-menu'],
+    ],
+  ];
+
+  return $items;
+}
+
+/**
+ * Prerender callback; Adds the workspace switcher forms to the render array.
+ *
+ * @param array $element
+ *
+ * @return array
+ *   The modified $element.
+ */
+function workspace_switcher_toolbar_pre_render(array $element) {
+  /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+  foreach (\Drupal::entityTypeManager()->getStorage('workspace')->loadMultiple() as $workspace) {
+    if ($workspace->access('view', \Drupal::currentUser())) {
+      $element['workspace_forms']['workspace_' . $workspace->getMachineName()] = \Drupal::formBuilder()->getForm(WorkspaceSwitcherForm::class, $workspace);
+    }
+  }
+
+  return $element;
 }
 
 /**

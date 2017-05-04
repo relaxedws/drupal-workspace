@@ -4,9 +4,6 @@ parameters:
     default: keyvalue.sorted_set.database
 
 services:
-  workspace.toolbar:
-    class: Drupal\workspace\Toolbar
-    arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder', '@current_user']
   workspace.paramconverter.entity_revision:
     class: Drupal\workspace\ParamConverter\EntityRevisionConverter
     arguments: ['@entity.manager']
