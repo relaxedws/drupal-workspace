@@ -56,7 +56,7 @@ class DeploymentController extends ControllerBase implements ContainerInjectionI
     $workspaces = Workspace::loadMultiple();
     $active_workspace = $workspaces[$active_workspace_id];
     unset($workspaces[$active_workspace_id]);
-    $deploy = $this->formBuilder->getForm(DeploymentForm::class, $active_workspace);
+    return $this->formBuilder->getForm(DeploymentForm::class, $active_workspace);
     return [
       '#theme' => 'workspace_deployment',
       '#active_workspace' => $active_workspace,
