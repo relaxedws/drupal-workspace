@@ -39,4 +39,4 @@ update any workspace from upstream:
   description: Update any workspace with the latest changes from its upstream workspace.
 
 permission_callbacks:
-  - workspace.entity_access::workspacePermissions
+  - Drupal\workspace\EntityAccess::workspacePermissions
