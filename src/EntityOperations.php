@@ -3,6 +3,7 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 
@@ -22,13 +23,21 @@ class EntityOperations {
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * Constructs a new Toolbar.
    *
    * @param \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\State\StateInterface $state
    */
-  public function __construct(MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
     $this->multiversionManager = $multiversion_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->state = $state;
   }
 
   /**
@@ -59,10 +68,18 @@ class EntityOperations {
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    */
   public function workspaceDelete(WorkspaceInterface $workspace) {
+    // Delete related workspace pointer entities.
     /** @var \Drupal\workspace\WorkspacePointerInterface[] $workspace_pointers */
     $workspace_pointers = $this->entityTypeManager->getStorage('workspace_pointer')->loadByProperties(['workspace_pointer' => $workspace->id()]);
-    $workspace_pointer = reset($workspace_pointers);
-    $workspace_pointer->delete();
+    if (!empty($workspace_pointers)) {
+      $workspace_pointer = reset($workspace_pointers);
+      $workspace_pointer->delete();
+    }
+
+    // Store a list of workspace IDs that still need processing.
+    $workspace_deleted = $this->state->get('workspace_deleted') ?: [];
+    $workspace_deleted[] = $workspace->id();
+    $this->state->set('workspace_deleted', $workspace_deleted);
   }
 
 }
