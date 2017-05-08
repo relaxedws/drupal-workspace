@@ -50,4 +50,19 @@ class EntityOperations {
     $pointer->save();
   }
 
+
+  /**
+   * Hook bridge for hook_workspace_delete()
+   *
+   * @see hook_ENTITY_TYPE_delete()
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   */
+  public function workspaceDelete(WorkspaceInterface $workspace) {
+    /** @var \Drupal\workspace\WorkspacePointerInterface[] $workspace_pointers */
+    $workspace_pointers = $this->entityTypeManager->getStorage('workspace_pointer')->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    $workspace_pointer = reset($workspace_pointers);
+    $workspace_pointer->delete();
+  }
+
 }

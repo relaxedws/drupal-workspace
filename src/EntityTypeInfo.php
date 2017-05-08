@@ -7,6 +7,7 @@ use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\workspace\Entity\Form\WorkspaceForm;
+use Drupal\workspace\Entity\Form\WorkspaceDeleteForm;
 use Drupal\workspace\Entity\Form\WorkspaceTypeDeleteForm;
 use Drupal\workspace\Entity\Form\WorkspaceTypeForm;
 
@@ -104,9 +105,11 @@ class EntityTypeInfo {
     $workspace->setFormClass('default', WorkspaceForm::class);
     $workspace->setFormClass('add', WorkspaceForm::class);
     $workspace->setFormClass('edit', WorkspaceForm::class);
+    $workspace->setFormClass('delete', WorkspaceDeleteForm::class);
     $workspace->setLinkTemplate('collection', '/admin/structure/workspace');
     $workspace->setLinkTemplate('canonical', '/admin/structure/workspace/{workspace}');
     $workspace->setLinkTemplate('edit-form', '/admin/structure/workspace/{workspace}/edit');
+    $workspace->setLinkTemplate('delete-form', '/admin/structure/workspace/{workspace}/delete');
     $workspace->setLinkTemplate('activate-form', '/admin/structure/workspace/{workspace}/activate');
     $workspace->setLinkTemplate('conflicts', '/admin/structure/workspace/{workspace}/conflicts');
     $workspace->set('field_ui_base_route', 'entity.workspace_type.edit_form');
