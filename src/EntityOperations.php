@@ -2,8 +2,10 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\State\StateInterface;
+use Drupal\Core\Queue\QueueFactory;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\MultiversionManagerInterface;
 
@@ -23,7 +25,7 @@ class EntityOperations {
   protected $entityTypeManager;
 
   /**
-   * @var \Drupal\Core\State\StateInterface
+   * @var \Drupal\Core\Queue\QueueFactory
    */
   protected $state;
 
@@ -32,12 +34,12 @@ class EntityOperations {
    *
    * @param \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   * @param \Drupal\Core\State\StateInterface $state
+   * @param \Drupal\Core\Queue\QueueInterface $queue
    */
-  public function __construct(MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
+  public function __construct(MultiversionManagerInterface $multiversion_manager, EntityTypeManagerInterface $entity_type_manager, QueueFactory $queue) {
     $this->multiversionManager = $multiversion_manager;
     $this->entityTypeManager = $entity_type_manager;
-    $this->state = $state;
+    $this->queue = $queue;
   }
 
   /**
@@ -76,10 +78,25 @@ class EntityOperations {
       $workspace_pointer->delete();
     }
 
-    // Store a list of workspace IDs that still need processing.
-    $workspace_deleted = $this->state->get('workspace_deleted') ?: [];
-    $workspace_deleted[] = $workspace->id();
-    $this->state->set('workspace_deleted', $workspace_deleted);
+    /** @var \Drupal\Core\Queue\QueueInterface $queue */
+    $queue = $this->queue->get('deleted_workspace_queue');
+    $queue->createQueue();
+    /** @var ContentEntityTypeInterface $entity_type */
+    foreach ($this->multiversionManager->getEnabledEntityTypes() as $entity_type) {
+      $entity_ids = $this->entityTypeManager
+        ->getStorage($entity_type->id())
+        ->getQuery()
+        ->condition('workspace', $workspace->id())
+        ->execute();
+      foreach ($entity_ids as $entity_id) {
+        $data = [
+          'workspace' => $workspace->id(),
+          'entity_type_id' => $entity_type->id(),
+          'entity_id' => $entity_id,
+        ];
+        $queue->createItem($data);
+      }
+    }
   }
 
 }

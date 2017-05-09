@@ -14,7 +14,7 @@ services:
     arguments: ['@multiversion.manager']
   workspace.entity_operations:
     class: Drupal\workspace\EntityOperations
-    arguments: ['@multiversion.manager', '@entity_type.manager', '@state']
+    arguments: ['@multiversion.manager', '@entity_type.manager', '@queue']
   workspace.toolbar:
     class: Drupal\workspace\Toolbar
     arguments: ['@entity_type.manager', '@workspace.manager', '@form_builder', '@current_user']
