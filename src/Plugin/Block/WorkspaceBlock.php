@@ -54,7 +54,7 @@ class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterfac
   public function build() {
     $build = [
       // @todo the block depending on the toolbar is obscure; find a better way to generate this form
-      '#pre_render' => ['workspace.toolbar:preRenderWorkspaceSwitcherForms'],
+      '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
       // This wil get filled in via pre-render.
       'workspace_forms' => [],
       '#attached' => [
