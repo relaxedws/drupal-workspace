@@ -118,36 +118,37 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
 function workspace_entity_load(array &$entities, $entity_type_id) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces(\Drupal::entityTypeManager()->getDefinition($entity_type_id))) {
+    return;
+  }
+
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   if ($active_workspace == $default_workspace_id) {
       return;
   }
 
-  if ($workspace_manager->entityTypeCanBelongToWorkspaces(\Drupal::entityTypeManager()->getDefinition($entity_type_id))) {
-    $keys = array_keys($entities);
-    $results = \Drupal::entityTypeManager()
+  $keys = array_keys($entities);
+  $results = \Drupal::entityTypeManager()
+    ->getStorage('content_workspace')
+    ->getQuery()
+    ->condition('content_entity_type_id', $entity_type_id)
+    ->condition('content_entity_id', $keys, 'IN')
+    ->condition('workspace', [$active_workspace, $default_workspace_id], 'IN')
+    ->execute();
+  foreach ($results as $revision_id => $entity_id) {
+    /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
+    $content_workspace = \Drupal::entityTypeManager()
       ->getStorage('content_workspace')
-      ->getQuery()
-      //->allRevisions()
-      ->condition('content_entity_type_id', $entity_type_id)
-      ->condition('content_entity_id', $keys, 'IN')
-      ->condition('workspace', [$active_workspace, $default_workspace_id], 'IN')
-      ->execute();
-    foreach ($results as $revision_id => $entity_id) {
-      /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
-      $content_workspace = \Drupal::entityTypeManager()
-        ->getStorage('content_workspace')
-        ->loadRevision($revision_id);
-      $entity = $entities[$content_workspace->get('content_entity_id')->value];
-      if ($content_workspace->get('content_entity_revision_id')->value != $entity->getRevisionId()) {
-        $new_entity = \Drupal::entityTypeManager()
-          ->getStorage($entity_type_id)
-          ->loadRevision($content_workspace->get('content_entity_revision_id')->value);
-        $entities[$entity->id()] = $new_entity;
-      }
-      $content_workspace->isPublished() ? $entities[$entity->id()]->setPublished() : $entities[$entity->id()]->setUnpublished();
+      ->loadRevision($revision_id);
+    $entity = $entities[$content_workspace->get('content_entity_id')->value];
+    if ($content_workspace->get('content_entity_revision_id')->value != $entity->getRevisionId()) {
+      $new_entity = \Drupal::entityTypeManager()
+        ->getStorage($entity_type_id)
+        ->loadRevision($content_workspace->get('content_entity_revision_id')->value);
+      $entities[$entity->id()] = $new_entity;
     }
+    $content_workspace->isPublished() ? $entities[$entity->id()]->setPublished() : $entities[$entity->id()]->setUnpublished();
   }
 }
 
