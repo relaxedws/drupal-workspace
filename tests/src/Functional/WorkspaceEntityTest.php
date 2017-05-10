@@ -40,7 +40,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $this->createNodeType('Test', 'test');
     $this->setupWorkspaceSwitcherBlock();
 
-    $buster = $this->drupalCreateUser(array_merge($permissions, ['create test content']));
+    $buster = $this->drupalCreateUser(array_merge($permissions, ['view own unpublished content', 'create test content', 'edit own test content']));
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($buster);
@@ -63,6 +63,31 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Vanilla node');
     $this->drupalGet('/node/' . $vanilla_node->id());
     $this->assertSession()->pageTextContains('Vanilla node');
+
+    $strawberry_node = $this->createNodeThroughUI('Strawberry node', 'test', FALSE);
+    $this->assertEquals($initial_workspace, $strawberry_node->workspace->target_id);
+
+    $this->drupalGet('/node');
+    $this->assertSession()->pageTextNotContains('Strawberry node');
+    $this->drupalGet('/node/' . $strawberry_node->id());
+    $this->assertSession()->pageTextContains('Strawberry node');
+
+    $chocolate_node = $this->createNodeThroughUI('Chocolate node', 'test', FALSE);
+    $this->assertEquals($initial_workspace, $chocolate_node->workspace->target_id);
+
+    $this->drupalGet('/node');
+    $this->assertSession()->pageTextNotContains('Chocolate node');
+    $this->drupalGet('/node/' . $chocolate_node->id());
+    $this->assertSession()->pageTextContains('Chocolate node');
+
+    $this->drupalPostForm('/node/' . $chocolate_node->id() . '/edit', [
+      'title[0][value]' => 'Mint node'
+    ], t('Save and publish'));
+
+    $this->drupalGet('/node');
+    $this->assertSession()->pageTextContains('Mint node');
+    $this->drupalGet('/node/' . $chocolate_node->id());
+    $this->assertSession()->pageTextContains('Mint node');
 
     foreach ($workspaces as $workspace_id => $workspace) {
       if ($workspace_id != $initial_workspace) {

@@ -205,10 +205,11 @@ function workspace_entity_presave(EntityInterface $entity) {
     // The publishing status can be stored in a property for safe keeping
     $entity->initial_published = $entity->isPublished();
 
-    if (\Drupal::getContainer()->getParameter('workspace.default') != $workspace_manager->getActiveWorkspace()) {
+    $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+    if ($default_workspace_id != $workspace_manager->getActiveWorkspace()) {
       // As this is the non-default workspace only new entity revisions should be
       // made default.
-      $entity->isNew() ? $entity->isDefaultRevision(TRUE) : $entity->isDefaultRevision(FALSE);
+      $entity->isNew() || ($entity->original->workspace->target_id != $default_workspace_id) ? $entity->isDefaultRevision(TRUE) : $entity->isDefaultRevision(FALSE);
 
       // All entities in the non-default workspace get unpublished.
       $entity->setUnpublished();

@@ -154,7 +154,7 @@ trait WorkspaceTestUtilities {
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createNodeThroughUI($label, $bundle) {
+  protected function createNodeThroughUI($label, $bundle, $publish = TRUE) {
     $this->drupalGet('/node/add/' . $bundle);
 
     $session = $this->getSession();
@@ -162,7 +162,12 @@ trait WorkspaceTestUtilities {
 
     $page = $session->getPage();
     $page->fillField('Title', $label);
-    $page->findButton(t('Save'))->click();
+    if ($publish) {
+      $page->findButton(t('Save and publish'))->click();
+    }
+    else {
+      $page->findButton(t('Save as unpublished'))->click();
+    }
 
     $session->getPage()->hasContent("{$label} has been created");
 
