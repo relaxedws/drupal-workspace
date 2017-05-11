@@ -157,13 +157,16 @@ trait WorkspaceTestUtilities {
   protected function createNodeThroughUI($label, $bundle, $publish = TRUE) {
     $this->drupalGet('/node/add/' . $bundle);
 
+    /** @var \Behat\Mink\Session $session */
     $session = $this->getSession();
     $this->assertSession()->statusCodeEquals(200);
 
+    /** @var \Behat\Mink\Element\DocumentElement $page */
     $page = $session->getPage();
     $page->fillField('Title', $label);
     if ($publish) {
-      $page->findButton(t('Save and publish'))->click();
+      $button = $page->findButton(t('Save and publish')) ?: $page->findButton(t('Save'));
+      $button->click();
     }
     else {
       $page->findButton(t('Save as unpublished'))->click();
