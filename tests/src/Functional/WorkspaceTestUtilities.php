@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
+use Drupal\node\Entity\NodeType;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
