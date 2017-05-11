@@ -34,7 +34,7 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_entity_base_field_info().
  */
 function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if ($entity_type->isRevisionable() && !in_array($entity_type->id(), ['content_workspace', 'workspace'])) {
+  if (\Drupal::service('workspace.manager')->entityTypeCanBelongToWorkspaces($entity_type)) {
     return ['workspace' => BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Workspace'))
       ->setDescription(t('The Workspace of this piece of content.'))
