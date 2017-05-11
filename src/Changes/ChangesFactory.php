@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\workspace\Changes;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -45,4 +46,5 @@ class ChangesFactory implements ChangesFactoryInterface {
     }
     return $this->instances[$workspace->id()];
   }
+
 }

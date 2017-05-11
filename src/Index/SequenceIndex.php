@@ -53,7 +53,7 @@ class SequenceIndex implements SequenceIndexInterface {
    * {@inheritdoc}
    */
   public function add(ContentEntityInterface $entity) {
-    $workspace_id = null;
+    $workspace_id = NULL;
     $record = $this->buildRecord($entity);
     if ($entity->getEntityType()->get('workspace') === FALSE) {
       $workspace_id = 0;
@@ -87,7 +87,7 @@ class SequenceIndex implements SequenceIndexInterface {
    * @param $workspace_id
    * @return \Drupal\key_value\KeyValueStore\KeyValueStoreSortedSetInterface
    */
-  protected function sortedSetStore($workspace_id = null) {
+  protected function sortedSetStore($workspace_id = NULL) {
     if (!$workspace_id) {
       $workspace_id = $this->workspaceId ?: $this->workspaceManager->getActiveWorkspace()->id();
     }

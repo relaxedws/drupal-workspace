@@ -8,6 +8,9 @@ use Drupal\workspace\UpstreamInterface;
  */
 class ReplicationManager {
 
+  /**
+   * @var array
+   */
   protected $replicators = [];
 
   /**
@@ -20,6 +23,7 @@ class ReplicationManager {
   /**
    * @param \Drupal\workspace\UpstreamInterface $source
    * @param \Drupal\workspace\UpstreamInterface $target
+   *
    * @return mixed
    */
   public function replicate(UpstreamInterface $source, UpstreamInterface $target) {
@@ -31,4 +35,5 @@ class ReplicationManager {
       }
     }
   }
+
 }

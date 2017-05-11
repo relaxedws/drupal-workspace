@@ -2,10 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\node\Entity\NodeType;
-use Drupal\workspace\WorkspacePointerInterface;
 
 /**
  * Utility methods for use in BrowserTestBase tests.
@@ -22,7 +19,7 @@ trait WorkspaceTestUtilities {
    *
    * @param $label
    *   The label of the workspace to load.
-   * @return WorkspaceInterface
+   * @return \Drupal\workspace\Entity\WorkspaceInterface
    */
   protected function getOneWorkspaceByLabel($label) {
     return $this->getOneEntityByLabel('workspace', $label);
@@ -38,10 +35,10 @@ trait WorkspaceTestUtilities {
    *   The type of entity to load.
    * @param $label
    *   The label of the entity to load.
-   * @return WorkspaceInterface
+   * @return \Drupal\workspace\Entity\WorkspaceInterface
    */
   protected function getOneEntityByLabel($type, $label) {
-    /** @var EntityTypeManagerInterface $etm */
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
 
     $property = $etm->getDefinition($type)->getKey('label');
@@ -65,7 +62,7 @@ trait WorkspaceTestUtilities {
    * @param string $machine_name
    *   The machine name of the workspace to create.
    *
-   * @return WorkspaceInterface
+   * @return \Drupal\workspace\Entity\WorkspaceInterface
    *   The workspace that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
@@ -112,7 +109,7 @@ trait WorkspaceTestUtilities {
    * This assumes that the switcher block has already been setup by calling
    * setupWorkspaceSwitcherBlock().
    *
-   * @param WorkspaceInterface $workspace
+   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace to set active.
    */
   protected function switchToWorkspace(WorkspaceInterface $workspace) {
@@ -184,11 +181,11 @@ trait WorkspaceTestUtilities {
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace for which we want a pointer.
-   * @return WorkspacePointerInterface
+   * @return \Drupal\workspace\WorkspacePointerInterface
    *   The pointer to the provided workspace.
    */
   protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
-    /** @var EntityTypeManagerInterface $etm */
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
 
     $pointers = $etm->getStorage('workspace_pointer')

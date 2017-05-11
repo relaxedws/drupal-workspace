@@ -75,7 +75,6 @@ class EntityAccess implements ContainerInjectionInterface {
    * @return AccessResult
    */
   public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-
     // Workspaces themselves are handled by another hook. Ignore them here.
     if ($entity->getEntityTypeId() == 'workspace') {
       return AccessResult::neutral();
@@ -179,7 +178,7 @@ class EntityAccess implements ContainerInjectionInterface {
    * Hook bridge;
    *
    * @see hook_create_access();
-   * @see hook_ENTITY_TYPE_create_access().
+   * @see hook_ENTITY_TYPE_create_access()
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    * @param array $context

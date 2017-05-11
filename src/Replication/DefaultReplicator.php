@@ -4,10 +4,8 @@ namespace Drupal\workspace\Replication;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Changes\ChangesFactoryInterface;
-use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Index\SequenceIndexInterface;
 use Drupal\workspace\UpstreamInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
@@ -78,7 +76,7 @@ class DefaultReplicator implements ReplicationInterface {
     $target = Workspace::load($target_id);
     $replication_id = \md5($source->id() . $target->id());
     $start_time = new \DateTime();
-    $sessionId = \md5((\microtime(true) * 1000000));
+    $sessionId = \md5((\microtime(TRUE) * 1000000));
     $replication_log = ReplicationLog::loadOrCreate($replication_id);
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 

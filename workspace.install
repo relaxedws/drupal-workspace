@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains install and update functions for Workspace.
+ */
+
 use Drupal\workspace\Entity\Workspace;
 
 /**

@@ -24,7 +24,7 @@ interface WorkspaceNegotiatorInterface {
 
   /**
    * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return boolean
+   * @return bool
    */
   public function applies(Request $request);
 
@@ -36,7 +36,7 @@ interface WorkspaceNegotiatorInterface {
 
   /**
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
-   * @return boolean
+   * @return bool
    */
   public function persist(WorkspaceInterface $workspace);
 

@@ -12,9 +12,9 @@ use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Drupal\workspace\EntityAccess;
+use Drupal\workspace\Form\DeploymentForm;
 use Drupal\workspace\Form\WorkspaceSwitcherForm;
 use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
-
 
 /**
  * Implements hook_help().
@@ -76,7 +76,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   if ($active_workspace == $default_workspace_id) {
-      return;
+    return;
   }
 
   $entity_type = $view->getBaseEntityType();
@@ -99,7 +99,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   $query->addWhere(0, 'cwrf.workspace', [$active_workspace, $default_workspace_id], 'IN');
   foreach ($query->where as $where_id => $where) {
     foreach ($where['conditions'] as $condition_id => $condition) {
-      if ($condition['field']  == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
+      if ($condition['field'] == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
         //$query->where[$where_id]['conditions'][$condition_id]['field'] = 'cwrf.published';
         $value = $query->where[$where_id]['conditions'][$condition_id]['value'];
         $query->setWhereGroup('OR', 'published');
@@ -125,7 +125,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
   $active_workspace = $workspace_manager->getActiveWorkspace();
   $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   if ($active_workspace == $default_workspace_id) {
-      return;
+    return;
   }
 
   $keys = array_keys($entities);
@@ -158,7 +158,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
 function workspace_element_info_alter(array &$types) {
   foreach ($types as &$type) {
     if (!isset($type['#pre_render'])) {
-      $type['#pre_render'] = array();
+      $type['#pre_render'] =[];
     }
     $type['#pre_render'][] = 'workspace_element_pre_render';
   }
@@ -220,7 +220,7 @@ function workspace_entity_presave(EntityInterface $entity) {
 /**
  * Implements hook_entity_insert().
  */
-function workspace_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
+function workspace_entity_insert(EntityInterface $entity) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $workspace_manager->updateOrCreateFromEntity($entity);
@@ -234,7 +234,7 @@ function workspace_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
 /**
  * Implements hook_entity_update().
  */
-function workspace_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+function workspace_entity_update(EntityInterface $entity) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $workspace_manager->updateOrCreateFromEntity($entity);
@@ -287,7 +287,7 @@ function workspace_toolbar() {
       'class' => ['workspace-deploy-toolbar-tab'],
     ],
     'tab' => [
-      \Drupal::formBuilder()->getForm(\Drupal\workspace\Form\DeploymentForm::class, $active_workspace),
+      \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace),
     ],
   ];
 

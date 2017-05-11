@@ -2,9 +2,8 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\node\Entity\Node;
 use Drupal\simpletest\BlockCreationTrait;
-use \Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests creating and loading entities in workspaces.
@@ -12,7 +11,6 @@ use \Drupal\Tests\BrowserTestBase;
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspaceEntityTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
@@ -154,4 +152,5 @@ class WorkspaceEntityTest extends BrowserTestBase {
       ['dev'],
     ];
   }
+
 }

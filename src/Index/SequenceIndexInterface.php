@@ -23,7 +23,7 @@ interface SequenceIndexInterface {
   /**
    * @param float $start
    * @param float $stop
-   * @param boolean $inclusive
+   * @param bool $inclusive
    *
    * @return array
    */

@@ -112,4 +112,5 @@ class ReplicationTest extends BrowserTestBase {
     $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
     $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
   }
+
 }

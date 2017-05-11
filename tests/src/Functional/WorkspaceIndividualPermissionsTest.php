@@ -13,7 +13,7 @@ use Drupal\Tests\BrowserTestBase;
  *
  * @preserveGlobalState disabled
  */
-class WorkspaceIndividualPermissionsTest extends BrowserTestBase  {
+class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
 

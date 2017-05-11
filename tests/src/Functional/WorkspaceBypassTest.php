@@ -11,7 +11,6 @@ use \Drupal\Tests\BrowserTestBase;
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspaceBypassTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
@@ -131,8 +130,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());
-
   }
-
 
 }

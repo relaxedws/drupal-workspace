@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\workspace;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
@@ -22,4 +23,5 @@ class UpstreamManager extends DefaultPluginManager {
     $this->alterInfo('workspace_upstream_info');
     $this->setCacheBackend($cache_backend, 'workspace_upstream');
   }
+
 }

@@ -6,8 +6,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\workspace\Entity\WorkspaceTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -62,7 +60,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var WorkspaceInterface $entity */
+    /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
     $row['label'] = $entity->label() . ' (' . $entity->getMachineName() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
@@ -74,7 +72,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function getDefaultOperations(EntityInterface $entity) {
-    /** @var WorkspaceInterface $entity */
+    /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
     $operations = parent::getDefaultOperations($entity);
     if (isset($operations['edit'])) {
       $operations['edit']['query']['destination'] = $entity->url('collection');
@@ -82,7 +80,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
 
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
     if ($entity->id() != $active_workspace) {
-      $operations['activate'] =[
+      $operations['activate'] = [
         'title' => $this->t('Set Active'),
         'weight' => 20,
         'url' => $entity->urlInfo('activate-form', ['query' => ['destination' => $entity->url('collection')]]),

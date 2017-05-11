@@ -15,14 +15,14 @@ interface WorkspaceManagerInterface {
   /**
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *
-   * @return boolean
+   * @return bool
    */
   public function entityCanBelongToWorkspaces(EntityInterface $entity);
 
   /**
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *
-   * @return boolean
+   * @return bool
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type);
 
@@ -79,4 +79,5 @@ interface WorkspaceManagerInterface {
    *   The entity to update or create from.
    */
   public function updateOrCreateFromEntity(EntityInterface $entity);
+
 }

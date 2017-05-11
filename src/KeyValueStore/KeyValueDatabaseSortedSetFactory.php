@@ -32,7 +32,7 @@ class KeyValueDatabaseSortedSetFactory implements KeyValueSortedSetFactoryInterf
    * @param \Drupal\Core\Database\Connection $connection
    *   The Connection object containing the key-value tables.
    */
-  function __construct(SerializationInterface $serializer, Connection $connection) {
+  public function __construct(SerializationInterface $serializer, Connection $connection) {
     $this->serializer = $serializer;
     $this->connection = $connection;
   }
@@ -43,4 +43,5 @@ class KeyValueDatabaseSortedSetFactory implements KeyValueSortedSetFactoryInterf
   public function get($collection) {
     return new DatabaseStorageSortedSet($collection, $this->serializer, $this->connection);
   }
+
 }

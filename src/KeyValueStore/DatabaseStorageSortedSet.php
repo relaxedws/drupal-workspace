@@ -54,7 +54,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
    * @param string (optional) $table
    *   The name of the SQL table to use, defaults to key_value_sorted.
    */
-  public function __construct($collection, SerializationInterface $serializer, Connection $connection,  $table = 'key_value_sorted') {
+  public function __construct($collection, SerializationInterface $serializer, Connection $connection, $table = 'key_value_sorted') {
     $this->collection = $collection;
     $this->serializer = $serializer;
     $this->connection = $connection;
@@ -87,7 +87,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
             ->condition('value', $encoded_value)
             ->execute();
         }
-        catch(\Exception $e) {
+        catch (\Exception $e) {
           // If there was an exception, try to create the table.
           if (!$try_again = $this->ensureTableExists()) {
             // If the exception happened for other reason than the missing
@@ -139,7 +139,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
       }
       return $values;
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       $this->catchException($e);
     }
   }
@@ -153,7 +153,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
         ':collection' => $this->collection
       ])->fetchField();
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       $this->catchException($e);
     }
   }
@@ -167,7 +167,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
         ':collection' => $this->collection
       ])->fetchField();
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       $this->catchException($e);
     }
   }
@@ -183,7 +183,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
       if (!$database_schema->tableExists($this->table)) {
         $database_schema->createTable($this->table, $this->schemaDefinition());
         return TRUE;
-     }
+      }
     }
     // If the table already exists, then attempting to recreate it will throw an
     // exception. In this case just catch the exception and do nothing.
@@ -246,4 +246,5 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
       ],
     ];
   }
+
 }

@@ -40,7 +40,7 @@ use Drupal\user\UserInterface;
  *   }
  * )
  */
-class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInterface  {
+class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInterface {
 
   use EntityPublishedTrait;
 
@@ -121,7 +121,7 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
   /**
    * Creates or updates an entity's workspace whilst saving that entity.
    *
-   * @param \Drupal\content_moderation\Entity\ContentWorkspace $content_workspace
+   * @param \Drupal\workspace\Entity\ContentWorkspace $content_workspace
    *   The content moderation entity content entity to create or save.
    *
    * @internal
@@ -141,7 +141,7 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
    *   An array of default values.
    */
   public static function getCurrentUserId() {
-    return array(\Drupal::currentUser()->id());
+    return [\Drupal::currentUser()->id()];
   }
 
   /**

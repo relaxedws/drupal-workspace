@@ -83,7 +83,7 @@ class DatabaseStorageSortedSetTest extends KernelTestBase {
   /**
    * Helper method to generate a key based on microtime().
    *
-   * @return integer
+   * @return int
    *   A key based on microtime().
    */
   public function newKey() {

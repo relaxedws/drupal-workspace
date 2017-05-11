@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace\Entity;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -137,4 +136,5 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
 
     return $fields;
   }
+
 }

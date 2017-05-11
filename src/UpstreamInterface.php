@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 
 /**
@@ -17,4 +16,5 @@ interface UpstreamInterface extends PluginInspectionInterface {
    *   The of the upstream.
    */
   public function getLabel();
+  
 }

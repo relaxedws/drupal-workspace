@@ -47,7 +47,7 @@ class Changes implements ChangesInterface {
   /**
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   * @param \Drupal\Workspace\Index\SequenceIndexInterface
+   * @param \Drupal\Workspace\Index\SequenceIndexInterface $sequence_index
    */
   public function __construct(WorkspaceInterface $workspace, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceId = $workspace->id();

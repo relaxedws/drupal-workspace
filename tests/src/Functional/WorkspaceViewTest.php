@@ -11,7 +11,6 @@ use Drupal\simpletest\BrowserTestBase;
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspaceViewTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
@@ -101,4 +100,5 @@ class WorkspaceViewTest extends BrowserTestBase {
     $this->drupalGet("admin/structure/workspace/{$packers->id()}/activate");
     $this->assertEquals(200, $session->getStatusCode());
   }
+
 }

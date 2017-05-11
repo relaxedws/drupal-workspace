@@ -2,10 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\simpletest\BrowserTestBase;
-
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests permission controls on workspaces.
@@ -13,11 +10,13 @@ use Drupal\simpletest\BrowserTestBase;
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspacePermissionsTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
+  /**
+   * @var array
+   */
   public static $modules = ['workspace', 'workspace'];
 
   /**
@@ -50,9 +49,9 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // Now edit that same workspace; We shouldn't be able to do so, since
     // we don't have edit permissions.
 
-    /** @var EntityTypeManagerInterface $etm */
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
-    /** @var WorkspaceInterface $bears */
+    /** @var \Drupal\workspace\Entity\WorkspaceInterface $bears */
     $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => 'Bears']);
     $bears = current($entity_list);
 
