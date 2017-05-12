@@ -96,11 +96,12 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
     ->createInstance('standard', $configuration);
   /** @var \Drupal\views\Plugin\views\query\Sql $query */
   $query->addRelationship('cwrf', $join, 'content_workspace_field_revision');
-  $query->addWhere(0, 'cwrf.workspace', [$active_workspace, $default_workspace_id], 'IN');
+  $query->setWhereGroup('OR', 'workspace');
+  $query->addWhere('workspace', 'cwrf.workspace', [$active_workspace, $default_workspace_id], 'IN');
+  $query->addWhere('workspace', 'cwrf.workspace', NULL, 'IS');
   foreach ($query->where as $where_id => $where) {
     foreach ($where['conditions'] as $condition_id => $condition) {
       if ($condition['field'] == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
-        //$query->where[$where_id]['conditions'][$condition_id]['field'] = 'cwrf.published';
         $value = $query->where[$where_id]['conditions'][$condition_id]['value'];
         $query->setWhereGroup('OR', 'published');
         $query->addWhere('published', 'cwrf.published', $value);
@@ -209,7 +210,15 @@ function workspace_entity_presave(EntityInterface $entity) {
     if ($default_workspace_id != $workspace_manager->getActiveWorkspace()) {
       // As this is the non-default workspace only new entity revisions should be
       // made default.
-      $entity->isNew() || ($entity->original->workspace->target_id != $default_workspace_id) ? $entity->isDefaultRevision(TRUE) : $entity->isDefaultRevision(FALSE);
+      if (!$entity->isNew()
+          || (isset($entity->original)
+          && ($entity->original->workspace->target_id == $default_workspace_id
+          || is_null($entity->original->workspace->target_id)))) {
+        $entity->isDefaultRevision(FALSE);
+      }
+      else {
+        $entity->isDefaultRevision(TRUE);
+      }
 
       // All entities in the non-default workspace get unpublished.
       $entity->setUnpublished();
