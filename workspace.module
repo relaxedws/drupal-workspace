@@ -86,9 +86,9 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
 
   $configuration = [
     'table' => 'content_workspace_field_revision',
-    'field' => 'content_entity_revision_id',
+    'field' => 'content_entity_id',
     'left_table' => $entity_type->getDataTable(),
-    'left_field' => $entity_type->getKey('revision'),
+    'left_field' => $entity_type->getKey('id'),
     'operator' => '=',
   ];
   /** @var \Drupal\views\Plugin\views\join\JoinPluginBase $join */
@@ -96,11 +96,11 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
     ->createInstance('standard', $configuration);
   /** @var \Drupal\views\Plugin\views\query\Sql $query */
   // @todo Don't use distinct.
-  $query->distinct = TRUE;
   $query->addRelationship('cwrf', $join, 'content_workspace_field_revision');
   $query->setWhereGroup('OR', 'workspace');
   $query->addWhere('workspace', 'cwrf.workspace', [$active_workspace, $default_workspace_id], 'IN');
   $query->addWhere('workspace', 'cwrf.workspace', NULL, 'IS');
+  //$query->aggregationMethodSimple($entity_type->getDataTable(), $entity_type->getKey('id'));
   foreach ($query->where as $where_id => $where) {
     foreach ($where['conditions'] as $condition_id => $condition) {
       if ($condition['field'] == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
@@ -111,6 +111,10 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
         unset($query->where[$where_id]['conditions'][$condition_id]);
       }
     }
+  }
+
+  foreach ($view->displayHandlers->getInstanceIds() as $display_id) {
+    $view->displayHandlers->get($display_id)->setOption('group_by', TRUE);
   }
 }
 
