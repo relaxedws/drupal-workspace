@@ -147,6 +147,7 @@ trait WorkspaceTestUtilities {
    *
    * @param string $label
    * @param string $bundle
+   * @param bool $publish
    *
    * @return \Drupal\workspace\Entity\WorkspaceInterface
    *
