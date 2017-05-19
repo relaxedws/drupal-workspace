@@ -155,7 +155,9 @@ class ConflictListBuilder {
     }
 
     // @todo Is there an entity key for changed time?
-    $row['changed'] = $this->dateFormatter->format($entity->getChangedTime(), 'short');
+    if (method_exists($entity, 'getChangedTime')) {
+      $row['changed'] = $this->dateFormatter->format($entity->getChangedTime(), 'short');
+    }
 
     return $row;
   }
