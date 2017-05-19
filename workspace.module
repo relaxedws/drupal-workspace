@@ -272,6 +272,34 @@ function workspace_active_id() {
 }
 
 /**
+ * Implements hook_page_bottom().
+ */
+function workspace_page_bottom(array &$page_bottom) {
+  /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
+  $deploy_form = \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace);
+  $page_bottom['workspace_toolbox'] = [
+    '#prefix' => '<div class="toolbox">',
+    'workspaces' =>  [
+      '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
+    ],
+    'active' => [
+      '#prefix' => '<div',
+      '#markup' => 'Active workspace: ' . $active_workspace->label(),
+      '#suffix' => '</div>',
+      'form' => $deploy_form,
+    ],
+    'close' => [
+      '#markup' => '<a href="#" class="toolbox-close">X</a>'
+    ],
+    '#suffix' => '</div>',
+    '#attached' => [
+      'library' => ['workspace/drupal.workspace.toolbox'],
+    ],
+  ];
+}
+
+/**
  * Implements hook_toolbar().
  *
  * @see \Drupal\workspace\Toolbar
@@ -291,20 +319,7 @@ function workspace_toolbar() {
       'class' => ['workspace-toolbar-tab'],
     ],
     '#attached' => [
-      'library' => [
-        'workspace/drupal.workspace.toolbar',
-      ],
-    ],
-  ];
-
-  $items['deploy'] = [
-    '#type' => 'toolbar_item',
-    '#weight' => 130,
-    '#wrapper_attributes' => [
-      'class' => ['workspace-deploy-toolbar-tab'],
-    ],
-    'tab' => [
-      \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace),
+      'library' => ['workspace/drupal.workspace.toolbar'],
     ],
   ];
 
@@ -315,28 +330,6 @@ function workspace_toolbar() {
     '#attributes' => [
       'title' => t('Switch workspaces'),
       'class' => ['toolbar-icon', 'toolbar-icon-workspace'],
-    ],
-  ];
-
-  $create_link = [
-    '#type' => 'link',
-    '#title' => t('Add workspace'),
-    '#url' => Url::fromRoute('entity.workspace.add_form'),
-    '#options' => ['attributes' => ['class' => ['add-workspace']]],
-  ];
-
-  $items['workspace_switcher']['tray'] = [
-    '#heading' => t('Switch to workspace'),
-    '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
-    // This wil get filled in via pre-render.
-    'workspace_forms' => [],
-    'create_link' => $create_link,
-    '#cache' => [
-      'contexts' => \Drupal::entityTypeManager()->getDefinition('workspace')->getListCacheContexts(),
-      'tags' => \Drupal::entityTypeManager()->getDefinition('workspace')->getListCacheTags(),
-    ],
-    '#attributes' => [
-      'class' => ['toolbar-menu'],
     ],
   ];
 

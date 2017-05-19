@@ -15,3 +15,14 @@ drupal.workspace.switcher:
   css:
     theme:
       css/workspace.switcher.css: {}
+
+drupal.workspace.toolbox:
+  version: VERSION
+  css:
+    component:
+      css/workspace.toolbox.css: {}
+  js:
+    js/workspace.toolbox.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

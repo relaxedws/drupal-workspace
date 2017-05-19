@@ -1,0 +1,62 @@
+html {
+    background-color: #333333;
+}
+
+body,
+.toolbox,
+body.transform-active nav.toolbar-bar,
+body.transform-active div.toolbar-tray {
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+.page {
+    width: 98%;
+    height: 98%;
+    background-color: #44AAFF;
+    padding: 1%;
+    margin: 0;
+}
+
+.transform-active {
+    margin: 200px 50px 0
+}
+
+.toolbox {
+    position: fixed;
+    height: 150px;
+    width: 100%;
+    top: -200px;
+    left: 0;
+    color: #EEEEFF;
+    overflow: hidden;
+    z-index: 1000;
+    background: #111111;
+    border-bottom: 50px solid #333;
+}
+
+.toolbox-active {
+    top: 0;
+}
+
+.toolbox div {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 200px;
+    background-color: #333333;
+    padding: 10px 50px 0 10px;
+}
+
+a.toolbox-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #FFFFFF;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 0.5em;
+}
