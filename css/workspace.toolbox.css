@@ -13,14 +13,6 @@ body.transform-active div.toolbar-tray {
     transition: all 0.5s ease;
 }
 
-.page {
-    width: 98%;
-    height: 98%;
-    background-color: #44AAFF;
-    padding: 1%;
-    margin: 0;
-}
-
 .transform-active {
     margin: 200px 50px 0
 }
@@ -36,27 +28,110 @@ body.transform-active div.toolbar-tray {
     z-index: 1000;
     background: #111111;
     border-bottom: 50px solid #333;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
 }
 
 .toolbox-active {
     top: 0;
 }
 
-.toolbox div {
+.toolbox ul {
+    margin-left: 50px;
+    padding: 0;
+    position: absolute;
+    bottom: 0;
+}
+
+.toolbox li {
+    list-style: none;
+    float: left;
+}
+
+.toolbox li .button {
+    background: #222222;
+    color: #FFFFFF;
+    border: 0;
+    text-shadow: none;
+    border-radius: 0;
+    padding: 2em;
+    min-width: 200px;
+    text-align: left;
+    margin: 0 3px 0 0;
+}
+
+.toolbox div.control-block {
+    width: 33%;
     position: absolute;
     right: 0;
     top: 0;
     height: 200px;
     background-color: #333333;
-    padding: 10px 50px 0 10px;
+    padding: 20px 50px;
+    font-weight: bold;
 }
 
-a.toolbox-close {
+.toolbox h3.active-workspace {
+    font-size: 1.7em;
+    margin: 0.5em 0 1em;
+}
+
+.toolbox h3.active-workspace:before {
+    content: "";
+    display: block;
+    background: url(../icons/ffffff/workspace.svg) no-repeat;
+    background-size: 24px 24px;
+    width: 24px;
+    height: 24px;
+    float: left;
+    margin: 7px 20px 0 0;
+}
+
+.toolbox button.toolbox-close {
     position: absolute;
-    top: 0;
-    right: 0;
-    color: #FFFFFF;
-    font-size: 1.5em;
-    font-weight: bold;
-    padding: 0.5em;
+    top: 10px;
+    right: 5px;
+    background: url(/core/themes/stable/images/core/icons/ffffff/twistie-down.svg) no-repeat center center;
+    background-size: 32px 32px;
+    height: 32px;
+    width: 32px;
+    text-indent: -9999px;
+    border: 0
+}
+
+.toolbox .button {
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    line-height: normal;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 4px 1.5em;
+    border: 1px solid #a6a6a6;
+    border-radius: 20em;
+    background-color: #f2f1eb;
+    background-image: -webkit-linear-gradient(top, #f6f6f3, #e7e7df);
+    background-image: linear-gradient(to bottom, #f6f6f3, #e7e7df);
+    color: #333;
+    text-decoration: none;
+    text-shadow: 0 1px hsla(0, 0%, 100%, 0.6);
+    font-weight: 600;
+    font-size: 14px;
+    font-size: 0.875rem;
+    -webkit-transition: all 0.1s;
+    transition: all 0.1s;
+    -webkit-font-smoothing: antialiased;
+    margin: 0 1em 0 0;
+}
+
+.toolbox .button.primary {
+    border-color: #1e5c90;
+    background-color: #0071b8;
+    background-image: -webkit-linear-gradient(top, #007bc6, #0071b8);
+    background-image: linear-gradient(to bottom, #007bc6, #0071b8);
+    color: #fff;
+    text-shadow: 0 1px hsla(0, 0%, 0%, 0.5);
+    font-weight: 700;
+    -webkit-font-smoothing: antialiased;
 }

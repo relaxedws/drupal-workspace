@@ -272,27 +272,41 @@ function workspace_active_id() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function workspace_theme($existing, $type, $theme, $path) {
+  return [
+    'workspace_toolbox' => [
+      'variables' => [
+        'workspace_forms' => NULL,
+        'active_workspace' => NULL,
+        'deploy_form' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
  * Implements hook_page_bottom().
  */
 function workspace_page_bottom(array &$page_bottom) {
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
   $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
   $deploy_form = \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace);
+
+  $workspace_forms = [];
+  /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+  foreach (\Drupal::entityTypeManager()->getStorage('workspace')->loadMultiple() as $workspace) {
+    if ($workspace->access('view', \Drupal::currentUser())) {
+      $workspace_forms['workspace_' . $workspace->getMachineName()] = \Drupal::formBuilder()->getForm(WorkspaceSwitcherForm::class, $workspace);
+    }
+  }
+
   $page_bottom['workspace_toolbox'] = [
-    '#prefix' => '<div class="toolbox">',
-    'workspaces' =>  [
-      '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
-    ],
-    'active' => [
-      '#prefix' => '<div',
-      '#markup' => 'Active workspace: ' . $active_workspace->label(),
-      '#suffix' => '</div>',
-      'form' => $deploy_form,
-    ],
-    'close' => [
-      '#markup' => '<a href="#" class="toolbox-close">X</a>'
-    ],
-    '#suffix' => '</div>',
+    '#theme' => 'workspace_toolbox',
+    '#workspace_forms' => $workspace_forms,
+    '#active_workspace' => $active_workspace,
+    '#deploy_form' => $deploy_form,
     '#attached' => [
       'library' => ['workspace/drupal.workspace.toolbox'],
     ],

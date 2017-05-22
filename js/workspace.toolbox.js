@@ -13,7 +13,7 @@
                 event.preventDefault();
                 return false;
             });
-            $(context).find('a.toolbox-close').once('workspaceToolbox').click(function () {
+            $(context).find('button.toolbox-close').once('workspaceToolbox').click(function () {
                 $('body').toggleClass('transform-active').css('padding-top', '79px');
                 $('div.toolbox').toggleClass('toolbox-active');
                 event.stopPropagation();

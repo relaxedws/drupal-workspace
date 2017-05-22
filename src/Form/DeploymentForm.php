@@ -33,18 +33,48 @@ class DeploymentForm extends FormBase {
       '#value' => $workspace->id(),
     ];
 
-    $form['submit'] = [
+    $form['update'] = [
       '#type' => 'submit',
-      '#value' => 'Deploy to ' . $upstream_plugin->getLabel(),
+      '#value' => $this->t('Update'),
+      '#submit' => [[$this, 'updateHandler']],
+    ];
+
+    $form['deploy'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Deploy to %upstream', ['%upstream' => $upstream_plugin->getLabel()]),
+      '#submit' => [[$this, 'deployHandler']],
+      '#attributes' => [
+        'class' => ['primary'],
+      ],
     ];
 
     return $form;
   }
 
   /**
-   * @inheritDoc
+   * @param array $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function updateHandler(array &$form, FormStateInterface $form_state) {
+    $workspace = Workspace::load($form_state->getValue('workspace_id'));
+    $upstream_manager = \Drupal::service('workspace.upstream_manager');
+    try {
+      \Drupal::service('workspace.replication_manager')->replicate(
+        $upstream_manager->createInstance($workspace->get('upstream')->value),
+        $upstream_manager->createInstance('workspace:' . $workspace->id())
+      );
+      drupal_set_message('Update successful.');
+    }
+    catch (\Exception $e) {
+      drupal_set_message('Deployment error', 'error');
+    }
+  }
+
+  /**
+   * @param array $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   */
+  public function deployHandler(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
     $upstream_manager = \Drupal::service('workspace.upstream_manager');
     try {
@@ -57,7 +87,13 @@ class DeploymentForm extends FormBase {
     catch (\Exception $e) {
       drupal_set_message('Deployment error', 'error');
     }
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Submission handled in custom handlers.
   }
 
 }
