@@ -44,7 +44,7 @@ class DeploymentForm extends FormBase {
       '#value' => $this->t('Deploy to %upstream', ['%upstream' => $upstream_plugin->getLabel()]),
       '#submit' => [[$this, 'deployHandler']],
       '#attributes' => [
-        'class' => ['primary'],
+        'class' => ['primary', 'button--primary'],
       ],
     ];
 

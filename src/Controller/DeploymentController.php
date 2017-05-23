@@ -58,9 +58,8 @@ class DeploymentController extends ControllerBase implements ContainerInjectionI
   /**
    * @return array
    */
-  public function workspaces() {
-    $active_workspace_id = $this->workspaceManager->getActiveWorkspace();
-    $active_workspace = Workspace::load($active_workspace_id);
+  public function workspaces($workspace = NULL) {
+    $active_workspace = Workspace::load($workspace);
     $form = $this->formBuilder->getForm(DeploymentForm::class, $active_workspace);
 
     return [
@@ -69,7 +68,7 @@ class DeploymentController extends ControllerBase implements ContainerInjectionI
       '#open' => TRUE,
       'from' => [
         '#prefix' => '<p>',
-        '#markup' => $this->t('Deploy all content from %from to %to.', [
+        '#markup' => $this->t('Update %from from %to or deploy to %to.', [
           '%from' => $active_workspace->label(),
           '%to' => $this->upstreamManager
             ->createInstance($active_workspace->get('upstream')->value)

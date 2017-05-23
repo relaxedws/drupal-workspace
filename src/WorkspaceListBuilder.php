@@ -87,6 +87,14 @@ class WorkspaceListBuilder extends EntityListBuilder {
       ];
     }
 
+    if ('workspace:' . $entity->id() != $entity->get('upstream')->value) {
+      $operations['deployment'] = [
+        'title' => $this->t('Deploy content'),
+        'weight' => 20,
+        'url' => $entity->urlInfo('deployment-form', ['query' => ['destination' => $entity->url('collection')]]),
+      ];
+    }
+
     return $operations;
   }
 

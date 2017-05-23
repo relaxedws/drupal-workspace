@@ -298,7 +298,7 @@ function workspace_page_bottom(array &$page_bottom) {
   $workspace_forms = [];
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
   foreach (\Drupal::entityTypeManager()->getStorage('workspace')->loadMultiple() as $workspace) {
-    if ($workspace->access('view', \Drupal::currentUser())) {
+    if ($workspace->id() != $active_workspace->id() && $workspace->access('view', \Drupal::currentUser())) {
       $workspace_forms['workspace_' . $workspace->getMachineName()] = \Drupal::formBuilder()->getForm(WorkspaceSwitcherForm::class, $workspace);
     }
   }

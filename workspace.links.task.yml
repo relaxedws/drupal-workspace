@@ -1,4 +1,0 @@
-entity.workspace.collection:
-  title: 'Workspaces'
-  route_name: entity.workspace.collection
-  base_route: entity.workspace.collection

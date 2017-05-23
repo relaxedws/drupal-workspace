@@ -45,8 +45,10 @@ use Drupal\user\UserInterface;
  *     "add-form" = "/admin/structure/workspace/add",
  *     "edit-form" = "/admin/structure/workspace/{workspace}/edit",
  *     "activate-form" = "/admin/structure/workspace/{workspace}/activate",
+ *     "deployment-form" = "/admin/structure/workspace/{workspace}/deployment",
  *     "collection" = "/admin/structure/workspace",
  *   },
+ *   field_ui_base_route = "entity.workspace.collection",
  * )
  */
 class Workspace extends ContentEntityBase implements WorkspaceInterface {
