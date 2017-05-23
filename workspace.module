@@ -279,7 +279,7 @@ function workspace_theme($existing, $type, $theme, $path) {
     'workspace_toolbox' => [
       'variables' => [
         'workspace_forms' => NULL,
-        'active_workspace' => NULL,
+        'control_block' => NULL,
         'deploy_form' => NULL,
       ],
     ],
@@ -292,6 +292,7 @@ function workspace_theme($existing, $type, $theme, $path) {
 function workspace_page_bottom(array &$page_bottom) {
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
   $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
+  $control_block = t('Current workspace: <h3 class="active-workspace">@active_workspace</h3> <a href="@collection_url">Manage workspaces</a>', ['@active_workspace' => $active_workspace->label(), '@collection_url' => Url::fromRoute('entity.workspace.collection')->toString()]);
   $deploy_form = \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace);
 
   $workspace_forms = [];
@@ -305,7 +306,7 @@ function workspace_page_bottom(array &$page_bottom) {
   $page_bottom['workspace_toolbox'] = [
     '#theme' => 'workspace_toolbox',
     '#workspace_forms' => $workspace_forms,
-    '#active_workspace' => $active_workspace,
+    '#control_block' => $control_block,
     '#deploy_form' => $deploy_form,
     '#attached' => [
       'library' => ['workspace/drupal.workspace.toolbox'],

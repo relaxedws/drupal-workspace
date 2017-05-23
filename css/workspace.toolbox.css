@@ -14,21 +14,23 @@ body.transform-active div.toolbar-tray {
 }
 
 .transform-active {
-    margin: 200px 50px 0
+    margin: 250px 50px 0
 }
 
 .toolbox {
     position: fixed;
-    height: 150px;
+    height: 200px;
     width: 100%;
-    top: -200px;
+    top: -250px;
     left: 0;
     color: #EEEEFF;
     overflow: hidden;
     z-index: 1000;
     background: #111111;
     border-bottom: 50px solid #333;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 
 .toolbox-active {
@@ -36,7 +38,7 @@ body.transform-active div.toolbar-tray {
 }
 
 .toolbox ul {
-    margin-left: 50px;
+    margin: 0 0 0 50px;
     padding: 0;
     position: absolute;
     bottom: 0;
@@ -48,15 +50,22 @@ body.transform-active div.toolbar-tray {
 }
 
 .toolbox li .button {
-    background: #222222;
     color: #FFFFFF;
     border: 0;
     text-shadow: none;
     border-radius: 0;
-    padding: 2em;
+    padding: 2em 2em 2em 54px;
     min-width: 200px;
     text-align: left;
     margin: 0 3px 0 0;
+    background: #222222 url(../icons/ffffff/ws_icon.svg) no-repeat 20px;
+    background-size: 24px 24px;
+}
+
+.toolbox li .button:hover,
+.toolbox li .button:focus {
+    background: #111111 url(../icons/ffffff/ws_icon.svg) no-repeat 20px;
+    background-size: 24px 24px;
 }
 
 .toolbox div.control-block {
@@ -70,6 +79,12 @@ body.transform-active div.toolbar-tray {
     font-weight: bold;
 }
 
+.toolbox div.control-block a {
+    position: relative;
+    top: -2em;
+    right: -4.8em;
+}
+
 .toolbox h3.active-workspace {
     font-size: 1.7em;
     margin: 0.5em 0 1em;
@@ -78,10 +93,10 @@ body.transform-active div.toolbar-tray {
 .toolbox h3.active-workspace:before {
     content: "";
     display: block;
-    background: url(../icons/ffffff/workspace.svg) no-repeat;
-    background-size: 24px 24px;
-    width: 24px;
-    height: 24px;
+    background: url(../icons/ffffff/ws_icon.svg) no-repeat;
+    background-size: 48px 48px;
+    width: 48px;
+    height: 48px;
     float: left;
     margin: 7px 20px 0 0;
 }
