@@ -36,7 +36,7 @@ class DeploymentController extends ControllerBase implements ContainerInjectionI
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-   * @param \Drupal\workspace\UpstreamManager
+   * @param \Drupal\workspace\UpstreamManager $upstream_manager
    */
   public function __construct(WorkspaceManagerInterface $workspace_manager, FormBuilderInterface $form_builder, UpstreamManager $upstream_manager) {
     $this->workspaceManager = $workspace_manager;

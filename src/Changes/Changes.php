@@ -35,7 +35,7 @@ class Changes implements ChangesInterface {
    *
    * @var boolean
    */
-  protected $includeDocs = FALSE;
+  protected $includeEntities = FALSE;
 
   /**
    * The sequence ID to start including changes from. Result includes $lastSeq.
@@ -58,8 +58,8 @@ class Changes implements ChangesInterface {
   /**
    * {@inheritdoc}
    */
-  public function includeDocs($include_docs) {
-    $this->includeDocs = $include_docs;
+  public function includeEntities($include_entities) {
+    $this->includeEntities = $include_entities;
     return $this;
   }
 
@@ -84,8 +84,7 @@ class Changes implements ChangesInterface {
     foreach ($sequences as $sequence) {
       // Get the document.
       $revision = NULL;
-      if ($this->includeDocs == TRUE) {
-        /** @var \Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface $storage */
+      if ($this->includeEntities == TRUE) {
         $storage = $this->entityTypeManager->getStorage($sequence['entity_type_id']);
         $storage->useWorkspace($this->workspaceId);
         $revision = $storage->loadRevision($sequence['revision_id']);
@@ -101,7 +100,7 @@ class Changes implements ChangesInterface {
       ];
 
       // Include the document.
-      if ($this->includeDocs == TRUE) {
+      if ($this->includeEntities == TRUE) {
         $changes[$sequence['entity_uuid']]['doc'] = $revision;
       }
     }

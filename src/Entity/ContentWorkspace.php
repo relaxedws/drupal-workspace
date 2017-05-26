@@ -55,7 +55,6 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
       ->setDescription(t('The username of the entity creator.'))
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\workspace\Entity\ContentWorkspace::getCurrentUserId')
-      ->setTranslatable(TRUE)
       ->setRevisionable(TRUE);
 
     $fields['workspace'] = BaseFieldDefinition::create('entity_reference')
@@ -63,7 +62,6 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
       ->setDescription(t('The workspace of the referenced content.'))
       ->setSetting('target_type', 'workspace')
       ->setRequired(TRUE)
-      ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->addConstraint('workspace', []);
 

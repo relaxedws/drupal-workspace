@@ -10,7 +10,7 @@ use Drupal\workspace\Index\SequenceIndexInterface;
  * Class ChangesFactory
  */
 class ChangesFactory implements ChangesFactoryInterface {
-  
+
   /**
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -20,12 +20,12 @@ class ChangesFactory implements ChangesFactoryInterface {
    * @var \Drupal\workspace\Index\SequenceIndexInterface
    */
   protected $sequenceIndex;
-  
+
   /**
    * @var \Drupal\workspace\Changes\Changes[]
    */
   protected $instances = [];
-  
+
   /**
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    */

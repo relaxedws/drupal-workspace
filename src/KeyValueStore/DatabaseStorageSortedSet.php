@@ -113,7 +113,7 @@ class DatabaseStorageSortedSet implements KeyValueStoreSortedSetInterface {
         ':collection' => $this->collection
       ])->fetchField();
     }
-    catch(\Exception $e) {
+    catch (\Exception $e) {
       $this->catchException($e);
     }
   }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Provides Workspaces for content.
+ */
+
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -168,7 +173,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
 function workspace_element_info_alter(array &$types) {
   foreach ($types as &$type) {
     if (!isset($type['#pre_render'])) {
-      $type['#pre_render'] =[];
+      $type['#pre_render'] = [];
     }
     $type['#pre_render'][] = 'workspace_element_pre_render';
   }
@@ -290,28 +295,38 @@ function workspace_theme($existing, $type, $theme, $path) {
  * Implements hook_page_bottom().
  */
 function workspace_page_bottom(array &$page_bottom) {
-  /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
-  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
-  $control_block = t('Current workspace: <h3 class="active-workspace">@active_workspace</h3> <a href="@collection_url">Manage workspaces</a>', ['@active_workspace' => $active_workspace->label(), '@collection_url' => Url::fromRoute('entity.workspace.collection')->toString()]);
-  $deploy_form = \Drupal::formBuilder()->getForm(DeploymentForm::class, $active_workspace);
+  if (\Drupal::currentUser()->hasPermission('view_own_workspace') || \Drupal::currentUser()->hasPermission('view_any_workspace')) {
+    /** @var \Drupal\workspace\Entity\WorkspaceInterface $active_workspace */
+    $active_workspace = \Drupal::service('workspace.manager')
+      ->getActiveWorkspace(TRUE);
+    $control_block = t('Current workspace: <h3 class="active-workspace">@active_workspace</h3> <a href="@collection_url">Manage workspaces</a>', ['@active_workspace' => $active_workspace->label(),
+      '@collection_url' => Url::fromRoute('entity.workspace.collection')
+        ->toString()
+    ]);
+    $deploy_form = \Drupal::formBuilder()
+      ->getForm(DeploymentForm::class, $active_workspace);
 
-  $workspace_forms = [];
-  /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
-  foreach (\Drupal::entityTypeManager()->getStorage('workspace')->loadMultiple() as $workspace) {
-    if ($workspace->id() != $active_workspace->id() && $workspace->access('view', \Drupal::currentUser())) {
-      $workspace_forms['workspace_' . $workspace->getMachineName()] = \Drupal::formBuilder()->getForm(WorkspaceSwitcherForm::class, $workspace);
+    $workspace_forms = [];
+    /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    foreach (\Drupal::entityTypeManager()
+               ->getStorage('workspace')
+               ->loadMultiple() as $workspace) {
+      if ($workspace->id() != $active_workspace->id() && $workspace->access('view', \Drupal::currentUser())) {
+        $workspace_forms['workspace_' . $workspace->getMachineName()] = \Drupal::formBuilder()
+          ->getForm(WorkspaceSwitcherForm::class, $workspace);
+      }
     }
-  }
 
-  $page_bottom['workspace_toolbox'] = [
-    '#theme' => 'workspace_toolbox',
-    '#workspace_forms' => $workspace_forms,
-    '#control_block' => $control_block,
-    '#deploy_form' => $deploy_form,
-    '#attached' => [
-      'library' => ['workspace/drupal.workspace.toolbox'],
-    ],
-  ];
+    $page_bottom['workspace_toolbox'] = [
+      '#theme' => 'workspace_toolbox',
+      '#workspace_forms' => $workspace_forms,
+      '#control_block' => $control_block,
+      '#deploy_form' => $deploy_form,
+      '#attached' => [
+        'library' => ['workspace/drupal.workspace.toolbox'],
+      ],
+    ];
+  }
 }
 
 /**

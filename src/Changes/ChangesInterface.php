@@ -3,20 +3,20 @@
 namespace Drupal\workspace\Changes;
 
 /**
- * Define and build a changeset for a Workspace.
+ * Define and build a list of changes for a Workspace.
  */
 interface ChangesInterface {
 
   /**
-   * Set the flag for including entities in the changeset.
+   * Set the flag for including entities in the list of changes.
    *
-   * @param bool $include_docs
-   *   Whether to include entities in the changeset.
+   * @param bool $include_entities
+   *   Whether to include entities in the list of changes.
    *
    * @return \Drupal\workspace\Changes\ChangesInterface
    *   Returns $this.
    */
-  public function includeDocs($include_docs);
+  public function includeEntities($include_entities);
 
   /**
    * Sets from what sequence number to check for changes.
@@ -31,11 +31,15 @@ interface ChangesInterface {
 
   /**
    * Return the changes in a 'normal' way.
+   *
+   * @return array
    */
   public function getNormal();
 
   /**
    * Return the changes with a 'longpoll'.
+   *
+   * @return array
    */
   public function getLongpoll();
 

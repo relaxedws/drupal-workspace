@@ -164,4 +164,5 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
   }
+
 }

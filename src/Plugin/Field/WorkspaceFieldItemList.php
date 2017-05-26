@@ -33,6 +33,7 @@ class WorkspaceFieldItemList extends EntityReferenceFieldItemList {
         ->condition('content_entity_revision_id', $entity->getRevisionId())
         ->allRevisions()
         ->sort('revision_id', 'DESC')
+        ->accessCheck(FALSE)
         ->execute();
 
       $revision_to_load = key($revisions);

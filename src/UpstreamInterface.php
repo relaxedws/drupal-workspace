@@ -16,5 +16,5 @@ interface UpstreamInterface extends PluginInspectionInterface {
    *   The of the upstream.
    */
   public function getLabel();
-  
+
 }

@@ -115,7 +115,7 @@ class DefaultReplicator implements ReplicationInterface {
       }
     }
 
-    $entities = []; 
+    $entities = [];
     // Load each missing revision.
     foreach ($rev_diffs as $entity_type_id => $revs) {
       foreach ($revs as $rev) {
