@@ -7,6 +7,7 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\ReplicationTask\ReplicationTask;
+use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -159,7 +160,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @param mixed $task
    *   Optional information that defines the replication task to perform.
    *
-   * @return ReplicationLog
+   * @return \Drupal\replication\Entity\ReplicationLogInterface
    *   The log entry for this replication.
    */
   public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, $task = NULL) {
@@ -176,7 +177,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @param mixed $task
    *   Optional information that defines the replication task to perform.
    *
-   * @return ReplicationLog
+   * @return \Drupal\replication\Entity\ReplicationLogInterface
    *   The log entry for this replication.
    */
   protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
@@ -209,7 +210,7 @@ class ReplicatorManager implements ReplicatorInterface {
       }
     }
 
-    return $this->failedReplicationLog($source, $target);
+    return $this->failedReplicationLog($source, $target, $task);
   }
 
   /**
@@ -219,18 +220,19 @@ class ReplicatorManager implements ReplicatorInterface {
    *   The workspace to replicate from.
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
+   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface|null $task
    *
-   * @return ReplicationLog
-   *   The log entry for this replication.
+   * @return \Drupal\replication\Entity\ReplicationLogInterface The log entry for this replication.
+   * The log entry for this replication.
    */
-  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
+  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     $time = new \DateTime();
     $history = [
       'start_time' => $time->format('D, d M Y H:i:s e'),
       'end_time' => $time->format('D, d M Y H:i:s e'),
       'session_id' => \md5((\microtime(TRUE) * 1000000)),
     ];
-    $replication_log_id = $source->generateReplicationId($target);
+    $replication_log_id = $source->generateReplicationId($target, $task);
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
     $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
     $replication_log->set('ok', FALSE);

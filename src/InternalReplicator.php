@@ -115,10 +115,22 @@ class InternalReplicator implements ReplicatorInterface {
       $task = new ReplicationTask();
     }
 
+    $replication_log_id = $source->generateReplicationId($target, $task);
+    /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
+    $replication_logs = \Drupal::entityTypeManager()
+      ->getStorage('replication_log')
+      ->loadByProperties(['uuid' => $replication_log_id]);
+    $replication_log = reset($replication_logs);
+    $since = 0;
+    if (!empty($replication_log) && $replication_log->get('ok')->value == TRUE) {
+      $since = $replication_log->getSourceLastSeq() ?: $since;
+    }
+
     // Get changes on the source workspace.
     $source_changes = $this->changesFactory->get($source_workspace)
         ->filter($task->getFilter())
         ->parameters($task->getParameters())
+        ->setSince($since)
         ->getNormal();
     $data = [];
     foreach ($source_changes as $source_change) {
@@ -176,7 +188,7 @@ class InternalReplicator implements ReplicatorInterface {
       'session_id' => \md5($start_time->getTimestamp()),
       'start_last_seq' => $source_workspace->getUpdateSeq(),
     ];
-    $replication_log_id = $source->generateReplicationId($target);
+    $replication_log_id = $source->generateReplicationId($target, $task);
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
     $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
     $replication_log->set('ok', TRUE);

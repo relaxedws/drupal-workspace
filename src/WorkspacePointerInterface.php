@@ -6,6 +6,7 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 
 /**
  * Provides an interface for defining Workspace pointer entities.
@@ -88,11 +89,16 @@ interface WorkspacePointerInterface extends ContentEntityInterface, EntityChange
    *
    * @return $this
    */
-  public function setWorkspaceId($uid);
+  public function setWorkspaceId($workspace_id);
 
   /**
    * @param \Drupal\workspace\WorkspacePointerInterface $target
+   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface|null $task
+   *
    * @return string
+   *
+   * @see \Relaxed\Replicator\Replication::generateReplicationId()
    */
-  public function generateReplicationId(WorkspacePointerInterface $target);
+  public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL);
+
 }

@@ -8,6 +8,8 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\replication\ReplicationTask\ReplicationTask;
+use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\workspace\WorkspacePointerInterface;
 
 /**
@@ -115,10 +117,23 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
   /**
    * {@inheritdoc}
    */
-  public function generateReplicationId(WorkspacePointerInterface $target) {
+  public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     $target_name = $target->label();
     if ($target->getWorkspace() instanceof WorkspaceInterface) {
       $target_name = $target->getWorkspace()->getMachineName();
+    }
+    if ($task) {
+      return \md5(
+        $this->getWorkspace()->getMachineName() .
+        $target_name .
+        var_export($task->getDocIds(), TRUE) .
+        ($task->getCreateTarget() ? '1' : '0') .
+        ($task->getContinuous() ? '1' : '0') .
+        $task->getFilter() .
+        '' .
+        $task->getStyle() .
+        var_export($task->getHeartbeat(), TRUE)
+      );
     }
     return \md5(
       $this->getWorkspace()->getMachineName() .
