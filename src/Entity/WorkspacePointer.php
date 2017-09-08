@@ -118,13 +118,17 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    * {@inheritdoc}
    */
   public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+    $source_name = $this->label();
+    if ($this->getWorkspace() instanceof WorkspaceInterface) {
+      $source_name = $this->getWorkspace()->getMachineName();
+    }
     $target_name = $target->label();
     if ($target->getWorkspace() instanceof WorkspaceInterface) {
       $target_name = $target->getWorkspace()->getMachineName();
     }
     if ($task) {
       return \md5(
-        $this->getWorkspace()->getMachineName() .
+        $source_name .
         $target_name .
         var_export($task->getDocIds(), TRUE) .
         ($task->getCreateTarget() ? '1' : '0') .
@@ -136,7 +140,7 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
       );
     }
     return \md5(
-      $this->getWorkspace()->getMachineName() .
+      $source_name .
       $target_name
     );
   }
