@@ -30,9 +30,9 @@ class WorkspaceEntityTest extends BrowserTestBase {
   public function testNodeEntity($initial_workspace) {
     $permissions = [
       'administer nodes',
-      'create_workspace',
-      'edit_any_workspace',
-      'view_any_workspace',
+      'create workspace',
+      'edit any workspace',
+      'view any workspace',
     ];
 
     $this->createNodeType('Test', 'test');
@@ -50,7 +50,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
     ];
     $default = \Drupal::getContainer()->getParameter('workspace.default');
     $this->switchToWorkspace($workspaces[$initial_workspace]);
-    
+
     $workspace_manager = \Drupal::service('workspace.manager');
     $this->assertEquals($initial_workspace, $workspace_manager->getActiveWorkspace());
 
@@ -79,8 +79,9 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Chocolate node');
 
     $this->drupalPostForm('/node/' . $chocolate_node->id() . '/edit', [
-      'title[0][value]' => 'Mint node'
-    ], t('Save and publish'));
+      'title[0][value]' => 'Mint node',
+      'status[value]' => TRUE,
+    ], t('Save'));
 
     $this->drupalGet('/node');
     $this->assertSession()->pageTextContains('Mint node');

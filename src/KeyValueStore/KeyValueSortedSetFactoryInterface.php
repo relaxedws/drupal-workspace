@@ -13,7 +13,7 @@ interface KeyValueSortedSetFactoryInterface {
    * @param string $collection
    *   The name of the collection holding key and value pairs.
    *
-   * @return \Drupal\Core\KeyValueStore\KeyValueStoreSortedSetInterface
+   * @return \Drupal\workspace\KeyValueStore\KeyValueStoreSortedSetInterface
    *   An sorted set key/value store implementation for the given $collection.
    */
   public function get($collection);

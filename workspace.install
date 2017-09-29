@@ -2,21 +2,21 @@
 
 /**
  * @file
- * Contains install and update functions for Workspace.
+ * Contains install, update and uninstall functions for the workspace module.
  */
 
 use Drupal\workspace\Entity\Workspace;
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function workspace_install() {
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $live */
-  $live = Workspace::create(['machine_name' => 'live', 'label' => 'Live']);
+  $live = Workspace::create(['id' => 'live', 'label' => 'Live']);
   $live->save();
 
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $stage */
-  $stage = Workspace::create(['machine_name' => 'stage', 'label' => 'Stage']);
+  $stage = Workspace::create(['id' => 'stage', 'label' => 'Stage']);
   $stage->set('upstream', 'workspace:' . $live->id());
   $stage->save();
 }

@@ -3,6 +3,7 @@
 namespace Drupal\workspace\KeyValueStore;
 
 use Drupal\Core\KeyValueStore\KeyValueFactory;
+
 /**
  * Defines the key/value store factory.
  */

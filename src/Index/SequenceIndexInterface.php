@@ -11,12 +11,15 @@ interface SequenceIndexInterface {
 
   /**
    * @param $id
-   * @return \Drupal\multiversion\Entity\Index\IndexInterface
+   *
+   * @return $this
    */
   public function useWorkspace($id);
 
   /**
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *
+   * @return $this
    */
   public function add(ContentEntityInterface $entity);
 

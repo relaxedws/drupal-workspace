@@ -9,7 +9,7 @@ use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class Workspace
+ * Derive an upstream plugin for each workspace.
  */
 class Workspace extends DeriverBase implements ContainerDeriverInterface {
 
@@ -36,6 +36,12 @@ class Workspace extends DeriverBase implements ContainerDeriverInterface {
     );
   }
 
+  /**
+   * Add a workspace plugin per workspace, with an ID in the format
+   * 'workspace:{id}', for example 'workspace:live'.
+   *
+   * {@inheritdoc}
+   */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $workspaces = $this->workspaceStorage->loadMultiple();
     foreach ($workspaces as $workspace) {

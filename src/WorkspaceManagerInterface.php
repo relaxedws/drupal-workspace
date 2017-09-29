@@ -38,21 +38,6 @@ interface WorkspaceManagerInterface {
   public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority);
 
   /**
-   * @param int $workspace_id
-   */
-  public function load($workspace_id);
-
-  /**
-   * @param array|null $workspace_ids
-   */
-  public function loadMultiple(array $workspace_ids = NULL);
-
-  /**
-   * @param string $machine_name
-   */
-  public function loadByMachineName($machine_name);
-
-  /**
    * @param bool $object
    *   Should the active workspace be returned as an object.
    *

@@ -33,19 +33,18 @@ class DeploymentForm extends FormBase {
       '#value' => $workspace->id(),
     ];
 
-    $form['update'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Update'),
-      '#submit' => [[$this, 'updateHandler']],
-    ];
-
     $form['deploy'] = [
       '#type' => 'submit',
       '#value' => $this->t('Deploy to %upstream', ['%upstream' => $upstream_plugin->getLabel()]),
-      '#submit' => [[$this, 'deployHandler']],
       '#attributes' => [
         'class' => ['primary', 'button--primary'],
       ],
+    ];
+
+    $form['update'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Update'),
+      '#submit' => ['::updateHandler'],
     ];
 
     return $form;
@@ -71,10 +70,9 @@ class DeploymentForm extends FormBase {
   }
 
   /**
-   * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * {@inheritdoc}
    */
-  public function deployHandler(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
     $upstream_manager = \Drupal::service('workspace.upstream_manager');
     try {
@@ -87,13 +85,6 @@ class DeploymentForm extends FormBase {
     catch (\Exception $e) {
       drupal_set_message('Deployment error', 'error');
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Submission handled in custom handlers.
   }
 
 }

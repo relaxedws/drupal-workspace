@@ -31,7 +31,6 @@ class SequenceIndex implements SequenceIndexInterface {
    */
   protected $workspaceManager;
 
-
   /**
    * @param \Drupal\workspace\KeyValueStore\KeyValueSortedSetFactoryInterface $sorted_set_factory
    * @param \Drupal\Workspace\WorkspaceManagerInterface $workspace_manager
@@ -85,7 +84,8 @@ class SequenceIndex implements SequenceIndexInterface {
 
   /**
    * @param $workspace_id
-   * @return \Drupal\key_value\KeyValueStore\KeyValueStoreSortedSetInterface
+   *
+   * @return \Drupal\workspace\KeyValueStore\KeyValueStoreSortedSetInterface
    */
   protected function sortedSetStore($workspace_id = NULL) {
     if (!$workspace_id) {

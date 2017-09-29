@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
+use Behat\Mink\Element\DocumentElement;
 use Drupal\node\Entity\NodeType;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
@@ -60,26 +61,30 @@ trait WorkspaceTestUtilities {
    *
    * @param string $label
    *   The label of the workspace to create.
-   * @param string $machine_name
-   *   The machine name of the workspace to create.
+   * @param string $id
+   *   The ID of the workspace to create.
    *
    * @return \Drupal\workspace\Entity\WorkspaceInterface
    *   The workspace that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createWorkspaceThroughUI($label, $machine_name) {
+  protected function createWorkspaceThroughUI($label, $id) {
     $this->drupalGet('/admin/structure/workspace/add');
 
     $session = $this->getSession();
     $this->assertSession()->statusCodeEquals(200);
 
+    /** @var DocumentElement $page */
     $page = $session->getPage();
     $page->fillField('label', $label);
-    $page->fillField('machine_name', $machine_name);
+    $page->fillField('id', $id);
+    if ($id == 'dev') {
+      $page->selectFieldOption('upstream', 'workspace:stage');
+    }
     $page->findButton(t('Save'))->click();
 
-    $session->getPage()->hasContent("$label ($machine_name)");
+    $session->getPage()->hasContent("$label ($id)");
 
     return $this->getOneWorkspaceByLabel($label);
   }
@@ -164,11 +169,11 @@ trait WorkspaceTestUtilities {
     $page = $session->getPage();
     $page->fillField('Title', $label);
     if ($publish) {
-      $button = $page->findButton(t('Save and publish')) ?: $page->findButton(t('Save'));
-      $button->click();
+      $page->findButton(t('Save'))->click();
     }
     else {
-      $page->findButton(t('Save as unpublished'))->click();
+      $page->uncheckField('Published');
+      $page->findButton(t('Save'))->click();
     }
 
     $session->getPage()->hasContent("{$label} has been created");

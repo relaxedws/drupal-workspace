@@ -33,15 +33,14 @@ class WorkspaceForm extends ContentEntityForm {
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
       '#default_value' => $workspace->label(),
-      '#description' => $this->t("Label for the Workspace."),
       '#required' => TRUE,
     ];
 
-    $form['machine_name'] = [
+    $form['id'] = [
       '#type' => 'machine_name',
       '#title' => $this->t('Workspace ID'),
       '#maxlength' => 255,
-      '#default_value' => $workspace->get('machine_name')->value,
+      '#default_value' => $workspace->id(),
       '#disabled' => !$workspace->isNew(),
       '#machine_name' => [
         'exists' => '\Drupal\workspace\Entity\Workspace::load',
@@ -72,7 +71,7 @@ class WorkspaceForm extends ContentEntityForm {
   protected function getEditedFieldNames(FormStateInterface $form_state) {
     return array_merge([
       'label',
-      'machine_name',
+      'id',
     ], parent::getEditedFieldNames($form_state));
   }
 
@@ -85,7 +84,7 @@ class WorkspaceForm extends ContentEntityForm {
     // contained in the display.
     $field_names = [
       'label',
-      'machine_name',
+      'id',
       'upstream'
     ];
     foreach ($violations->getByFields($field_names) as $violation) {
@@ -100,20 +99,21 @@ class WorkspaceForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $workspace = $this->entity;
-    $insert = $workspace->isNew();
-    $workspace->save();
+    $status = $workspace->save();
+
     \Drupal::service('workspace.upstream_manager')->clearCachedDefinitions();
+
     $info = ['%info' => $workspace->label()];
     $context = ['@type' => $workspace->bundle(), '%info' => $workspace->label()];
     $logger = $this->logger('workspace');
 
-    if ($insert) {
-      $logger->notice('@type: added %info.', $context);
-      drupal_set_message($this->t('Workspace %info has been created.', $info));
-    }
-    else {
+    if ($status == SAVED_UPDATED) {
       $logger->notice('@type: updated %info.', $context);
       drupal_set_message($this->t('Workspace %info has been updated.', $info));
+    }
+    else {
+      $logger->notice('@type: added %info.', $context);
+      drupal_set_message($this->t('Workspace %info has been created.', $info));
     }
 
     if ($workspace->id()) {

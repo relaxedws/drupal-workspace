@@ -13,7 +13,7 @@ class UpstreamManager extends DefaultPluginManager {
 
   /**
    * UpstreamManager constructor.
-   * 
+   *
    * @param \Traversable $namespaces
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler

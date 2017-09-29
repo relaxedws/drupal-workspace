@@ -16,9 +16,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceListBuilder extends EntityListBuilder {
 
   /**
+   * The workspace manager service.
+   *
    * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
+
+  /**
+   * Constructs a new EntityListBuilder object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage class.
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager service.
+   */
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager) {
+    parent::__construct($entity_type, $storage);
+    $this->workspaceManager = $workspace_manager;
+  }
 
   /**
    * {@inheritdoc}
@@ -32,26 +49,12 @@ class WorkspaceListBuilder extends EntityListBuilder {
   }
 
   /**
-   * Constructs a new EntityListBuilder object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage class.
-   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
-   */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager) {
-    parent::__construct($entity_type, $storage);
-    $this->workspaceManager = $workspace_manager;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = t('Workspace');
-    $header['uid'] = t('Owner');
-    $header['status'] = t('Status');
+    $header['label'] = $this->t('Workspace');
+    $header['uid'] = $this->t('Owner');
+    $header['status'] = $this->t('Status');
 
     return $header + parent::buildHeader();
   }
@@ -61,10 +64,11 @@ class WorkspaceListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
-    $row['label'] = $entity->label() . ' (' . $entity->getMachineName() . ')';
+    $row['label'] = $entity->label() . ' (' . $entity->id() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
-    $row['status'] = $active_workspace == $entity->id() ? 'Active' : 'Inactive';
+    $row['status'] = $active_workspace == $entity->id() ? $this->t('Active') : $this->t('Inactive');
+
     return $row + parent::buildRow($entity);
   }
 
@@ -75,7 +79,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
     $operations = parent::getDefaultOperations($entity);
     if (isset($operations['edit'])) {
-      $operations['edit']['query']['destination'] = $entity->url('collection');
+      $operations['edit']['query']['destination'] = $entity->toUrl('collection')->toString();
     }
 
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
@@ -83,7 +87,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
       $operations['activate'] = [
         'title' => $this->t('Set Active'),
         'weight' => 20,
-        'url' => $entity->urlInfo('activate-form', ['query' => ['destination' => $entity->url('collection')]]),
+        'url' => $entity->toUrl('activate-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
       ];
     }
 
@@ -91,7 +95,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
       $operations['deployment'] = [
         'title' => $this->t('Deploy content'),
         'weight' => 20,
-        'url' => $entity->urlInfo('deployment-form', ['query' => ['destination' => $entity->url('collection')]]),
+        'url' => $entity->toUrl('deployment-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
       ];
     }
 

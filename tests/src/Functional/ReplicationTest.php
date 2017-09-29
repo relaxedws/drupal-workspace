@@ -7,7 +7,7 @@ use Drupal\Tests\BrowserTestBase;
 
 /**
  * Class ReplicationTest
- * 
+ *
  * @group workspace
  */
 class ReplicationTest extends BrowserTestBase {
@@ -40,8 +40,8 @@ class ReplicationTest extends BrowserTestBase {
     $this->createNodeType('Test', 'test');
 
     $permissions = [
-      'create_workspace',
-      'view_any_workspace',
+      'create workspace',
+      'view any workspace',
       'create test content',
       'edit own test content',
       'access administration pages',
@@ -52,6 +52,7 @@ class ReplicationTest extends BrowserTestBase {
       'administer node display',
       'administer node fields',
       'administer node form display',
+      'administer workspaces',
     ];
     $test_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($test_user);
@@ -72,7 +73,7 @@ class ReplicationTest extends BrowserTestBase {
     $page->fillField('Title', 'Test node');
     $page->findButton(t('Save'))->click();
     $page = $session->getPage();
-    $page->hasContent("Test node has been created");
+    $this->assertTrue($page->hasContent("Test node has been created"));
     $this->drupalGet('/node/1/edit');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
@@ -80,14 +81,13 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
 
-    /** @var \Drupal\workspace\Replication\ReplicationManager $replicator */
-    $replicator = \Drupal::service('workspace.replication_manager');
-    /** @var \Drupal\workspace\UpstreamManager $upstream */
-    $upstream = \Drupal::service('workspace.upstream_manager');
-    $replicator->replicate(
-      $upstream->createInstance('workspace:' . $dev->id()),
-      $upstream->createInstance('workspace:' . $stage->id())
-    );
+    $this->drupalGet('/admin/structure/workspace/' . $dev->id() . '/deployment');
+    $session = $this->getSession();
+    $page = $session->getPage();
+    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertTrue($page->hasContent('Update Dev from Stage or deploy to Stage.'));
+    $page->findButton('edit-deploy')->click();
+    $session->getPage()->hasContent('Successful deployment');
 
     $this->switchToWorkspace($stage);
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
@@ -103,10 +103,13 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
 
-    $replicator->replicate(
-      $upstream->createInstance('workspace:' . $stage->id()),
-      $upstream->createInstance('workspace:' . $live->id())
-    );
+    $this->drupalGet('/admin/structure/workspace/' . $stage->id() . '/deployment');
+    $session = $this->getSession();
+    $page = $session->getPage();
+    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertTrue($page->hasContent('Update Stage from Live or deploy to Live.'));
+    $page->findButton('edit-deploy')->click();
+    $session->getPage()->hasContent('Successful deployment');
 
     $this->switchToWorkspace($live);
     $this->assertEquals($live->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);

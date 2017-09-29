@@ -86,8 +86,8 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
-    if (!in_array($entity_type->id(), $this->blacklist)
-      &&is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
+    if (!in_array($entity_type->id(), $this->blacklist, TRUE)
+      && is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
       && $entity_type->isRevisionable()) {
       return TRUE;
     }
@@ -118,32 +118,6 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
   /**
    * {@inheritdoc}
-   */
-  public function load($workspace_id) {
-    $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
-    if ($workspace instanceof WorkspaceInterface) {
-      return $workspace;
-    }
-    throw new EntityStorageException("Workspace not found");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function loadMultiple(array $workspace_ids = NULL) {
-    return $this->entityTypeManager->getStorage('workspace')->loadMultiple($workspace_ids);
-  }
-    
-  /**
-   * {@inheritdoc}
-   */
-  public function loadByMachineName($machine_name) {
-    $workspaces = $this->entityTypeManager->getStorage('workspace')->loadByProperties(['machine_name' => $machine_name]);
-    return current($workspaces);
-  }
-
-  /**
-   * {@inheritdoc}
    *
    * @todo {@link https://www.drupal.org/node/2600382 Access check.}
    */
@@ -153,7 +127,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
       if ($negotiator->applies($request)) {
         if ($workspace_id = $negotiator->getWorkspaceId($request)) {
           if ($object) {
-            return $this->load($workspace_id);
+            return $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
           }
           else {
             return $workspace_id;

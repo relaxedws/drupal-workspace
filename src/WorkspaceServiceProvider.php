@@ -10,6 +10,9 @@ use Drupal\Core\DependencyInjection\ServiceProviderBase;
  */
 class WorkspaceServiceProvider extends ServiceProviderBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public function alter(ContainerBuilder $container) {
     $renderer_config = $container->getParameter('renderer.config');
     $renderer_config['required_cache_contexts'][] = 'workspace';

@@ -4,7 +4,7 @@ entity.workspace.collection:
     _title: 'Workspaces'
     _entity_list: 'workspace'
   requirements:
-    _permission: 'administer workspaces+edit_any_workspace'
+    _permission: 'administer workspaces+edit any workspace'
 
 entity.workspace.activate_form:
   path: '/admin/structure/workspace/{workspace}/activate'
@@ -20,7 +20,7 @@ entity.workspace.deployment_form:
   path: '/admin/structure/workspace/{workspace}/deployment'
   defaults:
     _title: 'Workspace deployment'
-    _controller: '\Drupal\workspace\Controller\DeploymentController::workspaces'
+    _form: '\Drupal\workspace\Form\DeploymentForm'
   options:
     _admin_route: TRUE
   requirements:

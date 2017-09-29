@@ -28,7 +28,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $editor = $this->drupalCreateUser([
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
+      'create workspace',
     ]);
 
     // Login as a limited-access user and create a workspace.
@@ -41,7 +41,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $page = $session->getPage();
     $page->fillField('label', 'Bears');
-    $page->fillField('machine_name', 'bears');
+    $page->fillField('id', 'bears');
     $page->findButton(t('Save'))->click();
 
     $session->getPage()->hasContent('Bears (bears)');
@@ -68,8 +68,8 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $permissions = [
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
-      'edit_own_workspace',
+      'create workspace',
+      'edit own workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);
@@ -90,7 +90,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $page = $session->getPage();
     $page->fillField('label', 'Bears again');
-    $page->fillField('machine_name', 'bears');
+    $page->fillField('id', 'bears');
     $page->findButton(t('Save'))->click();
     $session->getPage()->hasContent('Bears again (bears)');
 
@@ -120,8 +120,8 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $permissions = [
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
-      'edit_own_workspace',
+      'create workspace',
+      'edit own workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);
@@ -142,14 +142,14 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $page = $session->getPage();
     $page->fillField('label', 'Bears again');
-    $page->fillField('machine_name', 'bears');
+    $page->fillField('id', 'bears');
     $page->findButton(t('Save'))->click();
     $session->getPage()->hasContent('Bears again (bears)');
 
     // Now login as a different user and ensure they don't have edit access,
     // and vice versa.
 
-    $admin = $this->drupalCreateUser(array_merge($permissions, ['edit_any_workspace']));
+    $admin = $this->drupalCreateUser(array_merge($permissions, ['edit any workspace']));
 
     $this->drupalLogin($admin);
     $session = $this->getSession();

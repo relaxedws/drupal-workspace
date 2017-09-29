@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Service wrapper for hooks relating to entity access control.
  */
 class EntityAccess implements ContainerInjectionInterface {
+
   use StringTranslationTrait;
 
   /**
@@ -61,7 +62,6 @@ class EntityAccess implements ContainerInjectionInterface {
 
     );
   }
-
 
   /**
    * Hook bridge;
@@ -136,58 +136,8 @@ class EntityAccess implements ContainerInjectionInterface {
     return AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_workspace_' . $active_workspace->id())
       ->orIf(
         AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
-          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass_entity_access_own_workspace'))
+          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass entity access own workspace'))
       );
-  }
-
-  /**
-   * Hook bridge;
-   *
-   * @see hook_entity_access()
-   * @see hook_ENTITY_TYPE_access()
-   *
-   * @param WorkspaceInterface $workspace
-   * @param string $operation
-   * @param AccountInterface $account
-   *
-   * @return AccessResult
-   */
-  public function workspaceAccess(WorkspaceInterface $workspace, $operation, AccountInterface $account) {
-
-    $operations = [
-      'view' => ['any' => 'view_any_workspace', 'own' => 'view_own_workspace'],
-      'update' => ['any' => 'edit_any_workspace', 'own' => 'edit_own_workspace'],
-      'delete' => ['any' => 'delete_any_workspace', 'own' => 'delete_own_workspace'],
-    ];
-
-    // The default workspace is always viewable, no matter what.
-    $result = AccessResult::allowedIf($operation == 'view' && $workspace->id() == $this->defaultWorkspaceId)
-      // Or if the user has permission to access any workspace at all.
-      ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
-      // Or if it's their own workspace, and they have permission to access their own workspace.
-      ->orIf(
-        AccessResult::allowedIf($workspace->getOwnerId() == $account->id())
-          ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
-      )
-      ->orIf(AccessResult::allowedIfHasPermission($account, $operation . '_workspace_' . $workspace->id()));
-
-    return $result;
-  }
-
-  /**
-   * Hook bridge;
-   *
-   * @see hook_create_access();
-   * @see hook_ENTITY_TYPE_create_access()
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   * @param array $context
-   * @param $entity_bundle
-   *
-   * @return AccessResult
-   */
-  public function workspaceCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
-    return AccessResult::allowedIfHasPermission($account, 'create_workspace');
   }
 
   /**
@@ -216,7 +166,8 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Returns a list of all workspace entities in the system.
    *
-   * @return WorkspaceInterface[]
+   * @return \Drupal\workspace\Entity\WorkspaceInterface[]
+   *   An array of workspace entities, keyed by their IDs.
    */
   protected function getAllWorkspaces() {
     return $this->entityTypeManager->getStorage('workspace')->loadMultiple();

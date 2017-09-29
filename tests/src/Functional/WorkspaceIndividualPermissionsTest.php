@@ -29,9 +29,9 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $permissions = [
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
-      'edit_own_workspace',
-      'view_own_workspace',
+      'create workspace',
+      'edit own workspace',
+      'view own workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);
@@ -61,8 +61,8 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $permissions = [
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
-      'edit_own_workspace',
+      'create workspace',
+      'edit own workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);

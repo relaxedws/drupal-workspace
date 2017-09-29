@@ -9,7 +9,8 @@ use Drupal\workspace\UpstreamInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a 'Workspace' upstream plugin.
+ * Provides a 'Workspace' upstream plugin to allow a workspace to be set as a
+ * source and / or target for content replication.
  *
  * @Upstream(
  *   id = "workspace",

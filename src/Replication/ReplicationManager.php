@@ -5,7 +5,7 @@ namespace Drupal\workspace\Replication;
 use Drupal\workspace\UpstreamInterface;
 
 /**
- * Class ReplicationManager
+ * Manage the replication tagged services.
  */
 class ReplicationManager {
 
@@ -22,6 +22,9 @@ class ReplicationManager {
   }
 
   /**
+   * Find all replicators that apply for the source and target upstream plugins
+   * and run the replication for each replicator.
+   *
    * @param \Drupal\workspace\UpstreamInterface $source
    * @param \Drupal\workspace\UpstreamInterface $target
    *

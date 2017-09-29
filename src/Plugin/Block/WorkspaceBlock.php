@@ -4,6 +4,7 @@ namespace Drupal\workspace\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -18,20 +19,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * @var \Drupal\workspace\WorkspaceManagerInterface
+   * @var \Drupal\Core\Form\FormBuilderInterface
    */
-  protected $workspaceManager;
+  protected $formBuilder;
+
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->workspaceManager = $workspace_manager;
+    $this->formBuilder = $form_builder;
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -43,7 +49,7 @@ class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterfac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('workspace.manager'),
+      $container->get('form_builder'),
       $container->get('entity_type.manager')
     );
   }
@@ -53,15 +59,7 @@ class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterfac
    */
   public function build() {
     $build = [
-      // @todo the block depending on the toolbar is obscure; find a better way to generate this form
-      '#pre_render' => ['workspace_switcher_toolbar_pre_render'],
-      // This wil get filled in via pre-render.
-      'workspace_forms' => [],
-      '#attached' => [
-        'library' => [
-          'workspace/drupal.workspace.switcher',
-        ],
-      ],
+      'form' => $this->formBuilder->getForm('Drupal\workspace\Form\WorkspaceSwitcherForm'),
       '#cache' => [
         'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
         'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),

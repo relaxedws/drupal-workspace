@@ -24,10 +24,10 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
    */
   public function testSwitchingWorkspaces() {
     $permissions = [
-      'create_workspace',
-      'edit_own_workspace',
-      'view_own_workspace',
-      'bypass_entity_access_own_workspace',
+      'create workspace',
+      'edit own workspace',
+      'view own workspace',
+      'bypass entity access own workspace',
     ];
 
     $this->setupWorkspaceSwitcherBlock();

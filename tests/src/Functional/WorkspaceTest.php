@@ -18,8 +18,8 @@ class WorkspaceTest extends BrowserTestBase {
     $permissions = [
       'access administration pages',
       'administer site configuration',
-      'create_workspace',
-      'edit_own_workspace',
+      'create workspace',
+      'edit own workspace',
     ];
 
     $editor1 = $this->drupalCreateUser($permissions);
@@ -34,7 +34,7 @@ class WorkspaceTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
     $page->fillField('label', 'workspace2');
-    $page->fillField('machine_name', 'A!"£%^&*{}#~@?');
+    $page->fillField('id', 'A!"£%^&*{}#~@?');
     $page->findButton(t('Save'))->click();
     $session->getPage()->hasContent("This value is not valid");
   }

@@ -7,6 +7,7 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 
 /**
@@ -19,6 +20,7 @@ use Drupal\user\UserInterface;
  *   handlers = {
  *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "list_builder" = "\Drupal\workspace\WorkspaceListBuilder",
+ *     "access" = "Drupal\workspace\WorkspaceAccessControlHandler",
  *     "route_provider" = {
  *       "html" = "\Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     },
@@ -34,7 +36,7 @@ use Drupal\user\UserInterface;
  *   data_table = "workspace_field_data",
  *   revision_data_table = "workspace_field_revision",
  *   entity_keys = {
- *     "id" = "machine_name",
+ *     "id" = "id",
  *     "revision" = "revision_id",
  *     "uuid" = "uuid",
  *     "label" = "label",
@@ -59,54 +61,44 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['machine_name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Workaspace ID'))
-      ->setDescription(t('The workspace machine name.'))
+    $fields['id'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Workaspace ID'))
+      ->setDescription(new TranslatableMarkup('The workspace ID.'))
       ->setSetting('max_length', 128)
       ->setRequired(TRUE)
       ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[\da-z_$()+-\/]*$/']]);
 
-    $fields['uuid'] = BaseFieldDefinition::create('uuid')
-      ->setLabel(t('UUID'))
-      ->setDescription(t('The workspace UUID.'))
-      ->setReadOnly(TRUE);
-
-    $fields['revision_id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Revision ID'))
-      ->setDescription(t('The revision ID.'))
-      ->setReadOnly(TRUE)
-      ->setSetting('unsigned', TRUE);
-
     $fields['label'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Workaspace name'))
-      ->setDescription(t('The workspace name.'))
+      ->setLabel(new TranslatableMarkup('Workaspace name'))
+      ->setDescription(new TranslatableMarkup('The workspace name.'))
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 128)
       ->setRequired(TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Owner'))
-      ->setDescription(t('The workspace owner.'))
+      ->setLabel(new TranslatableMarkup('Owner'))
+      ->setDescription(new TranslatableMarkup('The workspace owner.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getCurrentUserId');
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the workspace was last edited.'))
+      ->setLabel(new TranslatableMarkup('Changed'))
+      ->setDescription(new TranslatableMarkup('The time that the workspace was last edited.'))
       ->setRevisionable(TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The UNIX timestamp of when the workspace has been created.'));
+      ->setLabel(new TranslatableMarkup('Created'))
+      ->setDescription(new TranslatableMarkup('The UNIX timestamp of when the workspace has been created.'));
 
     $fields['upstream'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Assign default target workspace'))
-      ->setDescription(t('The workspace to push to and pull from.'))
+      ->setLabel(new TranslatableMarkup('Assign default target workspace'))
+      ->setDescription(new TranslatableMarkup('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setDefaultValueCallback('workspace_active_id');
+      ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getActiveWorkspaceId');
 
     return $fields;
   }
@@ -131,13 +123,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public function getStartTime() {
     return $this->get('created')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMachineName() {
-    return $this->get('machine_name')->value;
   }
 
   /**
@@ -180,6 +165,18 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public static function getCurrentUserId() {
     return [\Drupal::currentUser()->id()];
+  }
+
+  /**
+   * Default value callback for 'upstream' base field definition.
+   *
+   * @see ::baseFieldDefinitions()
+   *
+   * @return array
+   *   An array of default values.
+   */
+  public static function getActiveWorkspaceId() {
+    return ['workspace:' . \Drupal::service('workspace.manager')->getActiveWorkspace()];
   }
 
 }

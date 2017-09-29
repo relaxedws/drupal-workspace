@@ -55,14 +55,15 @@ class ExistingContentTest extends BrowserTestBase {
     $session->pageTextContains('Published node');
     $this->drupalPostForm(NULL, [
       'title[0][value]' => 'Published Stage node'
-    ], t('Save and keep published'));
+    ], t('Save'));
     $session->pageTextContains('Published stage node');
 
     $this->drupalGet('/node/' . $unpublished_node->id() . '/edit');
     $session->pageTextContains('Unpublished node');
     $this->drupalPostForm(NULL, [
-      'title[0][value]' => 'Published Unpublished Stage node'
-    ], t('Save and publish'));
+      'title[0][value]' => 'Published Unpublished Stage node',
+      'status[value]' => TRUE,
+    ], t('Save'));
     $session->pageTextContains('Published Unpublished stage node');
 
     $this->drupalGet('<front>');

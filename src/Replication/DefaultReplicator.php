@@ -11,26 +11,35 @@ use Drupal\workspace\UpstreamInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
- * Class DefaultReplicator
+ * The default replicator service, replicating from one workspace to another on
+ * a single site.
  */
 class DefaultReplicator implements ReplicationInterface {
 
   /**
+   * The workspace manager.
+   *
    * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
   /**
+   * The changes factory.
+   *
    * @var \Drupal\workspace\Changes\ChangesFactoryInterface
    */
   protected $changesFactory;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The sequence index.
+   *
    * @var \Drupal\workspace\Index\SequenceIndexInterface
    */
   protected $sequenceIndex;
@@ -51,10 +60,11 @@ class DefaultReplicator implements ReplicationInterface {
   }
 
   /**
-   * @param \Drupal\workspace\UpstreamInterface $source
-   * @param \Drupal\workspace\UpstreamInterface $target
-   *q
-   * @return bool
+   * Only use this replicator if the source and target are workspaces. The
+   * Upstream plugin ID would be something like 'workspace:live' for the live
+   * workspace.
+   *
+   * {@inheritdoc}
    */
   public function applies(UpstreamInterface $source, UpstreamInterface $target) {
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
@@ -67,6 +77,10 @@ class DefaultReplicator implements ReplicationInterface {
   }
 
   /**
+   * Replicating content from one workspace to another on the same site roughly
+   * following the same protocol as CouchDB replication
+   * (http://docs.couchdb.org/en/2.1.0/replication/protocol.html).
+   *
    * {@inheritdoc}
    */
   public function replicate(UpstreamInterface $source, UpstreamInterface $target) {

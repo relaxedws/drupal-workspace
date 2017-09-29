@@ -21,8 +21,7 @@ interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterf
    * @param int $timestamp
    *   The workspace creation timestamp.
    *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
-   *   The called workspace entity.
+   * @return $this
    */
   public function setCreatedTime($timestamp);
 
@@ -33,13 +32,5 @@ interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterf
    *   Creation timestamp of the workspace.
    */
   public function getStartTime();
-
-  /**
-   * Returns the workspace machine name.
-   *
-   * @return string
-   *   Machine name of the workspace.
-   */
-  public function getMachineName();
 
 }
