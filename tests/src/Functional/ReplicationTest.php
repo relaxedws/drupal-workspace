@@ -85,7 +85,6 @@ class ReplicationTest extends BrowserTestBase {
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
-    $this->assertTrue($page->hasContent('Update Dev from Stage or deploy to Stage.'));
     $page->findButton('edit-deploy')->click();
     $session->getPage()->hasContent('Successful deployment');
 
@@ -107,7 +106,6 @@ class ReplicationTest extends BrowserTestBase {
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
-    $this->assertTrue($page->hasContent('Update Stage from Live or deploy to Live.'));
     $page->findButton('edit-deploy')->click();
     $session->getPage()->hasContent('Successful deployment');
 

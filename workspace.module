@@ -75,8 +75,12 @@ function workspace_query_entity_query_alter(AlterableInterface $query) {
     // Join the Content Workspace entity's field revision table.
     $query->leftJoin('content_workspace_field_revision', 'cwfr', 'base_table.' . $entity_type_id_key . ' = cwfr.content_entity_id');
     $query->condition('cwfr.content_entity_type_id', $entity_type_id);
-    // Only return entities for the active or default workspace.
-    $query->condition('cwfr.workspace', [$active_workspace, $default_workspace_id], 'IN');
+    // Return entities in the active workspace, the default workspace, or if the
+    // workspace value is set to NULL.
+    $group = $query->orConditionGroup()
+      ->condition('cwfr.workspace', [$active_workspace, $default_workspace_id], 'IN')
+      ->condition('cwfr.workspace', NULL, 'IS');
+    $query->condition($group);
   }
 }
 

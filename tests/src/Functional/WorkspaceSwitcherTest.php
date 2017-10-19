@@ -45,7 +45,7 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
-    $page->findButton(t('Activate'))->click();
+    $page->findButton(t('Confirm'))->click();
 
     $session->getPage()->findLink($gravity->label());
   }
