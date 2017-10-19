@@ -123,7 +123,9 @@ trait WorkspaceTestUtilities {
     \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);
 
     // Switch the system under test to the specified workspace.
-    $this->getSession()->getPage()->findButton($workspace->label())->click();
+    $page = $this->getSession()->getPage();
+    $page->selectFieldOption('workspace_id', $workspace->id());
+    $page->pressButton('Activate');
 
     // If we don't do both of those, test runner utility methods will not be
     // run in the same workspace as the system under test, and you'll be left
