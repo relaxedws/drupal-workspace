@@ -8,9 +8,10 @@ use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Index\SequenceIndexInterface;
 
 /**
- * {@inheritdoc}
+ * Defines and builds a sorted list of changed entities in a workspace.
  */
 class Changes implements ChangesInterface {
+
   use DependencySerializationTrait;
 
   /**
@@ -21,33 +22,35 @@ class Changes implements ChangesInterface {
   protected $workspaceId;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The sequence index service.
+   *
    * @var \Drupal\workspace\Index\SequenceIndex
    */
   protected $sequenceIndex;
-
-  /**
-   * Whether to include entities in the changeset.
-   *
-   * @var boolean
-   */
-  protected $includeEntities = FALSE;
 
   /**
    * The sequence ID to start including changes from. Result includes $lastSeq.
    *
    * @var int
    */
-  protected $lastSeq = 0;
+  protected $lastSequenceId = 0;
 
   /**
+   * Constructs a new Changes object.
+   *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   *   A workspace entity.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Workspace\Index\SequenceIndexInterface $sequence_index
+   *   The sequence index service.
    */
   public function __construct(WorkspaceInterface $workspace, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceId = $workspace->id();
@@ -58,75 +61,34 @@ class Changes implements ChangesInterface {
   /**
    * {@inheritdoc}
    */
-  public function includeEntities($include_entities) {
-    $this->includeEntities = $include_entities;
+  public function setLastSequenceId($sequence_id) {
+    $this->lastSequenceId = $sequence_id;
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function lastSeq($seq) {
-    $this->lastSeq = $seq;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNormal() {
+  public function getChanges() {
     $sequences = $this->sequenceIndex
       ->useWorkspace($this->workspaceId)
-      ->getRange($this->lastSeq, NULL);
+      ->getRange($this->lastSequenceId, NULL);
 
     // Format the result array.
     $changes = [];
     foreach ($sequences as $sequence) {
-      // Get the document.
-      $revision = NULL;
-      if ($this->includeEntities == TRUE) {
-        $storage = $this->entityTypeManager->getStorage($sequence['entity_type_id']);
-        $storage->useWorkspace($this->workspaceId);
-        $revision = $storage->loadRevision($sequence['revision_id']);
-      }
-
-      $changes[$sequence['entity_uuid']] = [
-        'changes' => [
-          ['rev' => $sequence['revision_id']],
-        ],
-        'id' => $sequence['entity_id'],
-        'type' => $sequence['entity_type_id'],
-        'seq' => $sequence['seq'],
-      ];
-
-      // Include the document.
-      if ($this->includeEntities == TRUE) {
-        $changes[$sequence['entity_uuid']]['doc'] = $revision;
-      }
+      $changes[$sequence['seq']] = new Change(
+        $sequence['entity_type_id'],
+        $sequence['entity_id'],
+        $sequence['revision_id']
+      );
     }
 
     // Now when we have rebuilt the result array we need to ensure that the
-    // results array is still sorted on the sequence key, as in the index.
-    $return = array_values($changes);
-    usort($return, function($a, $b) {
-      return $a['seq'] - $b['seq'];
-    });
+    // changes array is sorted on the sequence key, as in the index.
+    ksort($changes);
 
-    return $return;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLongpoll() {
-    $no_change = TRUE;
-    do {
-      $change = $this->sequenceIndex
-        ->useWorkspace($this->workspaceId)
-        ->getRange($this->lastSeq, NULL);
-      $no_change = empty($change) ? TRUE : FALSE;
-    } while ($no_change);
-    return $change;
+    return $changes;
   }
 
 }

@@ -3,44 +3,26 @@
 namespace Drupal\workspace\Changes;
 
 /**
- * Define and build a list of changes for a Workspace.
+ * Builds a list of changes between two workspaces.
  */
 interface ChangesInterface {
 
   /**
-   * Set the flag for including entities in the list of changes.
-   *
-   * @param bool $include_entities
-   *   Whether to include entities in the list of changes.
-   *
-   * @return \Drupal\workspace\Changes\ChangesInterface
-   *   Returns $this.
-   */
-  public function includeEntities($include_entities);
-
-  /**
    * Sets from what sequence number to check for changes.
    *
-   * @param int $seq
-   *   The sequence ID to start including changes from. Result includes $seq.
+   * @param int $sequence_id
+   *   The sequence ID to start including changes from.
    *
-   * @return \Drupal\workspace\Changes\ChangesInterface
-   *   Returns $this.
+   * @return $this
    */
-  public function lastSeq($seq);
+  public function setLastSequenceId($sequence_id);
 
   /**
-   * Return the changes in a 'normal' way.
+   * Return an array of Change value objects.
    *
-   * @return array
+   * @return \Drupal\workspace\Changes\Change[]
+   *   An array of Change objects.
    */
-  public function getNormal();
-
-  /**
-   * Return the changes with a 'longpoll'.
-   *
-   * @return array
-   */
-  public function getLongpoll();
+  public function getChanges();
 
 }

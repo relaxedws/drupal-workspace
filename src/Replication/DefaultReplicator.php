@@ -99,13 +99,12 @@ class DefaultReplicator implements ReplicationInterface {
 
     // Get changes for the current workspace.
     $history = $replication_log->getHistory();
-    $last_seq = isset($history[0]['recorded_seq']) ? $history[0]['recorded_seq'] : 0;
-    $changes = $this->changesFactory->get($source)->lastSeq($last_seq)->getNormal();
+    $last_sequence_id = isset($history[0]['recorded_seq']) ? $history[0]['recorded_seq'] : 0;
+    $changes = $this->changesFactory->get($source)->setLastSequenceId($last_sequence_id)->getChanges();
     $rev_diffs = [];
+    /** @var \Drupal\workspace\Changes\ChangeInterface $change */
     foreach ($changes as $change) {
-      foreach ($change['changes'] as $change_item) {
-        $rev_diffs[$change['type']][] = $change_item['rev'];
-      }
+      $rev_diffs[$change->getEntityTypeId()][] = $change->getRevisionId();
     }
 
     // Get revision diff between source and target
