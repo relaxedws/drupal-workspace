@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\workspace\Plugin\Derivative;
+namespace Drupal\workspace\Plugin\Deriver;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -9,26 +9,29 @@ use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Derive an upstream plugin for each workspace.
+ * Derives an upstream plugin for each workspace.
  */
-class Workspace extends DeriverBase implements ContainerDeriverInterface {
+class WorkspaceUpstream extends DeriverBase implements ContainerDeriverInterface {
 
   /**
+   * The workspace entity storage handler.
+   *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $workspaceStorage;
 
   /**
-   * Workspace constructor.
+   * Constructs a new Workspace plugin deriver.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $workspace_storage
+   *   The workspace entity storage handler.
    */
   public function __construct(EntityStorageInterface $workspace_storage) {
     $this->workspaceStorage = $workspace_storage;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(

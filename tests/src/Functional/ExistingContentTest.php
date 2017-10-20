@@ -78,11 +78,11 @@ class ExistingContentTest extends BrowserTestBase {
 
     /** @var \Drupal\workspace\Replication\ReplicationManager $replicator */
     $replicator = \Drupal::service('workspace.replication_manager');
-    /** @var \Drupal\workspace\UpstreamManager $upstream */
-    $upstream = \Drupal::service('workspace.upstream_manager');
+    /** @var \Drupal\workspace\UpstreamPluginManager $upstream_plugin_manager */
+    $upstream_plugin_manager = \Drupal::service('plugin.manager.workspace.upstream');
     $replicator->replicate(
-      $upstream->createInstance('workspace:' . $stage->id()),
-      $upstream->createInstance('workspace:' . $live->id())
+      $upstream_plugin_manager->createInstance('workspace:' . $stage->id()),
+      $upstream_plugin_manager->createInstance('workspace:' . $live->id())
     );
 
     $this->drupalGet('<front>');

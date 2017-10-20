@@ -30,8 +30,8 @@ services:
   workspace.keyvalue.sorted_set.database:
     class: Drupal\workspace\KeyValueStore\KeyValueDatabaseSortedSetFactory
     arguments: ['@serialization.phpserialize', '@database']
-  workspace.upstream_manager:
-    class: Drupal\workspace\UpstreamManager
+  plugin.manager.workspace.upstream:
+    class: Drupal\workspace\UpstreamPluginManager
     parent: default_plugin_manager
 
   workspace.replication_manager:

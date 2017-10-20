@@ -2,7 +2,7 @@
 
 namespace Drupal\workspace\Replication;
 
-use Drupal\workspace\UpstreamInterface;
+use Drupal\workspace\UpstreamPluginInterface;
 
 /**
  * Interface ReplicationInterface
@@ -10,19 +10,19 @@ use Drupal\workspace\UpstreamInterface;
 interface ReplicationInterface {
 
   /**
-   * @param \Drupal\workspace\UpstreamInterface $source
-   * @param \Drupal\workspace\UpstreamInterface $target
+   * @param \Drupal\workspace\UpstreamPluginInterface $source
+   * @param \Drupal\workspace\UpstreamPluginInterface $target
    *
    * @return bool
    */
-  public function applies(UpstreamInterface $source, UpstreamInterface $target);
+  public function applies(UpstreamPluginInterface $source, UpstreamPluginInterface $target);
 
   /**
-   * @param \Drupal\workspace\UpstreamInterface $source
-   * @param \Drupal\workspace\UpstreamInterface $target
+   * @param \Drupal\workspace\UpstreamPluginInterface $source
+   * @param \Drupal\workspace\UpstreamPluginInterface $target
    *
    * @return \Drupal\workspace\Entity\ReplicationLogInterface
    */
-  public function replicate(UpstreamInterface $source, UpstreamInterface $target);
+  public function replicate(UpstreamPluginInterface $source, UpstreamPluginInterface $target);
 
 }

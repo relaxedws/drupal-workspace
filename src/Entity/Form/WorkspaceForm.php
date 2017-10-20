@@ -49,10 +49,10 @@ class WorkspaceForm extends ContentEntityForm {
     ];
 
     $upstreams = [];
-    $upstream_manager = \Drupal::service('workspace.upstream_manager');
+    $upstream_manager = \Drupal::service('plugin.manager.workspace.upstream');
     $upstream_definitions = $upstream_manager->getDefinitions();
     foreach ($upstream_definitions as $upstream_definition) {
-      /** @var \Drupal\workspace\UpstreamInterface $instance */
+      /** @var \Drupal\workspace\UpstreamPluginInterface $instance */
       $instance = $upstream_manager->createInstance($upstream_definition['id']);
       $upstreams[$instance->getPluginId()] = $instance->getLabel();
     }
@@ -101,7 +101,7 @@ class WorkspaceForm extends ContentEntityForm {
     $workspace = $this->entity;
     $status = $workspace->save();
 
-    \Drupal::service('workspace.upstream_manager')->clearCachedDefinitions();
+    \Drupal::service('plugin.manager.workspace.upstream')->clearCachedDefinitions();
 
     $info = ['%info' => $workspace->label()];
     $context = ['@type' => $workspace->bundle(), '%info' => $workspace->label()];

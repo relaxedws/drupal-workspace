@@ -7,7 +7,7 @@ use Drupal\workspace\Changes\ChangesFactoryInterface;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\Index\SequenceIndexInterface;
-use Drupal\workspace\UpstreamInterface;
+use Drupal\workspace\UpstreamPluginInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
@@ -66,7 +66,7 @@ class DefaultReplicator implements ReplicationInterface {
    *
    * {@inheritdoc}
    */
-  public function applies(UpstreamInterface $source, UpstreamInterface $target) {
+  public function applies(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());
     if ($source_plugin == 'workspace' && $target_plugin == 'workspace'
@@ -83,7 +83,7 @@ class DefaultReplicator implements ReplicationInterface {
    *
    * {@inheritdoc}
    */
-  public function replicate(UpstreamInterface $source, UpstreamInterface $target) {
+  public function replicate(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());
     $source = Workspace::load($source_id);

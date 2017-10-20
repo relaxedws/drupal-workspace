@@ -27,7 +27,7 @@ class DeploymentForm extends FormBase {
       return [];
     }
 
-    $upstream_plugin = \Drupal::service('workspace.upstream_manager')->createInstance($workspace->get('upstream')->value);
+    $upstream_plugin = \Drupal::service('plugin.manager.workspace.upstream')->createInstance($workspace->get('upstream')->value);
     $form['workspace_id'] = [
       '#type' => 'hidden',
       '#value' => $workspace->id(),
@@ -56,7 +56,7 @@ class DeploymentForm extends FormBase {
    */
   public function updateHandler(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
-    $upstream_manager = \Drupal::service('workspace.upstream_manager');
+    $upstream_manager = \Drupal::service('plugin.manager.workspace.upstream');
     try {
       \Drupal::service('workspace.replication_manager')->replicate(
         $upstream_manager->createInstance($workspace->get('upstream')->value),
@@ -74,7 +74,7 @@ class DeploymentForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $workspace = Workspace::load($form_state->getValue('workspace_id'));
-    $upstream_manager = \Drupal::service('workspace.upstream_manager');
+    $upstream_manager = \Drupal::service('plugin.manager.workspace.upstream');
     try {
       \Drupal::service('workspace.replication_manager')->replicate(
         $upstream_manager->createInstance('workspace:' . $workspace->id()),

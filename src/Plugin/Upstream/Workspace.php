@@ -2,10 +2,10 @@
 
 namespace Drupal\workspace\Plugin\Upstream;
 
+use Drupal\workspace\UpstreamPluginBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\PluginBase;
-use Drupal\workspace\UpstreamInterface;
+use Drupal\workspace\UpstreamPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -14,23 +14,32 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Upstream(
  *   id = "workspace",
- *   deriver = "Drupal\workspace\Plugin\Derivative\Workspace"
+ *   label = @Translation("Local workspace"),
+ *   description = @Translation("A workspace that is defined in the local Drupal installation."),
+ *   remote = FALSE,
+ *   deriver = "Drupal\workspace\Plugin\Deriver\WorkspaceUpstream",
  * )
  */
-class Workspace extends PluginBase implements UpstreamInterface, ContainerFactoryPluginInterface {
+class Workspace extends UpstreamPluginBase implements UpstreamPluginInterface, ContainerFactoryPluginInterface {
 
   /**
-   * @var \Drupal\workspace\Entity\Workspace
+   * The local workspace entity.
+   *
+   * @var \Drupal\workspace\Entity\WorkspaceInterface
    */
   protected $workspace;
 
   /**
-   * Workspace constructor.
+   * Constructs a new Workspace upstream plugin.
    *
    * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -38,12 +47,7 @@ class Workspace extends PluginBase implements UpstreamInterface, ContainerFactor
   }
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   * @param array $configuration
-   * @param string $plugin_id
-   * @param mixed $plugin_definition
-   *
-   * @return static
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
@@ -59,6 +63,18 @@ class Workspace extends PluginBase implements UpstreamInterface, ContainerFactor
    */
   public function getLabel() {
     return $this->workspace->label();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    $this->dependencies = parent::calculateDependencies();
+
+    $this->addDependency($this->workspace->getConfigDependencyKey(), $this->workspace->getConfigDependencyName());
+
+    return $this->dependencies;
+
   }
 
 }
