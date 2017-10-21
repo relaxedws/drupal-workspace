@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace\Entity;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -25,9 +24,9 @@ use Drupal\user\UserInterface;
  *       "html" = "\Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     },
  *     "form" = {
- *       "default" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
- *       "add" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
- *       "edit" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
+ *       "default" = "\Drupal\workspace\Form\WorkspaceForm",
+ *       "add" = "\Drupal\workspace\Form\WorkspaceForm",
+ *       "edit" = "\Drupal\workspace\Form\WorkspaceForm",
  *       "activate" = "\Drupal\workspace\Form\WorkspaceActivateForm",
  *     },
  *   },

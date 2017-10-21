@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\workspace\Entity\Form;
+namespace Drupal\workspace\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
