@@ -9,10 +9,6 @@ services:
     arguments: ['@entity.manager']
     tags:
       - { name: paramconverter, priority: 30 }
-  access_check.workspace_view:
-    class: Drupal\workspace\Access\WorkspaceViewCheck
-    tags:
-      - { name: access_check, applies_to: _workspace_view }
   workspace.manager:
     class: Drupal\workspace\WorkspaceManager
     arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@logger.channel.workspace']
