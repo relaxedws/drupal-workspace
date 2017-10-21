@@ -9,12 +9,12 @@ entity.workspace.collection:
 entity.workspace.activate_form:
   path: '/admin/structure/workspace/{workspace}/activate'
   defaults:
-    _entity_form: 'workspace.activate'
     _title: 'Activate Workspace'
+    _form: '\Drupal\workspace\Form\WorkspaceActivateForm'
   options:
     _admin_route: TRUE
   requirements:
-    _entity_access: 'workspace.view'
+    _workspace_view: 'TRUE'
 
 entity.workspace.deployment_form:
   path: '/admin/structure/workspace/{workspace}/deployment'

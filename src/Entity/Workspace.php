@@ -28,7 +28,6 @@ use Drupal\user\UserInterface;
  *       "default" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
  *       "add" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
  *       "edit" = "\Drupal\workspace\Entity\Form\WorkspaceForm",
- *       "activate" = "\Drupal\workspace\Form\WorkspaceActivateForm",
  *     },
  *   },
  *   admin_permission = "administer workspaces",
