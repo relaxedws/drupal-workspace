@@ -5,30 +5,40 @@ namespace Drupal\workspace\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Switcher for to activate a different workspace.
- *
- * This is a separate form for each workspace rather than one big form with
- * many buttons for scaling reasons. For example, this form may show up in a
- * toolbar. We may want to show just a subset of workspaces to switch to, maybe
- * access control, etc. This approach keeps that logic out of the switching
- * process itself.
+ * Provides a form that activates a different workspace.
  */
 class WorkspaceSwitcherForm extends FormBase {
 
   /**
+   * The workspace manager.
+   *
    * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
+
+  /**
+   * Constructs a new WorkspaceSwitcherForm.
+   *
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager) {
+    $this->workspaceManager = $workspace_manager;
+    $this->entityTypeManager = $entity_type_manager;
+  }
 
   /**
    * {@inheritdoc}
@@ -38,11 +48,6 @@ class WorkspaceSwitcherForm extends FormBase {
       $container->get('workspace.manager'),
       $container->get('entity_type.manager')
     );
-  }
-
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager) {
-    $this->workspaceManager = $workspace_manager;
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -56,7 +61,7 @@ class WorkspaceSwitcherForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $workspaces = Workspace::loadMultiple();
+    $workspaces = $this->entityTypeManager->getStorage('workspace')->loadMultiple();
     $workspace_labels = [];
     foreach ($workspaces as $workspace) {
       $workspace_labels[$workspace->id()] = $workspace->label();
@@ -102,16 +107,16 @@ class WorkspaceSwitcherForm extends FormBase {
     /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
     $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
     if (!$workspace) {
-      $form_state->setErrorByName('workspace_id', 'This workspace no longer exists.');
+      $form_state->setErrorByName('workspace_id', $this->t('This workspace does not exist.'));
     }
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $id = $form_state->getValue('workspace_id');
-    $workspace = Workspace::load($id);
+    $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
 
     try {
       $this->workspaceManager->setActiveWorkspace($workspace);
@@ -119,7 +124,7 @@ class WorkspaceSwitcherForm extends FormBase {
       $form_state->setRedirect('<front>');
     }
     catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
+      watchdog_exception('workspace', $e);
       drupal_set_message($e->getMessage(), 'error');
     }
   }
