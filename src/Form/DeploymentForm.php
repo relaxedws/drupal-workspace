@@ -13,14 +13,14 @@ use Drupal\workspace\Entity\WorkspaceInterface;
 class DeploymentForm extends FormBase {
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'workspace_deployment_form';
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, WorkspaceInterface $workspace = NULL) {
     if ('workspace:' . $workspace->id() == $workspace->get('upstream')->value) {

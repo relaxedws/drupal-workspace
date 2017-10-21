@@ -59,7 +59,7 @@ class Workspace extends UpstreamPluginBase implements UpstreamPluginInterface, C
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function getLabel() {
     return $this->workspace->label();
