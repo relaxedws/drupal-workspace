@@ -2,46 +2,73 @@
 
 namespace Drupal\workspace\Form;
 
-use Drupal\Core\Form\ConfirmFormBase;
+use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Handle activation of a workspace on administrative pages.
  */
-class WorkspaceActivateForm extends ConfirmFormBase {
+class WorkspaceActivateForm extends EntityConfirmFormBase {
+
+  /**
+   * The workspace replication manager.
+   *
+   * @var \Drupal\workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
+   * Constructs a new WorkspaceActivateForm.
+   *
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
+   */
+  public function __construct(WorkspaceManagerInterface $workspace_manager) {
+    $this->workspaceManager = $workspace_manager;
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
-    return 'activate';
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('workspace.manager')
+    );
   }
-
-  /**
-   * @var \Drupal\workspace\Entity\WorkspaceInterface;
-   */
-  protected $workspace;
 
   /**
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Would you like to activate the %workspace workspace?', ['%workspace' => $this->workspace->label()]);
+    return $this->t('Would you like to activate the %workspace workspace?', ['%workspace' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('Activate the %workspace workspace.', ['%workspace' => $this->workspace->label()]);
+    return $this->t('Activate the %workspace workspace.', ['%workspace' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return $this->workspace->toUrl('collection');
+    return $this->entity->toUrl('collection');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
+
+    // Content entity forms do not use the parent's #after_build callback.
+    unset($form['#after_build']);
+
+    return $form;
   }
 
   /**
@@ -49,22 +76,14 @@ class WorkspaceActivateForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
-      \Drupal::service('workspace.manager')->setActiveWorkspace($this->workspace);
-      drupal_set_message($this->t("@workspace is now the active workspace.", ['@workspace' => $this->workspace->label()]));
-      $form_state->setRedirect($this->workspace->toUrl('collection')->getRouteName());
+      $this->workspaceManager->setActiveWorkspace($this->entity);
+      drupal_set_message($this->t("@workspace is now the active workspace.", ['@workspace' => $this->entity->label()]));
+      $form_state->setRedirectUrl($this->entity->toUrl('collection'));
     }
     catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
+      watchdog_exception('workspace', $e);
       drupal_set_message($e->getMessage(), 'error');
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state, WorkspaceInterface $workspace = NULL) {
-    $this->workspace = $workspace;
-    return parent::buildForm($form, $form_state);
   }
 
 }
