@@ -102,7 +102,7 @@ class DefaultReplicator implements ReplicationInterface {
     $last_sequence_id = isset($history[0]['recorded_seq']) ? $history[0]['recorded_seq'] : 0;
     $changes = $this->changesFactory->get($source)->setLastSequenceId($last_sequence_id)->getChanges();
     $rev_diffs = [];
-    /** @var \Drupal\workspace\Changes\ChangeInterface $change */
+    /** @var \Drupal\workspace\Changes\Change $change */
     foreach ($changes as $change) {
       $rev_diffs[$change->getEntityTypeId()][] = $change->getRevisionId();
     }
