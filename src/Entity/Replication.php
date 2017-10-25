@@ -114,7 +114,6 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
     $fields['description'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Description'))
       ->setSettings([
-        'max_length' => 50,
         'text_processing' => 0,
       ])
       ->setDefaultValue('')
