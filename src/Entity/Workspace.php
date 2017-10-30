@@ -15,7 +15,13 @@ use Drupal\user\UserInterface;
  * @ContentEntityType(
  *   id = "workspace",
  *   label = @Translation("Workspace"),
- *   bundle_label = @Translation("Workspace type"),
+ *   label_collection = @Translation("Workspaces"),
+ *   label_singular = @Translation("workspace"),
+ *   label_plural = @Translation("workspaces"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count workspace",
+ *     plural = "@count workspaces"
+ *   ),
  *   handlers = {
  *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "list_builder" = "\Drupal\workspace\WorkspaceListBuilder",
@@ -41,7 +47,6 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid",
  *     "label" = "label",
  *     "uid" = "uid",
- *     "created" = "created"
  *   },
  *   links = {
  *     "add-form" = "/admin/structure/workspace/add",
@@ -101,13 +106,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getActiveWorkspaceId');
 
     return $fields;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getUpdateSeq() {
-    return \Drupal::service('workspace.entity_index.sequence')->useWorkspace($this->id())->getLastSequenceId();
   }
 
   /**

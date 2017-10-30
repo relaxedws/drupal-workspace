@@ -6,14 +6,10 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
 
+/**
+ * Defines an interface for the workspace entity type.
+ */
 interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
-
-  /**
-   * Returns the last sequence ID in the workspace's sequence index.
-   *
-   * @return float
-   */
-  public function getUpdateSeq();
 
   /**
    * Sets the workspace creation timestamp.
