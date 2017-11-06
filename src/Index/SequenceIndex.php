@@ -7,33 +7,45 @@ use Drupal\workspace\KeyValueStore\KeyValueSortedSetFactoryInterface;
 use Drupal\Workspace\WorkspaceManagerInterface;
 
 /**
- * Class SequenceIndex
+ * Provides the default implementation for a sequence index.
  */
 class SequenceIndex implements SequenceIndexInterface {
 
   /**
+   * The collection prefix for the sorted set key/value store.
+   *
    * @var string
    */
   protected $collectionPrefix = 'workspace.sequence_index.';
 
   /**
+   * The ID of the workspace to use.
+   *
    * @var string
    */
   protected $workspaceId;
 
   /**
+   * The sorted set key/value factory.
+   *
    * @var \Drupal\workspace\KeyValueStore\KeyValueSortedSetFactoryInterface
    */
   protected $sortedSetFactory;
 
   /**
+   * The workspace manager.
+   *
    * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
 
   /**
+   * Constructs a new SequenceIndex.
+   *
    * @param \Drupal\workspace\KeyValueStore\KeyValueSortedSetFactoryInterface $sorted_set_factory
+   *   The sorted set key/value factory.
    * @param \Drupal\Workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
    */
   public function __construct(KeyValueSortedSetFactoryInterface $sorted_set_factory, WorkspaceManagerInterface $workspace_manager) {
     $this->sortedSetFactory = $sorted_set_factory;
@@ -52,22 +64,15 @@ class SequenceIndex implements SequenceIndexInterface {
    * {@inheritdoc}
    */
   public function add(ContentEntityInterface $entity) {
-    $workspace_id = NULL;
     $record = $this->buildRecord($entity);
-    if ($entity->getEntityType()->get('workspace') === FALSE) {
-      $workspace_id = 0;
-    }
-    $this->sortedSetStore($workspace_id)->add($record['seq'], $record);
+    $this->sortedSetStore()->add($record['seq'], $record);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRange($start, $stop = NULL, $inclusive = TRUE) {
-    $range = $this->sortedSetStore()->getRange($start, $stop, $inclusive);
-    if (empty($range)) {
-      $range = $this->sortedSetStore(0)->getRange($start, $stop, $inclusive);
-    }
+  public function getRange($start, $stop = NULL) {
+    $range = $this->sortedSetStore()->getRange($start, $stop);
     return $range;
   }
 
@@ -76,14 +81,15 @@ class SequenceIndex implements SequenceIndexInterface {
    */
   public function getLastSequenceId() {
     $max_key = $this->sortedSetStore()->getMaxKey();
-    if (empty($max_key)) {
-      $max_key = $this->sortedSetStore(0)->getMaxKey();
-    }
     return $max_key;
   }
 
   /**
-   * @param $workspace_id
+   * Gets the sorted set key/value collection for a given workspace ID.
+   *
+   * @param string $workspace_id
+   *   (optional) A workspace ID to use. Defaults to NULL, which means the
+   *   current active workspace is used.
    *
    * @return \Drupal\workspace\KeyValueStore\KeyValueStoreSortedSetInterface
    */
@@ -95,8 +101,13 @@ class SequenceIndex implements SequenceIndexInterface {
   }
 
   /**
+   * Builds a record to add to the sorted set key/value store.
+   *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   A content entity object.
+   *
    * @return array
+   *   An array containing the relevant information about the given entity.
    */
   protected function buildRecord(ContentEntityInterface $entity) {
     return [
