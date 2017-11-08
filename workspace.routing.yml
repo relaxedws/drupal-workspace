@@ -68,6 +68,16 @@ entity.workspace_type.add_form:
   options:
     _admin_route: TRUE
 
+entity.workspace.changes:
+  path: '/admin/structure/workspace/{workspace}/changes'
+  defaults:
+    _controller: '\Drupal\workspace\Controller\ChangesListController::viewChanges'
+    _title_callback: '\Drupal\workspace\Controller\ChangesListController::getViewChangesTitle'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'view_any_workspace'
+
 # Update form
 workspace.update.form:
   path: '/admin/structure/deployment/update'

@@ -112,6 +112,7 @@ class EntityTypeInfo {
     $workspace->setLinkTemplate('delete-form', '/admin/structure/workspace/{workspace}/delete');
     $workspace->setLinkTemplate('activate-form', '/admin/structure/workspace/{workspace}/activate');
     $workspace->setLinkTemplate('conflicts', '/admin/structure/workspace/{workspace}/conflicts');
+    $workspace->setLinkTemplate('changes', '/admin/structure/workspace/{workspace}/changes');
     $workspace->set('field_ui_base_route', 'entity.workspace_type.edit_form');
 
     return $workspace;
