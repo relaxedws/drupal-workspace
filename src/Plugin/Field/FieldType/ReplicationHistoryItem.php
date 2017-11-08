@@ -4,14 +4,24 @@ namespace Drupal\workspace\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
+ * Defines the 'replication_history' entity field type.
+ *
+ * For each replication a history should be maintained. The only required field
+ * is session_id which is a unique ID for the replication. The recorded_sequence
+ * field is another important field, it stores the sequence ID of the last
+ * entity replicated. It is where replication is started from next time, and
+ * therefore defaults to 0, denoting to start from the first sequence ID. All
+ * other fields are for informational purposes which can be used for user
+ * messages, logs, or an audit trail.
+ *
  * @FieldType(
  *   id = "replication_history",
  *   label = @Translation("Replication history"),
  *   description = @Translation("History information for a replication."),
- *   list_class = "\Drupal\workspace\Plugin\Field\FieldType\ReplicationHistoryItemList",
  *   no_ui = TRUE
  * )
  */
@@ -28,59 +38,49 @@ class ReplicationHistoryItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['doc_write_failures'] = DataDefinition::create('integer')
-      ->setLabel(t('Write failures'))
-      ->setDescription(t('Number of failed document writes'))
+    $properties['entity_write_failures'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Write failures'))
+      ->setDescription(new TranslatableMarkup('Number of failed entity writes'))
       ->setRequired(FALSE);
 
-    $properties['docs_read'] = DataDefinition::create('integer')
-      ->setLabel(t('Documents read'))
-      ->setDescription(t('Number of documents read.'))
+    $properties['entities_read'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Entities read'))
+      ->setDescription(new TranslatableMarkup('Number of entities read.'))
       ->setRequired(FALSE);
 
-    $properties['docs_written'] = DataDefinition::create('integer')
-      ->setLabel(t('Documents written'))
-      ->setDescription(t('Number of documents written.'))
+    $properties['entities_written'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Entities written'))
+      ->setDescription(new TranslatableMarkup('Number of entities written.'))
       ->setRequired(FALSE);
 
-    $properties['end_last_seq'] = DataDefinition::create('integer')
-      ->setLabel(t('End sequence'))
-      ->setDescription(t('Sequence ID where the replication ended.'))
+    $properties['end_last_sequence'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('End sequence'))
+      ->setDescription(new TranslatableMarkup('Sequence ID where the replication ended.'))
       ->setRequired(FALSE);
 
     $properties['end_time'] = DataDefinition::create('datetime_iso8601')
-      ->setLabel(t('End time'))
-      ->setDescription(t('Date and time when replication ended.'))
+      ->setLabel(new TranslatableMarkup('End time'))
+      ->setDescription(new TranslatableMarkup('Date and time when replication ended.'))
       ->setRequired(FALSE);
 
-    $properties['missing_checked'] = DataDefinition::create('integer')
-      ->setLabel(t('Missing checked'))
-      ->setDescription(t('Number of missing documents checked.'))
-      ->setRequired(FALSE);
-
-    $properties['missing_found'] = DataDefinition::create('integer')
-      ->setLabel(t('Missing found'))
-      ->setDescription(t('Number of missing documents found.'))
-      ->setRequired(FALSE);
-
-    $properties['recorded_seq'] = DataDefinition::create('integer')
-      ->setLabel(t('Recorded sequence'))
-      ->setDescription(t('Recorded intermediate sequence.'))
+    $properties['recorded_sequence'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Recorded sequence'))
+      ->setDescription(new TranslatableMarkup('Recorded intermediate sequence.'))
       ->setRequired(FALSE);
 
     $properties['session_id'] = DataDefinition::create('string')
-      ->setLabel(t('Session ID'))
-      ->setDescription(t('Unique session ID for the replication.'))
+      ->setLabel(new TranslatableMarkup('Session ID'))
+      ->setDescription(new TranslatableMarkup('Unique session ID for the replication.'))
       ->setRequired(TRUE);
 
-    $properties['start_last_seq'] = DataDefinition::create('integer')
-      ->setLabel(t('Start sequence'))
-      ->setDescription(t('Sequence ID where the replication started.'))
+    $properties['start_last_sequence'] = DataDefinition::create('integer')
+      ->setLabel(new TranslatableMarkup('Start sequence'))
+      ->setDescription(new TranslatableMarkup('Sequence ID where the replication started.'))
       ->setRequired(FALSE);
 
     $properties['start_time'] = DataDefinition::create('datetime_iso8601')
-      ->setLabel(t('Start time'))
-      ->setDescription(t('Date and time when replication started.'))
+      ->setLabel(new TranslatableMarkup('Start time'))
+      ->setDescription(new TranslatableMarkup('Date and time when replication started.'))
       ->setRequired(FALSE);
 
     return $properties;
@@ -92,22 +92,22 @@ class ReplicationHistoryItem extends FieldItemBase {
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     return [
       'columns' => [
-        'doc_write_failures' => [
+        'entity_write_failures' => [
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => FALSE,
         ],
-        'docs_read' => [
+        'entities_read' => [
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => FALSE,
         ],
-        'docs_written' => [
+        'entities_written' => [
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => FALSE,
         ],
-        'end_last_seq' => [
+        'end_last_sequence' => [
           'type' => 'int',
           'size' => 'big',
           'not null' => FALSE,
@@ -117,17 +117,7 @@ class ReplicationHistoryItem extends FieldItemBase {
           'length' => 50,
           'not null' => FALSE,
         ],
-        'missing_checked' => [
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => FALSE,
-        ],
-        'missing_found' => [
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => FALSE,
-        ],
-        'recorded_seq' => [
+        'recorded_sequence' => [
           'type' => 'int',
           'size' => 'big',
           'not null' => FALSE,
@@ -138,7 +128,7 @@ class ReplicationHistoryItem extends FieldItemBase {
           'length' => 128,
           'not null' => TRUE,
         ],
-        'start_last_seq' => [
+        'start_last_sequence' => [
           'type' => 'int',
           'size' => 'big',
           'not null' => FALSE,

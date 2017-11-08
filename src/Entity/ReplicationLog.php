@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * The replication log entity type.
@@ -24,7 +25,6 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  *     "uuid" = "uuid",
  *     "revision" = "revision_id",
  *   },
- *   local = TRUE,
  * )
  */
 class ReplicationLog extends ContentEntityBase implements ReplicationLogInterface {
@@ -63,31 +63,27 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
   /**
    * {@inheritdoc}
    */
-  public function getSourceLastSeq() {
-    return $this->get('source_last_seq')->value;
+  public function getSourceLastSequence() {
+    return $this->get('source_last_sequence')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSourceLastSeq($source_last_seq) {
-    $this->set('source_last_seq', $source_last_seq);
+  public function setSourceLastSequence($source_last_sequence) {
+    $this->set('source_last_sequence', $source_last_sequence);
     return $this;
   }
 
   /**
-   * @param $id string
-   * @return \Drupal\workspace\Entity\ReplicationLogInterface
+   * {@inheritdoc}
    */
   public static function loadOrCreate($id) {
-    $entities = \Drupal::entityTypeManager()
-      ->getStorage('replication_log')
-      ->loadByProperties(['uuid' => $id]);
-    if (!empty($entities)) {
+    if ($entity = static::load($id)) {
       return reset($entities);
     }
     else {
-      return static::create(['uuid' => $id]);
+      return static::create(['id' => $id]);
     }
   }
 
@@ -95,42 +91,35 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields['id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('ID'))
-      ->setDescription(t('The ID of the replication log entity.'))
-      ->setReadOnly(TRUE)
-      ->setSetting('unsigned', TRUE);
+    $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['uuid'] = BaseFieldDefinition::create('uuid')
-      ->setLabel(t('UUID'))
-      ->setDescription(t('The UUID of the replication log entity.'))
-      ->setReadOnly(TRUE);
-
-    $fields['revision_id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Revision ID'))
-      ->setDescription(t('The local revision ID of the replication log entity.'))
+    $fields['id'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Replication log ID'))
+      ->setDescription(new TranslatableMarkup('The replication log ID.'))
       ->setReadOnly(TRUE)
-      ->setSetting('unsigned', TRUE);
+      ->setRequired(TRUE)
+      ->setSetting('max_length', 128)
+      ->setSetting('is_ascii', TRUE);
 
     $fields['history'] = BaseFieldDefinition::create('replication_history')
-      ->setLabel(t('Replication log history'))
-      ->setDescription(t('The version id of the test entity.'))
+      ->setLabel(new TranslatableMarkup('Replication log history'))
+      ->setDescription(new TranslatableMarkup('The version id of the test entity.'))
       ->setReadOnly(TRUE)
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
-    $fields['session_id'] = BaseFieldDefinition::create('uuid')
-      ->setLabel(t('Replication session ID'))
-      ->setDescription(t('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'))
+    $fields['session_id'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Replication session ID'))
+      ->setDescription(new TranslatableMarkup('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'))
       ->setReadOnly(TRUE);
 
-    $fields['source_last_seq'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Last processed checkpoint'))
-      ->setDescription(t('The last processed checkpoint. Shortcut to the source_last_seq in the last history item.'))
+    $fields['source_last_sequence'] = BaseFieldDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Last processed checkpoint'))
+      ->setDescription(new TranslatableMarkup('The last processed checkpoint. Shortcut to the source_last_sequence in the last history item.'))
       ->setReadOnly(TRUE);
 
-    $fields['ok'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('ok'))
-      ->setDescription(t('Replication status'))
+    $fields['status'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Status'))
+      ->setDescription(new TranslatableMarkup('Replication status'))
       ->setDefaultValue(TRUE)
       ->setReadOnly(TRUE);
 

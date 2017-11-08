@@ -88,10 +88,14 @@ class DefaultReplicator implements ReplicationInterface {
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());
     $source = Workspace::load($source_id);
     $target = Workspace::load($target_id);
-    $replication_id = \md5($source->id() . $target->id());
     $start_time = new \DateTime();
     $sessionId = \md5((\microtime(TRUE) * 1000000));
+    // @todo Figure out if we want to include more information in the
+    // replication log ID.
+    // @see http://docs.couchdb.org/en/2.0.0/replication/protocol.html#generate-replication-id
+    $replication_id = hash('sha256', $source->id() . $target->id());
     $replication_log = ReplicationLog::loadOrCreate($replication_id);
+
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     // Set the source as the active workspace.
@@ -99,7 +103,7 @@ class DefaultReplicator implements ReplicationInterface {
 
     // Get changes for the current workspace.
     $history = $replication_log->getHistory();
-    $last_sequence_id = isset($history[0]['recorded_seq']) ? $history[0]['recorded_seq'] : 0;
+    $last_sequence_id = isset($history[0]['recorded_sequence']) ? $history[0]['recorded_sequence'] : 0;
     $changes = $this->changesFactory->get($source)->setLastSequenceId($last_sequence_id)->getChanges();
     $rev_diffs = [];
     /** @var \Drupal\workspace\Changes\Change $change */
@@ -153,7 +157,7 @@ class DefaultReplicator implements ReplicationInterface {
     $this->workspaceManager->setActiveWorkspace($current_active);
 
     $replication_log->setHistory([
-      'recorded_seq' => $this->sequenceIndex->useWorkspace($source->id())->getLastSequenceId(),
+      'recorded_sequence' => $this->sequenceIndex->useWorkspace($source->id())->getLastSequenceId(),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
       'session_id' => $sessionId,
     ]);

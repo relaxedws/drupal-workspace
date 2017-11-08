@@ -7,7 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 interface ReplicationLogInterface extends ContentEntityInterface {
 
   /**
-   * Gets the entire history.
+   * Gets the entire replication history.
    *
    * @return array
    *   List of history values.
@@ -15,7 +15,7 @@ interface ReplicationLogInterface extends ContentEntityInterface {
   public function getHistory();
 
   /**
-   * Sets the entire history.
+   * Sets the entire replication history.
    *
    * @param array $history
    *   List containing replication history items.
@@ -25,18 +25,18 @@ interface ReplicationLogInterface extends ContentEntityInterface {
   public function setHistory($history);
 
   /**
-   * Gets the session id.
+   * Gets the session ID.
    *
    * @return string
-   *   The session id.
+   *   The session ID.
    */
   public function getSessionId();
 
   /**
-   * Sets the session id.
+   * Sets the session ID.
    *
    * @param string $session_id
-   *   The session id to set.
+   *   The session ID to set.
    *
    * @return $this
    */
@@ -48,16 +48,26 @@ interface ReplicationLogInterface extends ContentEntityInterface {
    * @return string
    *   The last processed checkpoint.
    */
-  public function getSourceLastSeq();
+  public function getSourceLastSequence();
 
   /**
-   * Sets the session id.
+   * Sets the last processed checkpoint.
    *
-   * @param string $source_last_seq
+   * @param string $source_last_sequence
    *   The last processed checkpoint.
    *
    * @return $this
    */
-  public function setSourceLastSeq($source_last_seq);
+  public function setSourceLastSequence($source_last_sequence);
+
+  /**
+   * Loads an existing replication log or creates one if necessary.
+   *
+   * @param string $id
+   *   The ID of the replication log entity.
+   *
+   * @return $this
+   */
+  public static function loadOrCreate($id);
 
 }
