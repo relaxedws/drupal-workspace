@@ -104,7 +104,7 @@ class ChangesListController extends ControllerBase {
       }
     }
 
-    // Get revisions the target workspace is missing.
+    // Get new revisions on the source workspace.
     $entities = [];
     foreach ($data as $uuid => $revs) {
       foreach ($revs as $rev) {

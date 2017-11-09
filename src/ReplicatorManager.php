@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
+use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Symfony\Component\Console\Exception\LogicException;
@@ -109,6 +110,10 @@ class ReplicatorManager implements ReplicatorInterface {
 
     // Push changes from $source to $target.
     $push_log = $this->doReplication($source, $target, $task);
+
+    if ($push_log instanceof ReplicationLogInterface && $push_log->get('ok')->value == TRUE && isset($push_log->workspace->target_id)) {
+      \Drupal::state()->set('last_sequence.workspace.' . $push_log->workspace->target_id, $push_log->source_last_seq->value);
+    };
 
     return $push_log;
   }
