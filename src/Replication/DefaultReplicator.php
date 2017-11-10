@@ -11,8 +11,10 @@ use Drupal\workspace\UpstreamPluginInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 
 /**
- * The default replicator service, replicating from one workspace to another on
- * a single site.
+ * Defines the default replicator service.
+ *
+ * This replicator synchronizes entity revisions between workspaces on the same
+ * site.
  */
 class DefaultReplicator implements ReplicationInterface {
 
@@ -45,12 +47,16 @@ class DefaultReplicator implements ReplicationInterface {
   protected $sequenceIndex;
 
   /**
-   * DefaultReplication constructor.
+   * Constructs the default replicator service.
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
    * @param \Drupal\workspace\Changes\ChangesFactoryInterface $changes_factory
+   *   The changes factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\workspace\Index\SequenceIndexInterface $sequence_index
+   *   The sequence index.
    */
   public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index) {
     $this->workspaceManager = $workspace_manager;
@@ -60,13 +66,12 @@ class DefaultReplicator implements ReplicationInterface {
   }
 
   /**
-   * Only use this replicator if the source and target are workspaces. The
-   * Upstream plugin ID would be something like 'workspace:live' for the live
-   * workspace.
-   *
    * {@inheritdoc}
    */
   public function applies(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
+    // This replicator service is only used if the source and the target are
+    // workspaces on the local site.
+    // @see \Drupal\workspace\Plugin\Upstream\Workspace
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());
     if ($source_plugin == 'workspace' && $target_plugin == 'workspace'
@@ -77,13 +82,12 @@ class DefaultReplicator implements ReplicationInterface {
   }
 
   /**
-   * Replicating content from one workspace to another on the same site roughly
-   * following the same protocol as CouchDB replication
-   * (http://docs.couchdb.org/en/2.1.0/replication/protocol.html).
-   *
    * {@inheritdoc}
    */
   public function replicate(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
+    // Replicating content from one workspace to another on the same site
+    // roughly follows the CouchDB replication protocol.
+    // @see http://docs.couchdb.org/en/2.1.0/replication/protocol.html
     list($source_plugin, $source_id) = explode(':', $source->getPluginId());
     list($target_plugin, $target_id) = explode(':', $target->getPluginId());
     $source = Workspace::load($source_id);
