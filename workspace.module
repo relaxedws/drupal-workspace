@@ -6,7 +6,6 @@
  * facilitate things like full-site preview and content staging.
  */
 
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -194,33 +193,6 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     // within the workspace.
     $content_workspace->isPublished() ? $entities[$entity->id()]->setPublished() : $entities[$entity->id()]->setUnpublished();
   }
-}
-
-/**
- * Implements hook_element_info_alter().
- */
-function workspace_element_info_alter(array &$types) {
-  foreach ($types as &$type) {
-    if (!isset($type['#pre_render'])) {
-      $type['#pre_render'] = [];
-    }
-    $type['#pre_render'][] = 'workspace_element_pre_render';
-  }
-}
-
-/**
- * Element pre-render callback.
- */
-function workspace_element_pre_render($element) {
-  if (isset($element['#cache'])) {
-    if (!isset($element['#cache']['contexts'])) {
-      $element['#cache']['contexts'] = [];
-    }
-    $element['#cache']['contexts'] = Cache::mergeContexts(
-      $element['#cache']['contexts'], ['workspace']
-    );
-  }
-  return $element;
 }
 
 /**

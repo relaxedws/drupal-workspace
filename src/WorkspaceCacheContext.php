@@ -40,7 +40,7 @@ class WorkspaceCacheContext implements CacheContextInterface {
    * {@inheritdoc}
    */
   public function getContext() {
-    return 'ws.' . $this->workspaceManager->getActiveWorkspace();
+    return $this->workspaceManager->getActiveWorkspace();
   }
 
   /**
