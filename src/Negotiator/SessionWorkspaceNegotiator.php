@@ -5,12 +5,13 @@ namespace Drupal\workspace\Negotiator;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\user\PrivateTempStoreFactory;
+use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class SessionWorkspaceNegotiator
+ * Defines the session workspace negotiator.
  */
-class SessionWorkspaceNegotiator extends WorkspaceNegotiatorBase {
+class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
 
   /**
    * The current user.
@@ -40,13 +41,10 @@ class SessionWorkspaceNegotiator extends WorkspaceNegotiatorBase {
    *   The current user.
    * @param \Drupal\user\PrivateTempStoreFactory $tempstore_factory
    *   The tempstore factory.
-   * @param string $default_workspace_id
-   *   The default workspace ID.
    */
-  public function __construct(AccountInterface $current_user, PrivateTempStoreFactory $tempstore_factory, $default_workspace_id) {
+  public function __construct(AccountInterface $current_user, PrivateTempStoreFactory $tempstore_factory) {
     $this->currentUser = $current_user;
     $this->tempstore = $tempstore_factory->get('workspace.negotiator.session');
-    $this->defaultWorkspaceId = $default_workspace_id;
   }
 
   /**
@@ -63,15 +61,14 @@ class SessionWorkspaceNegotiator extends WorkspaceNegotiatorBase {
    */
   public function getWorkspaceId(Request $request) {
     $workspace_id = $this->tempstore->get('active_workspace_id');
-    return $workspace_id ?: $this->defaultWorkspaceId;
+    return $workspace_id ?: WorkspaceManager::DEFAULT_WORKSPACE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function persist(WorkspaceInterface $workspace) {
+  public function setWorkspace(WorkspaceInterface $workspace) {
     $this->tempstore->set('active_workspace_id', $workspace->id());
-    return parent::persist($workspace);
   }
 
 }

@@ -19,13 +19,6 @@ class EntityAccess implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * @var int
-   *
-   * The ID of the default workspace, which has special permission handling.
-   */
-  protected $defaultWorkspaceId;
-
-  /**
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -42,13 +35,10 @@ class EntityAccess implements ContainerInjectionInterface {
    *   The entity type manager service.
    * @param WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
-   * @param int $default_workspace
-   *   The ID of the default workspace.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $default_workspace) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->workspaceManager = $workspace_manager;
-    $this->defaultWorkspaceId = $default_workspace;
   }
 
   /**
@@ -57,9 +47,7 @@ class EntityAccess implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('workspace.manager'),
-      $container->getParameter('workspace.default')
-
+      $container->get('workspace.manager')
     );
   }
 
@@ -83,7 +71,7 @@ class EntityAccess implements ContainerInjectionInterface {
     /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
     $workspace_manager = \Drupal::service('workspace.manager');
     if ($workspace_manager->entityCanBelongToWorkspaces($entity)
-      && $entity->workspace->target_id != \Drupal::getContainer()->getParameter('workspace.default')) {
+      && $entity->workspace->target_id != WorkspaceManager::DEFAULT_WORKSPACE) {
       $active_workspace = $workspace_manager->getActiveWorkspace();
       $result = \Drupal::entityTypeManager()
         ->getStorage('content_workspace')

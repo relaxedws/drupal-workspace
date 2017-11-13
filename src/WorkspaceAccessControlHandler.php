@@ -26,8 +26,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
     ];
 
     // The default workspace is always viewable, no matter what.
-    $default_workspace = \Drupal::getContainer()->getParameter('workspace.default');
-    $result = AccessResult::allowedIf($operation == 'view' && $entity->id() == $default_workspace)->addCacheableDependency($entity)
+    $result = AccessResult::allowedIf($operation == 'view' && $entity->id() == WorkspaceManager::DEFAULT_WORKSPACE)->addCacheableDependency($entity)
       // Or if the user has permission to access any workspace at all.
       ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
       // Or if it's their own workspace, and they have permission to access their own workspace.

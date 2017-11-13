@@ -1,5 +1,4 @@
 parameters:
-  workspace.default: live
   workspace.factory.keyvalue.sorted_set:
     default: keyvalue.sorted_set.database
 
@@ -37,18 +36,13 @@ services:
 
   workspace.negotiator.default:
     class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
-    arguments: ['%workspace.default%']
     tags:
       - { name: workspace_negotiator, priority: 0 }
   workspace.negotiator.session:
     class: Drupal\workspace\Negotiator\SessionWorkspaceNegotiator
-    arguments: ['@current_user', '@user.private_tempstore', '%workspace.default%']
+    arguments: ['@current_user', '@user.private_tempstore']
     tags:
       - { name: workspace_negotiator, priority: 100 }
-  workspace.negotiator.param:
-    class: Drupal\workspace\Negotiator\ParamWorkspaceNegotiator
-    tags:
-      - { name: workspace_negotiator, priority: 200 }
 
   cache_context.workspace:
     class: Drupal\workspace\WorkspaceCacheContext

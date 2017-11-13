@@ -17,6 +17,7 @@ use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Drupal\workspace\EntityAccess;
 use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
+use Drupal\workspace\WorkspaceManager;
 
 /**
  * Implements hook_help().
@@ -56,10 +57,9 @@ function workspace_query_entity_query_alter(AlterableInterface $query) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   // Don't alter any entity queries if the active workspace is the default
   // workspace (ie. live).
-  if ($active_workspace == $default_workspace_id) {
+  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
     return;
   }
 
@@ -75,7 +75,7 @@ function workspace_query_entity_query_alter(AlterableInterface $query) {
     // Return entities in the active workspace, the default workspace, or if the
     // workspace value is set to NULL.
     $group = $query->orConditionGroup()
-      ->condition('cwfr.workspace', [$active_workspace, $default_workspace_id], 'IN')
+      ->condition('cwfr.workspace', [$active_workspace, WorkspaceManager::DEFAULT_WORKSPACE], 'IN')
       ->condition('cwfr.workspace', NULL, 'IS');
     $query->condition($group);
   }
@@ -88,10 +88,9 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
   // Don't alter any views if the active workspace is the default workspace
   // (ie. live).
-  if ($active_workspace == $default_workspace_id) {
+  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
     return;
   }
 
@@ -118,7 +117,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   // Return entities in the active workspace, the default workspace, or if the
   // workspace value is set to NULL.
   $query->setWhereGroup('OR', 'workspace');
-  $query->addWhere('workspace', 'cwrf.workspace', [$active_workspace, $default_workspace_id], 'IN');
+  $query->addWhere('workspace', 'cwrf.workspace', [$active_workspace, WorkspaceManager::DEFAULT_WORKSPACE], 'IN');
   $query->addWhere('workspace', 'cwrf.workspace', NULL, 'IS');
   // If there is already a condition for publishing status, replace it with an
   // 'OR' condition, based on the publishing status in the workspace and the
@@ -157,8 +156,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
   // Don't alter the loaded entity if the active workspace is the default
   // workspace.
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-  if ($active_workspace == $default_workspace_id) {
+  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
     return;
   }
 
@@ -171,7 +169,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     ->allRevisions()
     ->condition('content_entity_type_id', $entity_type_id)
     ->condition('content_entity_id', $keys, 'IN')
-    ->condition('workspace', [$active_workspace, $default_workspace_id], 'IN')
+    ->condition('workspace', [$active_workspace, WorkspaceManager::DEFAULT_WORKSPACE], 'IN')
     ->sort('revision_id', 'DESC')
     ->range(0, 1)
     ->execute();
@@ -221,12 +219,11 @@ function workspace_entity_presave(EntityInterface $entity) {
     // The publishing status can be stored in a property for safe keeping
     $entity->initial_published = $entity->isPublished();
 
-    $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
-    if ($default_workspace_id != $workspace_manager->getActiveWorkspace()) {
+    if (WorkspaceManager::DEFAULT_WORKSPACE != $workspace_manager->getActiveWorkspace()) {
       // As this is the non-default workspace only new entity revisions should be
       // made default.
       if (isset($entity->original)
-          && ($entity->original->workspace->target_id == $default_workspace_id
+          && ($entity->original->workspace->target_id == WorkspaceManager::DEFAULT_WORKSPACE
           || is_null($entity->original->workspace->target_id))) {
         $entity->isDefaultRevision(FALSE);
       }

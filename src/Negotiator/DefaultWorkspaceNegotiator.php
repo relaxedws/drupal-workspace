@@ -2,29 +2,14 @@
 
 namespace Drupal\workspace\Negotiator;
 
+use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class DefaultWorkspaceNegotiator
+ * Defines the default workspace negotiator.
  */
-class DefaultWorkspaceNegotiator extends WorkspaceNegotiatorBase {
-
-  /**
-   * The default workspace ID.
-   *
-   * @var string
-   */
-  protected $defaultWorkspaceId;
-
-  /**
-   * Constructor.
-   *
-   * @param string $default_workspace_id
-   *   The default workspace ID.
-   */
-  public function __construct($default_workspace_id) {
-    $this->defaultWorkspaceId = $default_workspace_id;
-  }
+class DefaultWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
 
   /**
    * {@inheritdoc}
@@ -37,7 +22,12 @@ class DefaultWorkspaceNegotiator extends WorkspaceNegotiatorBase {
    * {@inheritdoc}
    */
   public function getWorkspaceId(Request $request) {
-    return $this->defaultWorkspaceId;
+    return WorkspaceManager::DEFAULT_WORKSPACE;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setWorkspace(WorkspaceInterface $workspace) {}
 
 }

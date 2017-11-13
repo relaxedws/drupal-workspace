@@ -4,6 +4,7 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\workspace\WorkspaceManager;
 
 /**
  * Tests creating and loading entities in workspaces.
@@ -48,7 +49,6 @@ class WorkspaceEntityTest extends BrowserTestBase {
       'stage' => $this->getOneWorkspaceByLabel('Stage'),
       'dev' => $this->createWorkspaceThroughUI('Dev', 'dev'),
     ];
-    $default = \Drupal::getContainer()->getParameter('workspace.default');
     $this->switchToWorkspace($workspaces[$initial_workspace]);
 
     $workspace_manager = \Drupal::service('workspace.manager');
@@ -92,7 +92,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
       if ($workspace_id != $initial_workspace) {
         $this->switchToWorkspace($workspace);
 
-        if ($initial_workspace == $default || $workspace_id == $default) {
+        if ($initial_workspace == WorkspaceManager::DEFAULT_WORKSPACE || $workspace_id == WorkspaceManager::DEFAULT_WORKSPACE) {
           // When the node started on the default workspace, or the current
           // workspace is default, entity queries should return the correct
           // revision.
@@ -122,7 +122,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
           ->loadUnchanged($vanilla_node->id());
         $this->assertSame($vanilla_node->getRevisionId(), $node->getRevisionId());
 
-        if ($initial_workspace == $default) {
+        if ($initial_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
           // Then the node was created on the default workspace it should
           // appear via the UI on all other workspaces.
           $this->drupalGet('/node');

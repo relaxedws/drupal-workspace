@@ -4,7 +4,6 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
-use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -22,6 +21,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class WorkspaceManager implements WorkspaceManagerInterface {
   use StringTranslationTrait;
+
+  /**
+   * The default workspace ID.
+   */
+  const DEFAULT_WORKSPACE = 'live';
 
   /**
    * @var string[]
@@ -141,11 +145,10 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function setActiveWorkspace(WorkspaceInterface $workspace) {
-    $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
     // If the current user doesn't have access to view the workspace, they
     // shouldn't be allowed to switch to it.
     // @todo Could this be handled better?
-    if (!$workspace->access('view') && ($workspace->id() != $default_workspace_id)) {
+    if (!$workspace->access('view') && ($workspace->id() != static::DEFAULT_WORKSPACE)) {
       $this->logger->error('Denied access to view workspace {workspace}', ['workspace' => $workspace->label()]);
       throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
     }
@@ -154,7 +157,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     $request = $this->requestStack->getCurrentRequest();
     foreach ($this->getSortedNegotiators() as $negotiator) {
       if ($negotiator->applies($request)) {
-        $negotiator->persist($workspace);
+        $negotiator->setWorkspace($workspace);
         break;
       }
     }
