@@ -61,7 +61,7 @@ class ReplicationTest extends BrowserTestBase {
   }
 
   public function testNodeReplication() {
-    $dev = $this->createWorkspaceThroughUI('Dev', 'dev');
+    $dev = $this->createWorkspaceThroughUI('Dev', 'dev', 'local_workspace:stage');
     $stage = $this->getOneWorkspaceByLabel('Stage');
     $live = $this->getOneWorkspaceByLabel('Live');
     $this->switchToWorkspace($dev);

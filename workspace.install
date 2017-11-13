@@ -17,6 +17,6 @@ function workspace_install() {
 
   /** @var \Drupal\workspace\Entity\WorkspaceInterface $stage */
   $stage = Workspace::create(['id' => 'stage', 'label' => 'Stage']);
-  $stage->set('upstream', 'workspace:' . $live->id());
+  $stage->set('upstream', 'local_workspace:' . $live->id());
   $stage->save();
 }

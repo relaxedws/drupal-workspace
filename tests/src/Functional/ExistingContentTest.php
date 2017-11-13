@@ -81,8 +81,8 @@ class ExistingContentTest extends BrowserTestBase {
     /** @var \Drupal\workspace\UpstreamPluginManager $upstream_plugin_manager */
     $upstream_plugin_manager = \Drupal::service('plugin.manager.workspace.upstream');
     $replicator->replicate(
-      $upstream_plugin_manager->createInstance('workspace:' . $stage->id()),
-      $upstream_plugin_manager->createInstance('workspace:' . $live->id())
+      $upstream_plugin_manager->createInstance('local_workspace:' . $stage->id()),
+      $upstream_plugin_manager->createInstance('local_workspace:' . $live->id())
     );
 
     $this->drupalGet('<front>');

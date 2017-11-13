@@ -9,18 +9,20 @@ use Drupal\workspace\UpstreamPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a 'Workspace' upstream plugin to allow a workspace to be set as a
- * source and / or target for content replication.
+ * Defines an upstream plugin that provides local content replication.
+ *
+ * This plugin provides the ability to replicate content between workspaces that
+ * are defined in the same Drupal installation.
  *
  * @Upstream(
- *   id = "workspace",
+ *   id = "local_workspace",
  *   label = @Translation("Local workspace"),
  *   description = @Translation("A workspace that is defined in the local Drupal installation."),
  *   remote = FALSE,
- *   deriver = "Drupal\workspace\Plugin\Deriver\WorkspaceUpstream",
+ *   deriver = "Drupal\workspace\Plugin\Deriver\LocalWorkspaceUpstreamDeriver",
  * )
  */
-class Workspace extends UpstreamPluginBase implements UpstreamPluginInterface, ContainerFactoryPluginInterface {
+class LocalWorkspaceUpstream extends UpstreamPluginBase implements UpstreamPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * The local workspace entity.
@@ -30,7 +32,7 @@ class Workspace extends UpstreamPluginBase implements UpstreamPluginInterface, C
   protected $workspace;
 
   /**
-   * Constructs a new Workspace upstream plugin.
+   * Constructs a new LocalWorkspaceUpstream.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -70,11 +72,9 @@ class Workspace extends UpstreamPluginBase implements UpstreamPluginInterface, C
    */
   public function calculateDependencies() {
     $this->dependencies = parent::calculateDependencies();
-
     $this->addDependency($this->workspace->getConfigDependencyKey(), $this->workspace->getConfigDependencyName());
 
     return $this->dependencies;
-
   }
 
 }

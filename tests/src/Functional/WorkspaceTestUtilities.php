@@ -2,9 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Behat\Mink\Element\DocumentElement;
 use Drupal\node\Entity\NodeType;
-use Drupal\Tests\WebAssert;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
@@ -64,26 +62,28 @@ trait WorkspaceTestUtilities {
    *   The label of the workspace to create.
    * @param string $id
    *   The ID of the workspace to create.
+   * @param string $upstream
+   *   The ID of the upstream plugin of the workspace.
    *
    * @return \Drupal\workspace\Entity\WorkspaceInterface
    *   The workspace that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createWorkspaceThroughUI($label, $id) {
+  protected function createWorkspaceThroughUI($label, $id, $upstream = NULL) {
     $this->drupalGet('/admin/structure/workspace/add');
 
     $session = $this->getSession();
     $this->assertSession()->statusCodeEquals(200);
 
-    /** @var DocumentElement $page */
+    /** @var \Behat\Mink\Element\DocumentElement $page */
     $page = $session->getPage();
     $page->fillField('label', $label);
     $page->fillField('id', $id);
-    if ($id == 'dev') {
-      $page->selectFieldOption('upstream', 'workspace:stage');
+    if ($upstream) {
+      $page->selectFieldOption('upstream', $upstream);
     }
-    $page->findButton(t('Save'))->click();
+    $page->findButton('Save')->click();
 
     $session->getPage()->hasContent("$label ($id)");
 
@@ -124,7 +124,7 @@ trait WorkspaceTestUtilities {
     $workspace_manager = \Drupal::service('workspace.manager');
     if ($workspace_manager->getActiveWorkspace() !== $workspace->id()) {
       // Switch the system under test to the specified workspace.
-      /** @var WebAssert $session */
+      /** @var \Drupal\Tests\WebAssert $session */
       $session = $this->assertSession();
       $session->buttonExists('Activate');
       $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], t('Activate'));

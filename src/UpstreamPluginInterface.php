@@ -3,6 +3,7 @@
 namespace Drupal\workspace;
 
 use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
@@ -19,7 +20,7 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * performing an external replication may need hostname, port, username,
  * password etc.
  */
-interface UpstreamPluginInterface extends PluginInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
+interface UpstreamPluginInterface extends PluginInspectionInterface, DerivativeInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
 
   /**
    * Returns the label of the upstream.

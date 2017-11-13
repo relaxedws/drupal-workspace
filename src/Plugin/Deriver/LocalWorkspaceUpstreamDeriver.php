@@ -9,9 +9,9 @@ use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Derives an upstream plugin for each workspace.
+ * Provides a local upstream plugin for each workspace.
  */
-class WorkspaceUpstream extends DeriverBase implements ContainerDeriverInterface {
+class LocalWorkspaceUpstreamDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
    * The workspace entity storage handler.
@@ -21,7 +21,7 @@ class WorkspaceUpstream extends DeriverBase implements ContainerDeriverInterface
   protected $workspaceStorage;
 
   /**
-   * Constructs a new Workspace plugin deriver.
+   * Constructs a new LocalWorkspaceUpstreamDeriver.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $workspace_storage
    *   The workspace entity storage handler.
@@ -40,14 +40,13 @@ class WorkspaceUpstream extends DeriverBase implements ContainerDeriverInterface
   }
 
   /**
-   * Add a workspace plugin per workspace, with an ID in the format
-   * 'workspace:{id}', for example 'workspace:live'.
-   *
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    $workspaces = $this->workspaceStorage->loadMultiple();
-    foreach ($workspaces as $workspace) {
+    $this->derivatives = [];
+
+    // Provide a local upstream plugin for each workspace.
+    foreach ($this->workspaceStorage->loadMultiple() as $workspace) {
       $this->derivatives[$workspace->id()] = $base_plugin_definition;
       $this->derivatives[$workspace->id()]['id'] = $base_plugin_definition['id'] . PluginBase::DERIVATIVE_SEPARATOR . $workspace->id();
     }

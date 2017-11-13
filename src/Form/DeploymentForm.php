@@ -23,7 +23,7 @@ class DeploymentForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, WorkspaceInterface $workspace = NULL) {
-    if ('workspace:' . $workspace->id() == $workspace->get('upstream')->value) {
+    if ('local_workspace:' . $workspace->id() == $workspace->get('upstream')->value) {
       return [];
     }
 
@@ -60,7 +60,7 @@ class DeploymentForm extends FormBase {
     try {
       \Drupal::service('workspace.replication_manager')->replicate(
         $upstream_manager->createInstance($workspace->get('upstream')->value),
-        $upstream_manager->createInstance('workspace:' . $workspace->id())
+        $upstream_manager->createInstance('local_workspace:' . $workspace->id())
       );
       drupal_set_message('Update successful.');
     }
@@ -77,7 +77,7 @@ class DeploymentForm extends FormBase {
     $upstream_manager = \Drupal::service('plugin.manager.workspace.upstream');
     try {
       \Drupal::service('workspace.replication_manager')->replicate(
-        $upstream_manager->createInstance('workspace:' . $workspace->id()),
+        $upstream_manager->createInstance('local_workspace:' . $workspace->id()),
         $upstream_manager->createInstance($workspace->get('upstream')->value)
       );
       drupal_set_message('Successful deployment.');

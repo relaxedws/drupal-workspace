@@ -174,7 +174,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    *   An array of default values.
    */
   public static function getActiveWorkspaceId() {
-    return ['workspace:' . \Drupal::service('workspace.manager')->getActiveWorkspace()];
+    return ['local_workspace:' . \Drupal::service('workspace.manager')->getActiveWorkspace()];
   }
 
 }

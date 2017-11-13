@@ -47,7 +47,7 @@ class WorkspaceEntityTest extends BrowserTestBase {
     $workspaces = [
       'live' => $this->getOneWorkspaceByLabel('Live'),
       'stage' => $this->getOneWorkspaceByLabel('Stage'),
-      'dev' => $this->createWorkspaceThroughUI('Dev', 'dev'),
+      'dev' => $this->createWorkspaceThroughUI('Dev', 'dev', 'local_workspace:stage'),
     ];
     $this->switchToWorkspace($workspaces[$initial_workspace]);
 

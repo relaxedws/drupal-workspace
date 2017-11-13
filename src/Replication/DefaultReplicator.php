@@ -71,11 +71,8 @@ class DefaultReplicator implements ReplicationInterface {
   public function applies(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
     // This replicator service is only used if the source and the target are
     // workspaces on the local site.
-    // @see \Drupal\workspace\Plugin\Upstream\Workspace
-    list($source_plugin, $source_id) = explode(':', $source->getPluginId());
-    list($target_plugin, $target_id) = explode(':', $target->getPluginId());
-    if ($source_plugin == 'workspace' && $target_plugin == 'workspace'
-    && !empty($source_id) && !empty($target_id)) {
+    // @see \Drupal\workspace\Plugin\Upstream\LocalWorkspaceUpstream
+    if ($source->getBaseId() === 'local_workspace' && $target->getBaseId() === 'local_workspace') {
       return TRUE;
     }
     return FALSE;
@@ -88,27 +85,25 @@ class DefaultReplicator implements ReplicationInterface {
     // Replicating content from one workspace to another on the same site
     // roughly follows the CouchDB replication protocol.
     // @see http://docs.couchdb.org/en/2.1.0/replication/protocol.html
-    list($source_plugin, $source_id) = explode(':', $source->getPluginId());
-    list($target_plugin, $target_id) = explode(':', $target->getPluginId());
-    $source = Workspace::load($source_id);
-    $target = Workspace::load($target_id);
+    $source_workspace = Workspace::load($source->getDerivativeId());
+    $target_workspace = Workspace::load($target->getDerivativeId());
     $start_time = new \DateTime();
     $sessionId = \md5((\microtime(TRUE) * 1000000));
     // @todo Figure out if we want to include more information in the
     // replication log ID.
     // @see http://docs.couchdb.org/en/2.0.0/replication/protocol.html#generate-replication-id
-    $replication_id = hash('sha256', $source->id() . $target->id());
+    $replication_id = hash('sha256', $source_workspace->id() . $target_workspace->id());
     $replication_log = ReplicationLog::loadOrCreate($replication_id);
 
     $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
 
     // Set the source as the active workspace.
-    $this->workspaceManager->setActiveWorkspace($source);
+    $this->workspaceManager->setActiveWorkspace($source_workspace);
 
     // Get changes for the current workspace.
     $history = $replication_log->getHistory();
     $last_sequence_id = isset($history[0]['recorded_sequence']) ? $history[0]['recorded_sequence'] : 0;
-    $changes = $this->changesFactory->get($source)->setLastSequenceId($last_sequence_id)->getChanges();
+    $changes = $this->changesFactory->get($source_workspace)->setLastSequenceId($last_sequence_id)->getChanges();
     $rev_diffs = [];
     /** @var \Drupal\workspace\Changes\Change $change */
     foreach ($changes as $change) {
@@ -124,7 +119,7 @@ class DefaultReplicator implements ReplicationInterface {
         ->allRevisions()
         ->condition('content_entity_type_id', $entity_type_id)
         ->condition('content_entity_revision_id', $revs, 'IN')
-        ->condition('workspace', $target->id())
+        ->condition('workspace', $target_workspace->id())
         ->execute();
     }
     foreach ($content_workspace_ids as $entity_type_id => $ids) {
@@ -150,7 +145,7 @@ class DefaultReplicator implements ReplicationInterface {
     }
 
     // Before saving set the active workspace to the target.
-    $this->workspaceManager->setActiveWorkspace($target);
+    $this->workspaceManager->setActiveWorkspace($target_workspace);
 
     // Save each revision on the target workspace
     foreach ($entities as $entity) {
@@ -161,7 +156,7 @@ class DefaultReplicator implements ReplicationInterface {
     $this->workspaceManager->setActiveWorkspace($current_active);
 
     $replication_log->setHistory([
-      'recorded_sequence' => $this->sequenceIndex->useWorkspace($source->id())->getLastSequenceId(),
+      'recorded_sequence' => $this->sequenceIndex->useWorkspace($source_workspace->id())->getLastSequenceId(),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
       'session_id' => $sessionId,
     ]);
