@@ -8,57 +8,72 @@ use Drupal\workspace\Entity\WorkspaceInterface;
 use Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface;
 
 /**
- * Interface WorkspaceManagerInterface
+ * Provides an interface for managing Workspaces.
  */
 interface WorkspaceManagerInterface {
 
   /**
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * Returns whether an entity type can belong to a workspace or not.
    *
-   * @return bool
-   */
-  public function entityCanBelongToWorkspaces(EntityInterface $entity);
-
-  /**
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type to check.
    *
    * @return bool
+   *   TRUE if the entity type can belong to a workspace, FALSE otherwise.
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type);
 
   /**
+   * Returns an array of entity types that can belong to workspaces.
+   *
    * @return \Drupal\Core\Entity\EntityTypeInterface[]
+   *   The entity types what can belong to workspaces.
    */
   public function getSupportedEntityTypes();
 
   /**
+   * Adds workspace negotiator services
+   *
    * @param \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface $negotiator
+   *   The negotiator service to add.
    * @param int $priority
+   *   The priority of the negotiator service.
    */
   public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority);
 
   /**
-   * @param bool $object
-   *   Should the active workspace be returned as an object.
+   * Gets the active workspace.
    *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface | int
+   * @param bool $object
+   *   TRUE for the active workspace to be returned as an object, FALSE
+   *   otherwise.
+   *
+   * @return \Drupal\workspace\Entity\WorkspaceInterface|string
+   *   The active workspace entity object or workspace ID, depending on the
+   *   $object parameter.
    */
   public function getActiveWorkspace($object = FALSE);
 
   /**
-   * Sets the active workspace for the site/session.
+   * Sets the active workspace via the workspace negotiators.
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace to set as active.
    *
-   * @return \Drupal\workspace\WorkspaceManagerInterface
+   * @return $this
    *
-   * @throws WorkspaceAccessException
+   * @throws \Drupal\workspace\WorkspaceAccessException
+   *   Thrown when the current user doesn't have access to view the workspace.
    */
   public function setActiveWorkspace(WorkspaceInterface $workspace);
 
   /**
    * Update or create a ContentWorkspace entity from another entity.
+   *
+   * If the entity passed in can belong to a workspace and already has a
+   * ContentWorkspace entity, then a new revision of this will be created with
+   * the new information. Otherwise, a new ContentWorkspace entity is created to
+   * store the passed-in entity's information.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to update or create from.

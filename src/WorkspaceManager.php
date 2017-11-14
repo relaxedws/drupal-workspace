@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Provides the workspace manager.
  */
 class WorkspaceManager implements WorkspaceManagerInterface {
+
   use StringTranslationTrait;
 
   /**
@@ -28,6 +29,11 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   const DEFAULT_WORKSPACE = 'live';
 
   /**
+   * An array of entity type IDs that can not belong to a workspace.
+   *
+   * By default, only entity types which are revisionable and publishable can
+   * belong to a workspace.
+   *
    * @var string[]
    */
   protected $blacklist = [
@@ -36,54 +42,64 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   ];
 
   /**
+   * The request stack.
+   *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The current user.
+   *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
 
   /**
-   * @var array
+   * A list of workspace negotiators.
+   *
+   * @var \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
    */
   protected $negotiators = [];
 
   /**
-   * @var array
+   * A list of workspace negotiators sorted by their priority.
+   *
+   * @var \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
    */
   protected $sortedNegotiators;
 
   /**
+   * A logger instance.
+   *
    * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
+   * Constructs a new WorkspaceManager.
+   *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user.
    * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
    */
   public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerInterface $logger = NULL) {
     $this->requestStack = $request_stack;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->logger = $logger ?: new NullLogger();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityCanBelongToWorkspaces(EntityInterface $entity) {
-    return $this->entityTypeCanBelongToWorkspaces($entity->getEntityType());
   }
 
   /**
@@ -174,11 +190,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function updateOrCreateFromEntity(EntityInterface $entity) {
-    if (!$this->entityCanBelongToWorkspaces($entity)) {
+    // Only run if the entity type can belong to workspaces.
+    if (!$this->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
       return;
     }
 
-    // If the entity is not new there should be a ContentWorkspace entry for it.
+    // If the entity is not new there should already be a ContentWorkspace
+    // entity for it.
     if (!$entity->isNew()) {
       $content_workspaces = $this->entityTypeManager
         ->getStorage('content_workspace')
@@ -207,6 +225,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
     $content_workspace->set('workspace', $this->getActiveWorkspace());
     $entity->initial_published ? $content_workspace->setPublished() : $content_workspace->setUnpublished();
+    // Save without updating the content entity.
     ContentWorkspace::updateOrCreateFromEntity($content_workspace);
   }
 

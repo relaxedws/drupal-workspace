@@ -70,7 +70,7 @@ class EntityAccess implements ContainerInjectionInterface {
 
     /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
     $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->entityCanBelongToWorkspaces($entity)
+    if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
       && $entity->workspace->target_id != WorkspaceManager::DEFAULT_WORKSPACE) {
       $active_workspace = $workspace_manager->getActiveWorkspace();
       $result = \Drupal::entityTypeManager()
