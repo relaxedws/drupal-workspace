@@ -71,7 +71,7 @@ trait WorkspaceTestUtilities {
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function createWorkspaceThroughUI($label, $id, $upstream = NULL) {
-    $this->drupalGet('/admin/structure/workspace/add');
+    $this->drupalGet('/admin/config/workflow/workspace/add');
 
     $session = $this->getSession();
     $this->assertSession()->statusCodeEquals(200);

@@ -49,11 +49,11 @@ use Drupal\user\UserInterface;
  *     "uid" = "uid",
  *   },
  *   links = {
- *     "add-form" = "/admin/structure/workspace/add",
- *     "edit-form" = "/admin/structure/workspace/{workspace}/edit",
- *     "activate-form" = "/admin/structure/workspace/{workspace}/activate",
- *     "deployment-form" = "/admin/structure/workspace/{workspace}/deployment",
- *     "collection" = "/admin/structure/workspace",
+ *     "add-form" = "/admin/config/workflow/workspace/add",
+ *     "edit-form" = "/admin/config/workflow/workspace/{workspace}/edit",
+ *     "activate-form" = "/admin/config/workflow/workspace/{workspace}/activate",
+ *     "deployment-form" = "/admin/config/workflow/workspace/{workspace}/deployment",
+ *     "collection" = "/admin/config/workflow/workspace",
  *   },
  *   field_ui_base_route = "entity.workspace.collection",
  * )

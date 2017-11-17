@@ -35,7 +35,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->drupalLogin($editor);
     $session = $this->getSession();
 
-    $this->drupalGet('/admin/structure/workspace/add');
+    $this->drupalGet('/admin/config/workflow/workspace/add');
 
     $this->assertEquals(200, $session->getStatusCode());
 
@@ -55,7 +55,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => 'Bears']);
     $bears = current($entity_list);
 
-    $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertEquals(403, $session->getStatusCode());
 
     // @todo add Deletion checks once there's a UI for deletion.
@@ -85,7 +85,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $session = $this->getSession();
 
-    $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
 
     $page = $session->getPage();
@@ -106,10 +106,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
-    $this->drupalGet("/admin/structure/workspace/{$packers->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
 
-    $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertEquals(403, $session->getStatusCode());
   }
 
@@ -137,7 +137,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $session = $this->getSession();
 
-    $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
 
     $page = $session->getPage();
@@ -158,10 +158,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
-    $this->drupalGet("/admin/structure/workspace/{$packers->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
 
-    $this->drupalGet("/admin/structure/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
   }
 

@@ -29,7 +29,7 @@ class WorkspaceTest extends BrowserTestBase {
     $this->createWorkspaceThroughUI('Workspace 1', 'a0_$()+-/');
 
     // Test and invaid workspace name
-    $this->drupalGet('/admin/structure/workspace/add');
+    $this->drupalGet('/admin/config/workflow/workspace/add');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();

@@ -51,11 +51,11 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     // Load the activate form for the Bears workspace. It should fail because
     // the workspace belongs to someone else.
-    $this->drupalGet("admin/structure/workspace/{$bears->id()}/activate");
+    $this->drupalGet("admin/config/workflow/workspace/{$bears->id()}/activate");
     $this->assertEquals(403, $session->getStatusCode());
 
     // But editor 2 should be able to activate the Packers workspace.
-    $this->drupalGet("admin/structure/workspace/{$packers->id()}/activate");
+    $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
     $this->assertEquals(200, $session->getStatusCode());
   }
 
@@ -93,11 +93,11 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     // Load the activate form for the Bears workspace. This user should be
     // able to see both workspaces because of the "view any" permission.
-    $this->drupalGet("admin/structure/workspace/{$bears->id()}/activate");
+    $this->drupalGet("admin/config/workflow/workspace/{$bears->id()}/activate");
     $this->assertEquals(200, $session->getStatusCode());
 
     // But editor 2 should be able to activate the Packers workspace.
-    $this->drupalGet("admin/structure/workspace/{$packers->id()}/activate");
+    $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
     $this->assertEquals(200, $session->getStatusCode());
   }
 

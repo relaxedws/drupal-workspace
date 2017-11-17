@@ -81,7 +81,7 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
 
-    $this->drupalGet('/admin/structure/workspace/' . $dev->id() . '/deployment');
+    $this->drupalGet('/admin/config/workflow/workspace/' . $dev->id() . '/deployment');
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
@@ -102,7 +102,7 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
 
-    $this->drupalGet('/admin/structure/workspace/' . $stage->id() . '/deployment');
+    $this->drupalGet('/admin/config/workflow/workspace/' . $stage->id() . '/deployment');
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
