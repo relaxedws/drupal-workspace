@@ -63,15 +63,17 @@ class EntityAccess implements ContainerInjectionInterface {
    * @return AccessResult
    */
   public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    // Workspaces themselves are handled by another hook. Ignore them here.
-    if ($entity->getEntityTypeId() == 'workspace') {
+    /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+    $workspace_manager = \Drupal::service('workspace.manager');
+
+    // Workspaces themselves are handled by their own access handler and we
+    // should not try to do any access checks for entity types that can not
+    // belong to a workspace.
+    if ($entity->getEntityTypeId() === 'workspace' || !$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
       return AccessResult::neutral();
     }
 
-    /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-    $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-      && $entity->workspace->target_id != WorkspaceManager::DEFAULT_WORKSPACE) {
+    if ($entity->workspace->target_id != WorkspaceManager::DEFAULT_WORKSPACE) {
       $active_workspace = $workspace_manager->getActiveWorkspace();
       $result = \Drupal::entityTypeManager()
         ->getStorage('content_workspace')
