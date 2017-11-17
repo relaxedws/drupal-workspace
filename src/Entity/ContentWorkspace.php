@@ -119,21 +119,21 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
   /**
    * Creates or updates an entity's workspace whilst saving that entity.
    *
-   * @param \Drupal\workspace\Entity\ContentWorkspace $content_workspace
+   * @param \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace
    *   The content moderation entity content entity to create or save.
    *
    * @internal
    *   This method should only be called as a result of saving the related
    *   content entity.
    */
-  public static function updateOrCreateFromEntity(ContentWorkspace $content_workspace) {
+  public static function updateOrCreateFromEntity(ContentWorkspaceInterface $content_workspace) {
     $content_workspace->realSave();
   }
 
   /**
    * Default value callback for the 'uid' base field definition.
    *
-   * @see \Drupal\content_moderation\Entity\ContentWorkspace::baseFieldDefinitions()
+   * @see \Drupal\workspace\Entity\ContentWorkspace::baseFieldDefinitions()
    *
    * @return array
    *   An array of default values.

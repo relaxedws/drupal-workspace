@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Provides the ability to have multiple workspaces on a single site to
- * facilitate things like full-site preview and content staging.
+ * Provides full-site preview functionality for content staging.
  */
 
 use Drupal\Core\Database\Query\AlterableInterface;
@@ -45,7 +44,7 @@ function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
         ->setComputed(TRUE)
         ->setClass(WorkspaceFieldItemList::class)
         ->setSetting('target_type', 'workspace')
-        ->setTranslatable(TRUE)
+        ->setTranslatable(TRUE),
     ];
   }
 }
@@ -197,6 +196,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
  * Implements hook_entity_presave().
  */
 function workspace_entity_presave(EntityInterface $entity) {
+  /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
 
@@ -205,23 +205,18 @@ function workspace_entity_presave(EntityInterface $entity) {
   if (!empty($workspace_manager->getActiveWorkspace())
     && $workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
 
-    if (!$entity->isNew()) {
-      $original_workspace_id = $entity->original->workspace->target_id;
-      $workspace_id = $entity->workspace->target_id;
-      /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
-      if ($original_workspace_id == $workspace_id) {
-        // Force a new revision is the entity is not new and the workspace
-        // is the same as the previous revision.
-        $entity->setNewRevision(TRUE);
-      }
+    // Force a new revision if the entity is not replicating.
+    if (!$entity->isNew() && !isset($entity->_isReplicating)) {
+      $entity->setNewRevision(TRUE);
     }
 
-    // The publishing status can be stored in a property for safe keeping
+    // The publishing status is stored in a property to be used then creating
+    // or updating the content_workspace entity.
     $entity->initial_published = $entity->isPublished();
 
     if (WorkspaceManager::DEFAULT_WORKSPACE != $workspace_manager->getActiveWorkspace()) {
-      // As this is the non-default workspace only new entity revisions should be
-      // made default.
+      // As this is the non-default workspace only new entity revisions should
+      // be made default.
       if (isset($entity->original)
           && ($entity->original->workspace->target_id == WorkspaceManager::DEFAULT_WORKSPACE
           || is_null($entity->original->workspace->target_id))) {
@@ -241,13 +236,14 @@ function workspace_entity_presave(EntityInterface $entity) {
  * Implements hook_entity_insert().
  */
 function workspace_entity_insert(EntityInterface $entity) {
-  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-  $workspace_manager = \Drupal::service('workspace.manager');
-  $workspace_manager->updateOrCreateFromEntity($entity);
-  if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
+  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
+  if ($entity->getEntityTypeId() == 'content_workspace') {
+    $content_entity = \Drupal::entityTypeManager()
+      ->getStorage($entity->content_entity_type_id->value)
+      ->loadRevision($entity->content_entity_revision_id->value);
     \Drupal::service('workspace.index.sequence')
-      ->useWorkspace($workspace_manager->getActiveWorkspace())
-      ->add($entity);
+      ->useWorkspace($entity->workspace->target_id)
+      ->add($content_entity);
   }
 }
 
@@ -255,13 +251,14 @@ function workspace_entity_insert(EntityInterface $entity) {
  * Implements hook_entity_update().
  */
 function workspace_entity_update(EntityInterface $entity) {
-  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-  $workspace_manager = \Drupal::service('workspace.manager');
-  $workspace_manager->updateOrCreateFromEntity($entity);
-  if ($workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
+  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
+  if ($entity->getEntityTypeId() == 'content_workspace') {
+    $content_entity = \Drupal::entityTypeManager()
+      ->getStorage($entity->content_entity_type_id->value)
+      ->loadRevision($entity->content_entity_revision_id->value);
     \Drupal::service('workspace.index.sequence')
-      ->useWorkspace($workspace_manager->getActiveWorkspace())
-      ->add($entity);
+      ->useWorkspace($entity->workspace->target_id)
+      ->add($content_entity);
   }
 }
 
