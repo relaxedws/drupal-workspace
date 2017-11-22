@@ -81,11 +81,11 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($dev->id(), $this->getOneEntityByLabel('node', 'Test node')->workspace->target_id);
 
-    $this->drupalGet('/admin/config/workflow/workspace/' . $dev->id() . '/deployment');
+    $this->drupalGet('/admin/config/workflow/workspace/' . $dev->id() . '/deploy');
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
-    $page->findButton('edit-deploy')->click();
+    $page->findButton('edit-submit')->click();
     $session->getPage()->hasContent('Successful deployment');
 
     $this->switchToWorkspace($stage);
@@ -102,11 +102,11 @@ class ReplicationTest extends BrowserTestBase {
 
     $this->assertEquals($stage->id(), $this->getOneEntityByLabel('node', 'Test stage node')->workspace->target_id);
 
-    $this->drupalGet('/admin/config/workflow/workspace/' . $stage->id() . '/deployment');
+    $this->drupalGet('/admin/config/workflow/workspace/' . $stage->id() . '/deploy');
     $session = $this->getSession();
     $page = $session->getPage();
     $this->assertEquals(200, $session->getStatusCode());
-    $page->findButton('edit-deploy')->click();
+    $page->findButton('edit-submit')->click();
     $session->getPage()->hasContent('Successful deployment');
 
     $this->switchToWorkspace($live);

@@ -91,11 +91,11 @@ class WorkspaceListBuilder extends EntityListBuilder {
       ];
     }
 
-    if ('local_workspace:' . $entity->id() != $entity->get('upstream')->value) {
-      $operations['deployment'] = [
+    if (!empty($entity->upstream->value) && 'local_workspace:' . $entity->id() != $entity->upstream->value) {
+      $operations['deploy'] = [
         'title' => $this->t('Deploy content'),
         'weight' => 20,
-        'url' => $entity->toUrl('deployment-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
+        'url' => $entity->toUrl('deploy-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
       ];
     }
 

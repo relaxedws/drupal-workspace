@@ -16,11 +16,11 @@ entity.workspace.activate_form:
   requirements:
     _entity_access: 'workspace.view'
 
-entity.workspace.deployment_form:
-  path: '/admin/config/workflow/workspace/{workspace}/deployment'
+entity.workspace.deploy_form:
+  path: '/admin/config/workflow/workspace/{workspace}/deploy'
   defaults:
-    _title: 'Workspace deployment'
-    _form: '\Drupal\workspace\Form\DeploymentForm'
+    _entity_form: 'workspace.deploy'
+    _title: 'Deploy Workspace'
   options:
     _admin_route: TRUE
   requirements:
