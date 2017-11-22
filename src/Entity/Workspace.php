@@ -88,15 +88,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getCurrentUserId')
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 5,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => '60',
-          'placeholder' => '',
-        ],
-      ])
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')

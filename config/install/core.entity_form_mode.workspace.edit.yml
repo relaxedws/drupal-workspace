@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - workspace
+id: workspace.edit
+label: Edit
+targetEntityType: workspace
+cache: true
