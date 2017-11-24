@@ -118,20 +118,6 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
   $query->setWhereGroup('OR', 'workspace');
   $query->addWhere('workspace', 'cwrf.workspace', [$active_workspace, WorkspaceManager::DEFAULT_WORKSPACE], 'IN');
   $query->addWhere('workspace', 'cwrf.workspace', NULL, 'IS');
-  // If there is already a condition for publishing status, replace it with an
-  // 'OR' condition, based on the publishing status in the workspace and the
-  // general publishing status of the entity.
-  foreach ($query->where as $where_id => $where) {
-    foreach ($where['conditions'] as $condition_id => $condition) {
-      if ($condition['field'] == $entity_type->getDataTable() . '.' . $entity_type->getKey('published')) {
-        $value = $query->where[$where_id]['conditions'][$condition_id]['value'];
-        $query->setWhereGroup('OR', 'published');
-        $query->addWhere('published', 'cwrf.published', $value);
-        $query->addWhere('published', $entity_type->getDataTable() . '.' . $entity_type->getKey('published'), $value);
-        unset($query->where[$where_id]['conditions'][$condition_id]);
-      }
-    }
-  }
 
   // Add a group_by option for all displays so only one result is returned per
   // entity.
@@ -186,9 +172,6 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
         ->loadRevision($content_workspace->get('content_entity_revision_id')->value);
       $entities[$entity->id()] = $new_entity;
     }
-    // Update the entity's publishing status based on the publishing status
-    // within the workspace.
-    $content_workspace->isPublished() ? $entities[$entity->id()]->setPublished() : $entities[$entity->id()]->setUnpublished();
   }
 }
 
@@ -208,26 +191,16 @@ function workspace_entity_presave(EntityInterface $entity) {
     // Force a new revision if the entity is not replicating.
     if (!$entity->isNew() && !isset($entity->_isReplicating)) {
       $entity->setNewRevision(TRUE);
-    }
 
-    // The publishing status is stored in a property to be used then creating
-    // or updating the content_workspace entity.
-    $entity->initial_published = $entity->isPublished();
-
-    if (WorkspaceManager::DEFAULT_WORKSPACE != $workspace_manager->getActiveWorkspace()) {
-      // As this is the non-default workspace only new entity revisions should
-      // be made default.
-      if (isset($entity->original)
-          && ($entity->original->workspace->target_id == WorkspaceManager::DEFAULT_WORKSPACE
-          || is_null($entity->original->workspace->target_id))) {
+      if (WorkspaceManager::DEFAULT_WORKSPACE != $workspace_manager->getActiveWorkspace()) {
+        // All entities in the non-default workspace are pending revisions,
+        // regardless of their publishing status. This means that when creating
+        // a published revision in a non-default workspace it will also be a
+        // published revision in the default workspace, however, it will become
+        // the default revision only when it is replicated to the default
+        // workspace.
         $entity->isDefaultRevision(FALSE);
       }
-      else {
-        $entity->isDefaultRevision(TRUE);
-      }
-
-      // All entities in the non-default workspace get unpublished.
-      $entity->setUnpublished();
     }
   }
 }

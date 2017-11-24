@@ -36,7 +36,6 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid",
  *     "uid" = "uid",
  *     "langcode" = "langcode",
- *     "published" = "published",
  *   }
  * )
  */
@@ -48,7 +47,7 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type) + self::publishedBaseFieldDefinitions($entity_type);
+    $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('User'))
