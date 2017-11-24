@@ -4,7 +4,6 @@ namespace Drupal\workspace\Replication;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Workspace;
@@ -145,15 +144,12 @@ class DefaultReplicator implements ReplicationInterface {
           $entities[] = $entity;
         }
         else {
-          // If the target workspace is not a default workspace the content
+          // If the target workspace is not the default workspace, the content
           // workspace link entity can simply be updated with the target
           // workspace.
           $content_workspace->setNewRevision(TRUE);
           $content_workspace->workspace->target_id = $target_workspace->id();
-          // Use the updateOrCreateFormEntity() method to make sure the content
-          // entity is not updated.
-          // @todo: Look into if we need this method at all.
-          ContentWorkspace::updateOrCreateFromEntity($content_workspace);
+          $content_workspace->save();
         }
       }
     }

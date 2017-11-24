@@ -73,22 +73,6 @@ class EntityAccess implements ContainerInjectionInterface {
       return AccessResult::neutral();
     }
 
-    if ($entity->workspace->target_id != WorkspaceManager::DEFAULT_WORKSPACE) {
-      $active_workspace = $workspace_manager->getActiveWorkspace();
-      $result = \Drupal::entityTypeManager()
-        ->getStorage('content_workspace')
-        ->getQuery()
-        ->allRevisions()
-        ->condition('content_entity_type_id', $entity->getEntityTypeId())
-        ->condition('content_entity_id', $entity->id())
-        ->condition('content_entity_revision_id', $entity->getRevisionId())
-        ->condition('workspace', $active_workspace)
-        ->execute();
-      if (empty($result)) {
-        return AccessResult::forbidden();
-      }
-    }
-
     return $this->bypassAccessResult($account);
   }
 
@@ -104,7 +88,6 @@ class EntityAccess implements ContainerInjectionInterface {
    * @return \Drupal\Core\Access\AccessResult
    */
   public function entityCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
-
     // Workspaces themselves are handled by another hook. Ignore them here.
     if ($entity_bundle == 'workspace') {
       return AccessResult::neutral();

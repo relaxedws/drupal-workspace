@@ -7,15 +7,12 @@
 
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Drupal\workspace\EntityAccess;
-use Drupal\workspace\Plugin\Field\WorkspaceFieldItemList;
 use Drupal\workspace\WorkspaceManager;
 
 /**
@@ -29,23 +26,6 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Workspace module allows workspaces to be defined and switched between. Content is then assigned to the active workspace when created. For more information, see the <a href=":workspace">online documentation for the Workspace module</a>.', [':workspace' => 'https://www.drupal.org/node/2824024']) . '</p>';
       return $output;
-  }
-}
-
-/**
- * Implements hook_entity_base_field_info().
- */
-function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if (\Drupal::service('workspace.manager')->entityTypeCanBelongToWorkspaces($entity_type)) {
-    return [
-      'workspace' => BaseFieldDefinition::create('entity_reference')
-        ->setLabel(t('Workspace'))
-        ->setDescription(t('The Workspace of this piece of content.'))
-        ->setComputed(TRUE)
-        ->setClass(WorkspaceFieldItemList::class)
-        ->setSetting('target_type', 'workspace')
-        ->setTranslatable(TRUE),
-    ];
   }
 }
 

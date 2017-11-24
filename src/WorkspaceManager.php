@@ -226,7 +226,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     $content_workspace->set('workspace', $this->getActiveWorkspace());
 
     // Save without updating the content entity.
-    ContentWorkspace::updateOrCreateFromEntity($content_workspace);
+    $content_workspace->save();
   }
 
   /**

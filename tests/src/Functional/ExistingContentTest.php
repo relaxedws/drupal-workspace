@@ -45,9 +45,6 @@ class ExistingContentTest extends BrowserTestBase {
     $stage = Workspace::load('stage');
     $this->setupWorkspaceSwitcherBlock();
 
-    $this->assertNull($published_node->workspace->target_id);
-    $this->assertNull($unpublished_node->workspace->target_id);
-
     $this->switchToWorkspace($stage);
     $session = $this->assertSession();
     $session->pageTextContains('Published node');
