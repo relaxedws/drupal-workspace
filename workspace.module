@@ -237,11 +237,6 @@ function workspace_entity_presave(EntityInterface $entity) {
  */
 function workspace_entity_insert(EntityInterface $entity) {
   \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
-  if ($entity->getEntityTypeId() == 'content_workspace') {
-    $content_entity = \Drupal::entityTypeManager()
-      ->getStorage($entity->content_entity_type_id->value)
-      ->loadRevision($entity->content_entity_revision_id->value);
-  }
 }
 
 /**
@@ -249,11 +244,6 @@ function workspace_entity_insert(EntityInterface $entity) {
  */
 function workspace_entity_update(EntityInterface $entity) {
   \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
-  if ($entity->getEntityTypeId() == 'content_workspace') {
-    $content_entity = \Drupal::entityTypeManager()
-      ->getStorage($entity->content_entity_type_id->value)
-      ->loadRevision($entity->content_entity_revision_id->value);
-  }
 }
 
 /**
