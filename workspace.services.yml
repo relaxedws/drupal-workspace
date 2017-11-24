@@ -1,39 +1,21 @@
-parameters:
-  workspace.factory.keyvalue.sorted_set:
-    default: keyvalue.sorted_set.database
-
 services:
   workspace.manager:
     class: Drupal\workspace\WorkspaceManager
     arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@logger.channel.workspace']
     tags:
       - { name: service_collector, tag: workspace_negotiator, call: addNegotiator }
-  workspace.index.sequence:
-    class: Drupal\workspace\Index\SequenceIndex
-    arguments: ['@workspace.keyvalue.sorted_set', '@workspace.manager']
-  workspace.changes_factory:
-    class: Drupal\workspace\Changes\ChangesFactory
-    arguments: ['@entity_type.manager', '@workspace.index.sequence']
-  workspace.keyvalue.sorted_set:
-    class: Drupal\workspace\KeyValueStore\KeyValueSortedSetFactory
-    arguments: ['@service_container', '%workspace.factory.keyvalue.sorted_set%']
-  workspace.keyvalue.sorted_set.database:
-    class: Drupal\workspace\KeyValueStore\KeyValueDatabaseSortedSetFactory
-    arguments: ['@serialization.phpserialize', '@database']
   plugin.manager.workspace.upstream:
     class: Drupal\workspace\UpstreamPluginManager
     parent: default_plugin_manager
-
   workspace.replication_manager:
     class: Drupal\workspace\Replication\ReplicationManager
     tags:
       - { name: service_collector, tag: workspace_replicator, call: addReplicator }
   workspace.default_replicator:
     class: Drupal\workspace\Replication\DefaultReplicator
-    arguments: ['@workspace.manager', '@workspace.changes_factory', '@entity_type.manager', '@workspace.index.sequence', '@database']
+    arguments: ['@workspace.manager', '@entity_type.manager', '@database']
     tags:
       - { name: workspace_replicator, priority: 0 }
-
   workspace.negotiator.default:
     class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
     tags:
@@ -43,7 +25,6 @@ services:
     arguments: ['@current_user', '@user.private_tempstore']
     tags:
       - { name: workspace_negotiator, priority: 100 }
-
   cache_context.workspace:
     class: Drupal\workspace\WorkspaceCacheContext
     arguments: ['@workspace.manager']

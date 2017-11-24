@@ -4,12 +4,10 @@ namespace Drupal\workspace\Replication;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\workspace\Changes\ChangesFactoryInterface;
 use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\Index\SequenceIndexInterface;
 use Drupal\workspace\UpstreamPluginInterface;
 use Drupal\workspace\WorkspaceManager;
 use Drupal\workspace\WorkspaceManagerInterface;
@@ -30,25 +28,11 @@ class DefaultReplicator implements ReplicationInterface {
   protected $workspaceManager;
 
   /**
-   * The changes factory.
-   *
-   * @var \Drupal\workspace\Changes\ChangesFactoryInterface
-   */
-  protected $changesFactory;
-
-  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-
-  /**
-   * The sequence index.
-   *
-   * @var \Drupal\workspace\Index\SequenceIndexInterface
-   */
-  protected $sequenceIndex;
 
   /**
    * The database connection.
@@ -62,20 +46,14 @@ class DefaultReplicator implements ReplicationInterface {
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager.
-   * @param \Drupal\workspace\Changes\ChangesFactoryInterface $changes_factory
-   *   The changes factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\workspace\Index\SequenceIndexInterface $sequence_index
-   *   The sequence index.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, EntityTypeManagerInterface $entity_type_manager, SequenceIndexInterface $sequence_index, Connection $database) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, Connection $database) {
     $this->workspaceManager = $workspace_manager;
-    $this->changesFactory = $changes_factory;
     $this->entityTypeManager = $entity_type_manager;
-    $this->sequenceIndex = $sequence_index;
     $this->database = $database;
   }
 
@@ -119,36 +97,8 @@ class DefaultReplicator implements ReplicationInterface {
     // relative to the source workspace.
     $this->workspaceManager->setActiveWorkspace($source_workspace);
 
-    // Get changes for the current workspace based on the sequence ID from the
-    // last replication between this workspaces, if there is one.
-    $changes = $this->changesFactory->get($source_workspace)->setLastSequenceId($this->getLastSequenceId($replication_log))->getChanges();
-
-    // If there are no changes then there's no need to continue with the
-    // replication.
-    if (empty($changes)) {
-      return $this->updateReplicationLog($replication_log, [
-        'entity_write_failures' => 0,
-        'entities_read' => 0,
-        'entities_written' => 0,
-        'end_last_sequence' => $this->sequenceIndex->useWorkspace($source_workspace->id())->getLastSequenceId(),
-        'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
-        'recorded_sequence' => $this->sequenceIndex->useWorkspace($source_workspace->id())->getLastSequenceId(),
-        'session_id' => $session_id,
-        'start_last_sequence' => $this->getLastSequenceId($replication_log),
-        'start_time' => $start_time->format('D, d M Y H:i:s e'),
-      ]);
-    }
-
-    // Reduce the changes to an array of revision IDs, keyed by the entity type
-    // ID.
-    $changes = array_reduce($changes, function ($reduced, $change) {
-      /** @var \Drupal\workspace\Changes\Change $change */
-      $reduced[$change->getEntityTypeId()][] = $change->getRevisionId();
-      return $reduced;
-    });
-
     $content_workspace_ids = [];
-    foreach ($changes as $entity_type_id => $revision_ids) {
+    foreach ($this->workspaceManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
       // Get all entity revision IDs for all entities which are in only one
       // of either the source or the target workspaces. We assume that this
       // means the revision is in the source, but not the target, and the
@@ -157,22 +107,23 @@ class DefaultReplicator implements ReplicationInterface {
         ->select('content_workspace_field_revision', 'cwfr')
         ->fields('cwfr', ['content_entity_revision_id']);
       $select->condition('content_entity_type_id', $entity_type_id);
-      $select->condition('content_entity_revision_id', $revision_ids, 'IN');
       $select->condition('workspace', [$source_workspace->id(), $target_workspace->id()], 'IN');
       $select->groupBy('content_entity_revision_id');
       $select->having('count(workspace) < :workspaces', [':workspaces' => 2]);
       $revision_difference = $select->execute()->fetchCol();
 
-      // Get the content workspace IDs for all of the entity revision IDs which
-      // are not yet in the target workspace.
-      $content_workspace_ids[$entity_type_id] = $this->entityTypeManager
-        ->getStorage('content_workspace')
-        ->getQuery()
-        ->allRevisions()
-        ->condition('content_entity_type_id', $entity_type_id)
-        ->condition('content_entity_revision_id', $revision_difference, 'IN')
-        ->condition('workspace', $source_workspace->id())
-        ->execute();
+      if (!empty($revision_difference)) {
+        // Get the content workspace IDs for all of the entity revision IDs which
+        // are not yet in the target workspace.
+        $content_workspace_ids[$entity_type_id] = $this->entityTypeManager
+          ->getStorage('content_workspace')
+          ->getQuery()
+          ->allRevisions()
+          ->condition('content_entity_type_id', $entity_type_id)
+          ->condition('content_entity_revision_id', $revision_difference, 'IN')
+          ->condition('workspace', $source_workspace->id())
+          ->execute();
+      }
     }
 
     $entities = [];
@@ -226,11 +177,7 @@ class DefaultReplicator implements ReplicationInterface {
     // the history.
     return $this->updateReplicationLog($replication_log, [
       'entity_write_failures' => 0,
-      'entities_read' => count($changes),
-      'entities_written' => count($revision_difference),
-      'end_last_sequence' => $this->sequenceIndex->useWorkspace($target_workspace->id())->getLastSequenceId(),
       'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
-      'recorded_sequence' => $this->sequenceIndex->useWorkspace($target_workspace->id())->getLastSequenceId(),
       'session_id' => $session_id,
       'start_last_sequence' => $this->getLastSequenceId($replication_log),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
