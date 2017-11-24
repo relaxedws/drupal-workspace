@@ -3,11 +3,9 @@
 namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\TranslatableInterface;
-use Drupal\user\UserInterface;
 
 /**
  * Defines the Content workspace entity.
@@ -21,10 +19,6 @@ use Drupal\user\UserInterface;
  *     singular = "@count content workspace",
  *     plural = "@count content workspaces"
  *   ),
- *   handlers = {
- *     "storage_schema" = "Drupal\content_moderation\ContentWorkspaceStorageSchema",
- *     "views_data" = "\Drupal\views\EntityViewsData",
- *   },
  *   base_table = "content_workspace",
  *   revision_table = "content_workspace_revision",
  *   data_table = "content_workspace_field_data",
@@ -34,27 +28,17 @@ use Drupal\user\UserInterface;
  *     "id" = "id",
  *     "revision" = "revision_id",
  *     "uuid" = "uuid",
- *     "uid" = "uid",
  *     "langcode" = "langcode",
  *   }
  * )
  */
 class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInterface {
 
-  use EntityPublishedTrait;
-
   /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('User'))
-      ->setDescription(t('The username of the entity creator.'))
-      ->setSetting('target_type', 'user')
-      ->setDefaultValueCallback('Drupal\workspace\Entity\ContentWorkspace::getCurrentUserId')
-      ->setRevisionable(TRUE);
 
     $fields['workspace'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('workspace'))
@@ -86,36 +70,6 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwnerId() {
-    return $this->getEntityKey('uid');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
-    return $this;
-  }
-
-  /**
    * Creates or updates an entity's workspace whilst saving that entity.
    *
    * @param \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace
@@ -127,18 +81,6 @@ class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInte
    */
   public static function updateOrCreateFromEntity(ContentWorkspaceInterface $content_workspace) {
     $content_workspace->realSave();
-  }
-
-  /**
-   * Default value callback for the 'uid' base field definition.
-   *
-   * @see \Drupal\workspace\Entity\ContentWorkspace::baseFieldDefinitions()
-   *
-   * @return array
-   *   An array of default values.
-   */
-  public static function getCurrentUserId() {
-    return [\Drupal::currentUser()->id()];
   }
 
   /**
