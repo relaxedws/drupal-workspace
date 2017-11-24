@@ -30,7 +30,7 @@ services:
       - { name: service_collector, tag: workspace_replicator, call: addReplicator }
   workspace.default_replicator:
     class: Drupal\workspace\Replication\DefaultReplicator
-    arguments: ['@workspace.manager', '@workspace.changes_factory', '@entity_type.manager', '@workspace.index.sequence']
+    arguments: ['@workspace.manager', '@workspace.changes_factory', '@entity_type.manager', '@workspace.index.sequence', '@database']
     tags:
       - { name: workspace_replicator, priority: 0 }
 
