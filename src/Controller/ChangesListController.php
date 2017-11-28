@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace\Controller;
 
+use Doctrine\CouchDB\CouchDBClient;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -129,15 +130,17 @@ class ChangesListController extends ControllerBase {
   /**
    * Return the array with changed entities when target is a remote workspace.
    *
-   * @param $source_workspace_pointer
-   * @param $target_workspace_pointer
+   * @param $source_workspace_pointer \Drupal\workspace\WorkspacePointerInterface
+   * @param $target_workspace_pointer \Drupal\workspace\WorkspacePointerInterface
    *
    * @return array
    */
   protected function getChangesBetweenRemoteWorkspaces($source_workspace_pointer, $target_workspace_pointer) {
     $since = \Drupal::state()->get('last_sequence.workspace.' . $source_workspace_pointer->getWorkspaceId(), 0);
     $replicator = \Drupal::service('relaxed.couchdb_replicator');
+    /** @var CouchDBClient $source */
     $source = $replicator->setupEndpoint($source_workspace_pointer);
+    /** @var CouchDBClient $target */
     $target = $replicator->setupEndpoint($target_workspace_pointer);
     $revs_diff = [];
     $source_workspace = $source_workspace_pointer->getWorkspace();
@@ -175,7 +178,7 @@ class ChangesListController extends ControllerBase {
   }
 
   /**
-   * @param $source_workspace \Drupal\multiversion\Entity\Workspace
+   * @param $source_workspace \Drupal\multiversion\Entity\WorkspaceInterface
    * @param $revs_diff array
    *
    * @return array
@@ -262,6 +265,7 @@ class ChangesListController extends ControllerBase {
    * The page title.
    */
   public function getViewChangesTitle($workspace) {
+    /** @var WorkspaceInterface $active_workspace */
     $active_workspace = $this->workspaceManager->load($workspace);
     $active_workspace_label = $active_workspace->label();
     $target_workspace_pointer = $active_workspace->get('upstream')->entity;
@@ -301,26 +305,14 @@ class ChangesListController extends ControllerBase {
     return $pointer;
   }
 
-  protected function getMapping($changes)
-  {
-    $rows = array();
-    $arr = \explode("\n",$changes);
-    foreach ($arr as $line) {
-      if (\strlen($line) > 0) {
-        $rows[] = json_decode($line, true);
-      }
-    }
-    // To be sent to target/_revs_diff.
-    $mapping = array();
-    foreach ($rows as $row) {
-      $mapping[$row['id']] = array();
-      foreach ($row['changes'] as $revision) {
-        $mapping[$row['id']][] = $revision['rev'];
-      }
-    }
-    return $mapping;
-  }
-
+  /**
+   * Create a task using workspace info.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $entity
+   * @param $field_name
+   *
+   * @return \Drupal\replication\ReplicationTask\ReplicationTask
+   */
   protected function getTask(WorkspaceInterface $entity, $field_name) {
     $task = new ReplicationTask();
     $items = $entity->get($field_name);
