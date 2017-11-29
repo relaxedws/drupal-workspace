@@ -192,13 +192,14 @@ class ChangesListController extends ControllerBase {
    */
   protected function getEntitiesFromRevsDiff($source_workspace, $revs_diff) {
     $entities = [];
+    $source_workspace_id = $source_workspace->id();
     foreach ($revs_diff as $uuid => $revs) {
       foreach ($revs['missing'] as $rev) {
-        $item = $this->revIndex->useWorkspace($source_workspace->id())->get("$uuid:$rev");
+        $item = $this->revIndex->useWorkspace($source_workspace_id)->get("$uuid:$rev");
         $entity_type_id = $item['entity_type_id'];
         $revision_id = $item['revision_id'];
 
-        $storage = $this->entityTypeManager()->getStorage($entity_type_id);
+        $storage = $this->entityTypeManager()->getStorage($entity_type_id)->useWorkspace($source_workspace_id);
         $entity = $storage->loadRevision($revision_id);
         if ($entity instanceof ContentEntityInterface) {
           $entities[] = $entity;
