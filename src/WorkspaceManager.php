@@ -38,6 +38,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    */
   protected $blacklist = [
     'content_workspace',
+    'replication_log',
     'workspace'
   ];
 
@@ -190,12 +191,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function updateOrCreateFromEntity(EntityInterface $entity) {
-    // Only run if the entity type can belong to workspaces.
-    if (!$this->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
-      return;
-    }
-
-    // If the entity is not new there should already be a ContentWorkspace
+    // If the entity is not new, check if there's an existing ContentWorkspace
     // entity for it.
     if (!$entity->isNew()) {
       $content_workspaces = $this->entityTypeManager

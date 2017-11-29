@@ -80,9 +80,11 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
 function workspace_entity_load(array &$entities, $entity_type_id) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
+  $entity_type_manager = \Drupal::entityTypeManager();
+
   // Don't alter the loaded entity if the entity type can't belong to a
   // workspace.
-  if (!$workspace_manager->entityTypeCanBelongToWorkspaces(\Drupal::entityTypeManager()->getDefinition($entity_type_id))) {
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity_type_manager->getDefinition($entity_type_id))) {
     return;
   }
 
@@ -96,7 +98,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
   // Find the latest content workspace entity for an entity within the active or
   // default workspaces.
   $keys = array_keys($entities);
-  $results = \Drupal::entityTypeManager()
+  $results = $entity_type_manager
     ->getStorage('content_workspace')
     ->getQuery()
     ->allRevisions()
@@ -108,14 +110,14 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     ->execute();
   foreach ($results as $revision_id => $entity_id) {
     /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
-    $content_workspace = \Drupal::entityTypeManager()
+    $content_workspace = $entity_type_manager
       ->getStorage('content_workspace')
       ->loadRevision($revision_id);
     $entity = $entities[$content_workspace->get('content_entity_id')->value];
     // If the latest revision is not the same as the loaded entity, replace it
     // with the latest revision.
     if ($content_workspace->get('content_entity_revision_id')->value != $entity->getRevisionId()) {
-      $new_entity = \Drupal::entityTypeManager()
+      $new_entity = $entity_type_manager
         ->getStorage($entity_type_id)
         ->loadRevision($content_workspace->get('content_entity_revision_id')->value);
       $entities[$entity->id()] = $new_entity;
@@ -131,25 +133,35 @@ function workspace_entity_presave(EntityInterface $entity) {
   /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
   $workspace_manager = \Drupal::service('workspace.manager');
 
-  // Only modify the entity if the active workspace isn't the default, and
-  // and the entity can belong to a workspace.
-  if (!empty($workspace_manager->getActiveWorkspace())
-    && $workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
+  // Only run if the entity type can belong to a workspace and we are in a
+  // non-default workspace.
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
+     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+    return;
+  }
 
-    // Force a new revision if the entity is not replicating.
-    if (!$entity->isNew() && !isset($entity->_isReplicating)) {
-      $entity->setNewRevision(TRUE);
+  // Force a new revision if the entity is not replicating.
+  if (!$entity->isNew() && !isset($entity->_isReplicating)) {
+    $entity->setNewRevision(TRUE);
 
-      if (WorkspaceManager::DEFAULT_WORKSPACE != $workspace_manager->getActiveWorkspace()) {
-        // All entities in the non-default workspace are pending revisions,
-        // regardless of their publishing status. This means that when creating
-        // a published revision in a non-default workspace it will also be a
-        // published revision in the default workspace, however, it will become
-        // the default revision only when it is replicated to the default
-        // workspace.
-        $entity->isDefaultRevision(FALSE);
-      }
-    }
+    // All entities in the non-default workspace are pending revisions,
+    // regardless of their publishing status. This means that when creating
+    // a published pending revision in a non-default workspace it will also be
+    // a published pending revision in the default workspace, however, it will
+    // become the default revision only when it is replicated to the default
+    // workspace.
+    $entity->isDefaultRevision(FALSE);
+  }
+
+  // When a new published entity is inserted in a non-default workspace, we
+  // actually want two revisions to be saved:
+  //  - An unpublished default revision in the default ('live') workspace.
+  //  - A published pending revision in the current workspace.
+  if ($entity->isNew() && $entity->isPublished()) {
+    // Keep track of the publishing status for workspace_entity_insert() and
+    // unpublish the default revision.
+    $entity->_initialPublished = TRUE;
+    $entity->setUnpublished();
   }
 }
 
@@ -157,14 +169,47 @@ function workspace_entity_presave(EntityInterface $entity) {
  * Implements hook_entity_insert().
  */
 function workspace_entity_insert(EntityInterface $entity) {
-  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
+  /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
+  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+  $workspace_manager = \Drupal::service('workspace.manager');
+
+  // Only run if the entity type can belong to a workspace and we are in a
+  // non-default workspace.
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
+     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+    return;
+  }
+
+  // Handle the case when a new published entity was created in a non-default
+  // workspace and create a published pending revision for it.
+  if (isset($entity->_initialPublished)) {
+    // Operate on a clone to avoid changing the entity prior to subsequent
+    // hook_entity_insert() implementations.
+    $pending_revision = clone $entity;
+    $pending_revision->setPublished();
+    $pending_revision->isDefaultRevision(FALSE);
+    $pending_revision->save();
+  }
+  else {
+    $workspace_manager->updateOrCreateFromEntity($entity);
+  }
 }
 
 /**
  * Implements hook_entity_update().
  */
 function workspace_entity_update(EntityInterface $entity) {
-  \Drupal::service('workspace.manager')->updateOrCreateFromEntity($entity);
+  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
+  $workspace_manager = \Drupal::service('workspace.manager');
+
+  // Only run if the entity type can belong to a workspace and we are in a
+  // non-default workspace.
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
+     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+    return;
+  }
+
+  $workspace_manager->updateOrCreateFromEntity($entity);
 }
 
 /**
