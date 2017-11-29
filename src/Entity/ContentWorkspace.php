@@ -20,14 +20,10 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   ),
  *   base_table = "content_workspace",
  *   revision_table = "content_workspace_revision",
- *   data_table = "content_workspace_field_data",
- *   revision_data_table = "content_workspace_field_revision",
- *   translatable = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",
  *     "uuid" = "uuid",
- *     "langcode" = "langcode",
  *   }
  * )
  */
