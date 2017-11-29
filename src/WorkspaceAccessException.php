@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace;
 
-
 use Drupal\Core\Access\AccessException;
 
 /**
