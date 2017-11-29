@@ -115,7 +115,6 @@ class ChangesListController extends ControllerBase {
    * @return array
    */
   protected function getChangesBetweenLocalWorkspaces($source_workspace, $target_workspace) {
-    // @todo Check if it's possible to get the since value from replication log.
     $since = \Drupal::state()->get('last_sequence.workspace.' . $source_workspace->id(), 0);
     // Get changes on the source workspace.
     $source_changes = $this->changesFactory->get($source_workspace)
@@ -161,7 +160,7 @@ class ChangesListController extends ControllerBase {
           'filter' => $task->getFilter(),
           'parameters' => $task->getParameters(),
           'doc_ids' => NULL,
-          'limit' => 100,
+          'limit' => 50,
         )
       );
       if (empty($changes['results']) || empty($changes['last_seq'])) {
@@ -198,7 +197,7 @@ class ChangesListController extends ControllerBase {
         $item = $this->revIndex->useWorkspace($source_workspace_id)->get("$uuid:$rev");
         $entity_type_id = $item['entity_type_id'];
         $revision_id = $item['revision_id'];
-
+        /** @var \Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface $storage */
         $storage = $this->entityTypeManager()->getStorage($entity_type_id)->useWorkspace($source_workspace_id);
         $entity = $storage->loadRevision($revision_id);
         if ($entity instanceof ContentEntityInterface) {
