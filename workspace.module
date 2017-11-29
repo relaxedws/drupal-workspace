@@ -5,7 +5,6 @@
  * Provides full-site preview functionality for content staging.
  */
 
-use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -26,37 +25,6 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Workspace module allows workspaces to be defined and switched between. Content is then assigned to the active workspace when created. For more information, see the <a href=":workspace">online documentation for the Workspace module</a>.', [':workspace' => 'https://www.drupal.org/node/2824024']) . '</p>';
       return $output;
-  }
-}
-
-/**
- * Implements hook_query_TAG_alter().
- */
-function workspace_query_entity_query_alter(AlterableInterface $query) {
-  /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-  $workspace_manager = \Drupal::service('workspace.manager');
-  $active_workspace = $workspace_manager->getActiveWorkspace();
-  // Don't alter any entity queries if the active workspace is the default
-  // workspace (ie. live).
-  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
-    return;
-  }
-
-  // Only alter if the entity type can belong to a workspace, being revisionable
-  // and publishable.
-  $entity_type = \Drupal::entityTypeManager()->getDefinition($query->getMetaData('entity_type'));
-  if (!empty($entity_type) && $workspace_manager->entityTypeCanBelongToWorkspaces($entity_type)) {
-    $entity_type_id = $entity_type->id();
-    $entity_type_id_key = $entity_type->getKey('id');
-    // Join the Content Workspace entity's field revision table.
-    $query->leftJoin('content_workspace_field_revision', 'cwfr', 'base_table.' . $entity_type_id_key . ' = cwfr.content_entity_id');
-    $query->condition('cwfr.content_entity_type_id', $entity_type_id);
-    // Return entities in the active workspace, the default workspace, or if the
-    // workspace value is set to NULL.
-    $group = $query->orConditionGroup()
-      ->condition('cwfr.workspace', [$active_workspace, WorkspaceManager::DEFAULT_WORKSPACE], 'IN')
-      ->condition('cwfr.workspace', NULL, 'IS');
-    $query->condition($group);
   }
 }
 
