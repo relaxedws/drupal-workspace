@@ -223,7 +223,7 @@ class ChangesListController extends ControllerBase {
     // Split the items up into chunks:
     $chunks = array_chunk($entities, $this->changesPerPage);
     // Get changes for the current page:
-    $current_page_changes = $chunks[$page];
+    $current_page_changes = isset($chunks[$page]) ? $chunks[$page] : [];
     $headers = [t('Entities'), t('Entity type'), t('Operations')];
     $rows = [];
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $current_page_changes */
