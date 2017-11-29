@@ -103,8 +103,8 @@ class DefaultReplicator implements ReplicationInterface {
       // means the revision is in the source, but not the target, and the
       // revision has not been replicated yet.
       $select = $this->database
-        ->select('content_workspace_field_revision', 'cwfr')
-        ->fields('cwfr', ['content_entity_revision_id']);
+        ->select('content_workspace_revision', 'cwr')
+        ->fields('cwr', ['content_entity_revision_id']);
       $select->condition('content_entity_type_id', $entity_type_id);
       $select->condition('workspace', [$source_workspace->id(), $target_workspace->id()], 'IN');
       $select->groupBy('content_entity_revision_id');

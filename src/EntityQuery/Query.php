@@ -81,7 +81,7 @@ class Query extends BaseQuery {
       // LEFT join the Content Workspace entity's field revision table so we can
       // properly include live content along with a possible workspace-specific
       // revision.
-      $this->sqlQuery->leftJoin('content_workspace_field_revision', 'cwfr', "cwfr.content_entity_type_id = '{$this->entityTypeId}' AND cwfr.content_entity_id = base_table.$id_field AND cwfr.workspace = '$active_workspace'");
+      $this->sqlQuery->leftJoin('content_workspace_revision', 'cwr', "cwr.content_entity_type_id = '{$this->entityTypeId}' AND cwr.content_entity_id = base_table.$id_field AND cwr.workspace = '$active_workspace'");
     }
 
     return $this;
