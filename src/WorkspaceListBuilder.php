@@ -89,9 +89,15 @@ class WorkspaceListBuilder extends EntityListBuilder {
       ];
     }
 
+    $operations['changes'] = [
+      'title' => $this->t('View Changes'),
+      'weight' => 21,
+      'url' => $entity->toUrl('changes', ['workspace' => $entity->id()]),
+    ];
+
     $operations['conflicts'] = [
       'title' => $this->t('View Conflicts'),
-      'weight' => 21,
+      'weight' => 22,
       'url' => $entity->toUrl('conflicts', ['workspace' => $entity->id()]),
     ];
 
