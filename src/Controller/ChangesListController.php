@@ -44,6 +44,13 @@ class ChangesListController extends ControllerBase {
   protected $entityTypeManager;
 
   /**
+   * Pager limit - the number of elements pe page.
+   *
+   * @var int
+   */
+  protected $changesPerPage = 50;
+
+  /**
    * ChangesListController constructor.
    *
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
@@ -210,11 +217,17 @@ class ChangesListController extends ControllerBase {
    *   A render array representing the administrative page content.
    */
   protected function adminOverview(array $entities = []) {
-    $rows = [];
-
+    $total = count($entities);
+    // Initialize the pager.
+    $page = pager_default_initialize($total, $this->changesPerPage);
+    // Split the items up into chunks:
+    $chunks = array_chunk($entities, $this->changesPerPage);
+    // Get changes for the current page:
+    $current_page_changes = $chunks[$page];
     $headers = [t('Entities'), t('Entity type'), t('Operations')];
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
-    foreach ($entities as $entity) {
+    $rows = [];
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $current_page_changes */
+    foreach ($current_page_changes as $entity) {
       $row = [
         $entity->label() ?: '*** ' . $this->t('No label for this entity') . ' ***',
         $entity->getEntityTypeId(),
@@ -241,14 +254,12 @@ class ChangesListController extends ControllerBase {
     }
 
     $build['prefix']['#markup'] = '<p>' . t('The array is sorted by last change first.') . '</p>';
-
     $build['changes-list'] = [
       '#type' => 'table',
       '#header' => $headers,
       '#rows' => $rows,
       '#empty' => t('There are no changes.'),
     ];
-
     $build['pager'] = [
       '#type' => 'pager',
     ];
