@@ -6,4 +6,3 @@ core: 8.x
 package: Core (Experimental)
 dependencies:
  - user
- - serialization
