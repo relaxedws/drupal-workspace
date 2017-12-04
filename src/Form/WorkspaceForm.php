@@ -99,6 +99,7 @@ class WorkspaceForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $workspace = $this->entity;
+    $workspace->setNewRevision(TRUE);
     $status = $workspace->save();
 
     \Drupal::service('plugin.manager.workspace.upstream')->clearCachedDefinitions();

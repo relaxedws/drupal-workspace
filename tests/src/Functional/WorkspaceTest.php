@@ -3,7 +3,6 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-
 /**
  * Test the workspace entity.
  *
@@ -38,6 +37,7 @@ class WorkspaceTest extends BrowserTestBase {
       'administer site configuration',
       'create workspace',
       'edit own workspace',
+      'edit any workspace',
     ];
 
     $this->editor1 = $this->drupalCreateUser($permissions);
@@ -85,6 +85,23 @@ class WorkspaceTest extends BrowserTestBase {
 
     $test_workspace = $storage->loadUnchanged('test_workspace');
     $this->assertEquals($this->editor2->id(), $test_workspace->getOwnerId());
+  }
+
+  /**
+   * Tests that editing a workspace creates a new revision.
+   */
+  public function testWorkspaceFormRevisions() {
+    $this->drupalLogin($this->editor1);
+    $storage = \Drupal::entityTypeManager()->getStorage('workspace');
+
+    // The current live workspace entity should be revision 1.
+    $live_workspace = $storage->load('live');
+    $this->assertEquals('1', $live_workspace->getRevisionId());
+
+    // Re-save the live workspace via the UI to create revision 3.
+    $this->drupalPostForm($live_workspace->url('edit-form'), [], 'Save');
+    $live_workspace = $storage->loadUnchanged('live');
+    $this->assertEquals('3', $live_workspace->getRevisionId());
   }
 
 }
