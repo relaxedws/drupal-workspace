@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace\Controller;
 
-use Doctrine\CouchDB\CouchDBClient;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -106,7 +105,10 @@ class ChangesListController extends ControllerBase {
    * @param int $workspace
    *
    * @return array The render array to display for the page.
-   * The render array to display for the page.
+   *  The render array to display for the page.
+   * @throws \Doctrine\CouchDB\HTTP\HTTPException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function viewChanges($workspace) {
     $source_workspace = $this->workspaceManager->load($workspace);
@@ -116,10 +118,13 @@ class ChangesListController extends ControllerBase {
       return ['#content' => $this->t('The upstream is not set.')];
     }
     $target_workspace = $target_workspace_pointer->getWorkspace();
+    $replicator_exists = class_exists('Relaxed\Replicator\Replicator');
+    $couchdbclient_exists = class_exists('Doctrine\CouchDB\CouchDBClient');
+    $entities = [];
     if ($target_workspace instanceof WorkspaceInterface) {
       $entities = $this->getChangesBetweenLocalWorkspaces($source_workspace, $target_workspace);
     }
-    else {
+    elseif ($replicator_exists && $couchdbclient_exists) {
       $entities = $this->getChangesBetweenRemoteWorkspaces($source_workspace_pointer, $target_workspace_pointer);
     }
 
@@ -133,6 +138,7 @@ class ChangesListController extends ControllerBase {
    * @param $target_workspace
    *
    * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getChangesBetweenLocalWorkspaces($source_workspace, $target_workspace) {
     $since = $this->state->get('last_sequence.workspace.' . $source_workspace->id(), 0);
@@ -160,12 +166,14 @@ class ChangesListController extends ControllerBase {
    * @param $target_workspace_pointer \Drupal\workspace\WorkspacePointerInterface
    *
    * @return array
+   * @throws \Doctrine\CouchDB\HTTP\HTTPException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getChangesBetweenRemoteWorkspaces($source_workspace_pointer, $target_workspace_pointer) {
     $since = $this->state->get('last_sequence.workspace.' . $source_workspace_pointer->getWorkspaceId(), 0);
-    /** @var CouchDBClient $source */
+    /** @var \Doctrine\CouchDB\CouchDBClient $source */
     $source = $this->couchDbReplicator->setupEndpoint($source_workspace_pointer);
-    /** @var CouchDBClient $target */
+    /** @var \Doctrine\CouchDB\CouchDBClient $target */
     $target = $this->couchDbReplicator->setupEndpoint($target_workspace_pointer);
     $revs_diff = [];
     $source_workspace = $source_workspace_pointer->getWorkspace();
@@ -207,6 +215,7 @@ class ChangesListController extends ControllerBase {
    * @param $revs_diff array
    *
    * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getEntitiesFromRevsDiff($source_workspace, $revs_diff) {
     $entities = [];
@@ -234,6 +243,7 @@ class ChangesListController extends ControllerBase {
    *
    * @return array A render array representing the administrative page content.
    *   A render array representing the administrative page content.
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   protected function adminOverview(array $entities = []) {
     $total = count($entities);
@@ -326,6 +336,7 @@ class ChangesListController extends ControllerBase {
    *
    * @return \Drupal\workspace\WorkspacePointerInterface
    *   The pointer to the provided workspace.
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
     $pointers = $this->entityTypeManager
