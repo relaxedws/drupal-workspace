@@ -3,7 +3,7 @@ status: true
 dependencies:
   module:
     - workspace
-id: workspace.edit
+id: workspace.deploy
 label: Edit
 targetEntityType: workspace
 cache: true

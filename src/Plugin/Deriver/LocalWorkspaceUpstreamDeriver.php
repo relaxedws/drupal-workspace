@@ -5,7 +5,6 @@ namespace Drupal\workspace\Plugin\Deriver;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,9 +45,10 @@ class LocalWorkspaceUpstreamDeriver extends DeriverBase implements ContainerDeri
     $this->derivatives = [];
 
     // Provide a local upstream plugin for each workspace.
-    foreach ($this->workspaceStorage->loadMultiple() as $workspace) {
-      $this->derivatives[$workspace->id()] = $base_plugin_definition;
-      $this->derivatives[$workspace->id()]['id'] = $base_plugin_definition['id'] . PluginBase::DERIVATIVE_SEPARATOR . $workspace->id();
+    foreach ($this->workspaceStorage->loadMultiple() as $workspace_id => $workspace) {
+      $this->derivatives[$workspace_id] = $base_plugin_definition;
+      $this->derivatives[$workspace_id]['label'] = $workspace->label();
+      $this->derivatives[$workspace_id]['category'] = $base_plugin_definition['label'];
     }
     return $this->derivatives;
   }

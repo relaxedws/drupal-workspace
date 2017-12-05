@@ -70,7 +70,7 @@ trait WorkspaceTestUtilities {
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createWorkspaceThroughUI($label, $id, $upstream = NULL) {
+  protected function createWorkspaceThroughUI($label, $id, $upstream = 'local_workspace:live') {
     $this->drupalGet('/admin/config/workflow/workspace/add');
 
     $session = $this->getSession();
@@ -80,9 +80,7 @@ trait WorkspaceTestUtilities {
     $page = $session->getPage();
     $page->fillField('label', $label);
     $page->fillField('id', $id);
-    if ($upstream) {
-      $page->selectFieldOption('upstream', $upstream);
-    }
+    $page->selectFieldOption('upstream[0][value]', $upstream);
     $page->findButton('Save')->click();
 
     $session->getPage()->hasContent("$label ($id)");

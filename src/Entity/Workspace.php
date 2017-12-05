@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
+use Drupal\workspace\UpstreamPluginInterface;
 
 /**
  * The workspace entity class.
@@ -89,6 +90,10 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getCurrentUserId')
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'weight' => 5,
+      ])
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
@@ -101,13 +106,36 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDescription(new TranslatableMarkup('The UNIX timestamp of when the workspace has been created.'));
 
     $fields['upstream'] = BaseFieldDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Assign default target workspace'))
+      ->setLabel(new TranslatableMarkup('Target workspace'))
       ->setDescription(new TranslatableMarkup('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setDefaultValueCallback('Drupal\workspace\Entity\Workspace::getActiveWorkspaceId');
+      ->setDisplayOptions('form', [
+        'type' => 'workspace_upstream_plugin',
+        'weight' => 4,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->addPropertyConstraints('value', [
+        'Upstream' => [],
+      ]);
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getUpstreamPlugin() {
+    if (($upstream = $this->upstream->value) && $upstream !== UpstreamPluginInterface::UPSTREAM_FIELD_EMPTY) {
+      return \Drupal::service('plugin.manager.workspace.upstream')->createInstance($upstream);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLocalUpstreamPlugin() {
+    return \Drupal::service('plugin.manager.workspace.upstream')->createInstance('local_workspace:' . $this->id());
   }
 
   /**
@@ -165,18 +193,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public static function getCurrentUserId() {
     return [\Drupal::currentUser()->id()];
-  }
-
-  /**
-   * Default value callback for 'upstream' base field definition.
-   *
-   * @see ::baseFieldDefinitions()
-   *
-   * @return array
-   *   An array of default values.
-   */
-  public static function getActiveWorkspaceId() {
-    return ['local_workspace:' . \Drupal::service('workspace.manager')->getActiveWorkspace()];
   }
 
 }

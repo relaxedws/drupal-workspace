@@ -37,6 +37,15 @@ class Upstream extends Plugin {
   public $description;
 
   /**
+   * The human-readable category.
+   *
+   * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   */
+  public $category = '';
+
+  /**
    * Whether the upstream plugin is a remote destination or not.
    *
    * @var bool

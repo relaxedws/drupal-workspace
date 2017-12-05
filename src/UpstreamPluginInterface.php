@@ -2,10 +2,8 @@
 
 namespace Drupal\workspace;
 
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Component\Plugin\DerivativeInspectionInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Upstream plugins represent the source / destination of a content replication.
@@ -20,7 +18,12 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * performing an external replication may need hostname, port, username,
  * password etc.
  */
-interface UpstreamPluginInterface extends PluginInspectionInterface, DerivativeInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
+interface UpstreamPluginInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
+
+  /**
+   * Default empty value for upstream fields.
+   */
+  const UPSTREAM_FIELD_EMPTY = '_none';
 
   /**
    * Returns the label of the upstream.

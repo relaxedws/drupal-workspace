@@ -2,6 +2,8 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Component\Plugin\CategorizingPluginManagerInterface;
+use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -13,7 +15,9 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
  * @see \Drupal\workspace\UpstreamPluginInterface
  * @see plugin_api
  */
-class UpstreamPluginManager extends DefaultPluginManager {
+class UpstreamPluginManager extends DefaultPluginManager implements CategorizingPluginManagerInterface {
+
+  use CategorizingPluginManagerTrait;
 
   /**
    * Constructs a new UpstreamPluginManager.
@@ -30,6 +34,14 @@ class UpstreamPluginManager extends DefaultPluginManager {
     parent::__construct('Plugin/Upstream', $namespaces, $module_handler, 'Drupal\workspace\UpstreamPluginInterface', 'Drupal\workspace\Annotation\Upstream');
     $this->alterInfo('workspace_upstream_info');
     $this->setCacheBackend($cache_backend, 'workspace_upstream');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function processDefinition(&$definition, $plugin_id) {
+    parent::processDefinition($definition, $plugin_id);
+    $this->processDefinitionCategory($definition);
   }
 
 }

@@ -3,7 +3,6 @@
 namespace Drupal\workspace\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\workspace\Replication\ReplicationManager;
@@ -14,13 +13,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * Provides the workspace deploy form.
  */
 class WorkspaceDeployForm extends ContentEntityForm {
-
-  /**
-   * The upstream plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $upstreamPluginManager;
 
   /**
    * The workspace replication manager.
@@ -39,15 +31,12 @@ class WorkspaceDeployForm extends ContentEntityForm {
   /**
    * Constructs a new WorkspaceDeployForm.
    *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $upstream_plugin_manager
-   *   The upstream plugin manager.
    * @param \Drupal\workspace\Replication\ReplicationManager $replication_manager
    *   The workspace replication manager.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(PluginManagerInterface $upstream_plugin_manager, ReplicationManager $replication_manager, TimeInterface $time) {
-    $this->upstreamPluginManager = $upstream_plugin_manager;
+  public function __construct(ReplicationManager $replication_manager, TimeInterface $time) {
     $this->workspaceReplicationManager = $replication_manager;
     $this->time = $time;
   }
@@ -57,7 +46,6 @@ class WorkspaceDeployForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.workspace.upstream'),
       $container->get('workspace.replication_manager'),
       $container->get('datetime.time')
     );
@@ -72,15 +60,13 @@ class WorkspaceDeployForm extends ContentEntityForm {
     /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
-    if (empty($workspace->upstream->value) || 'local_workspace:' . $workspace->id() == $workspace->upstream->value) {
+    // We can not deploy if we do not have an upstream workspace.
+    if (!$workspace->getUpstreamPlugin()) {
       throw new BadRequestHttpException();
     }
 
-    $source_upstream = $this->upstreamPluginManager->createInstance('local_workspace:' . $workspace->id());
-    $target_upstream = $this->upstreamPluginManager->createInstance($workspace->upstream->value);
-
     $form['help'] = [
-      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or update %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $source_upstream->getLabel(), '%target_upstream_label' => $target_upstream->getLabel()]),
+      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or update %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalUpstreamPlugin()->getLabel(), '%target_upstream_label' => $workspace->getUpstreamPlugin()->getLabel()]),
     ];
 
     return $form;
@@ -92,13 +78,15 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
 
-    $upstream_plugin = $this->upstreamPluginManager->createInstance($this->entity->upstream->value);
+    /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    $workspace = $this->entity;
+    $upstream_plugin_label = $workspace->getUpstreamPlugin()->getLabel();
 
-    $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_plugin->getLabel()]);
+    $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_plugin_label]);
     $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
     $elements['update'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Update from @upstream', ['@upstream' => $upstream_plugin->getLabel()]),
+      '#value' => $this->t('Update from @upstream', ['@upstream' => $upstream_plugin_label]),
       '#submit' => ['::submitForm', '::update'],
     ];
     $elements['cancel'] = [
@@ -125,8 +113,8 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     try {
       $this->workspaceReplicationManager->replicate(
-        $this->upstreamPluginManager->createInstance('local_workspace:' . $workspace->id()),
-        $this->upstreamPluginManager->createInstance($workspace->upstream->value)
+        $workspace->getLocalUpstreamPlugin(),
+        $workspace->getUpstreamPlugin()
       );
       drupal_set_message($this->t('Successful deployment.'));
     }
@@ -150,8 +138,8 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     try {
       $this->workspaceReplicationManager->replicate(
-        $this->upstreamPluginManager->createInstance($workspace->upstream->value),
-        $this->upstreamPluginManager->createInstance('local_workspace:' . $workspace->id())
+        $workspace->getUpstreamPlugin(),
+        $workspace->getLocalUpstreamPlugin()
       );
       drupal_set_message($this->t('Update successful.'));
     }

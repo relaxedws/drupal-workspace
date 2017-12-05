@@ -3,6 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+
 /**
  * Test the workspace entity.
  *
@@ -73,6 +74,7 @@ class WorkspaceTest extends BrowserTestBase {
     $this->drupalPostForm('/admin/config/workflow/workspace/add', [
       'id' => 'test_workspace',
       'label' => 'Test workspace',
+      'upstream[0][value]' => 'local_workspace:live',
     ], 'Save');
 
     $storage = \Drupal::entityTypeManager()->getStorage('workspace');

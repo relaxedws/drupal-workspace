@@ -48,20 +48,6 @@ class WorkspaceForm extends ContentEntityForm {
       '#element_validate' => [],
     ];
 
-    $upstreams = [];
-    $upstream_manager = \Drupal::service('plugin.manager.workspace.upstream');
-    $upstream_definitions = $upstream_manager->getDefinitions();
-    foreach ($upstream_definitions as $upstream_definition) {
-      /** @var \Drupal\workspace\UpstreamPluginInterface $instance */
-      $instance = $upstream_manager->createInstance($upstream_definition['id']);
-      $upstreams[$instance->getPluginId()] = $instance->getLabel();
-    }
-    $form['upstream'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Default upstream'),
-      '#default_value' => $workspace->get('upstream')->value,
-      '#options' => $upstreams,
-    ];
     return parent::form($form, $form_state);
   }
 
@@ -85,7 +71,6 @@ class WorkspaceForm extends ContentEntityForm {
     $field_names = [
       'label',
       'id',
-      'upstream'
     ];
     foreach ($violations->getByFields($field_names) as $violation) {
       list($field_name) = explode('.', $violation->getPropertyPath(), 2);

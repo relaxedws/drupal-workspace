@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - workspace
+id: workspace.workspace.deploy
+targetEntityType: workspace
+bundle: workspace
+mode: deploy
+content: {  }
+hidden:
+  uid: true
+  upstream: true

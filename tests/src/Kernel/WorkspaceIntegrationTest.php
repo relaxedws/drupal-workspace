@@ -75,8 +75,10 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->installEntitySchema('replication_log');
 
     // Create two workspaces by default, 'live' and 'stage'.
-    Workspace::create(['id' => 'live'])->save();
-    Workspace::create(['id' => 'stage', 'upstream' => 'local_workspace:live'])->save();
+    $live = Workspace::create(['id' => 'live']);
+    $live->save();
+    $stage = Workspace::create(['id' => 'stage', 'upstream' => 'local_workspace:live']);
+    $stage->save();
 
     $permissions = [
       'administer nodes',
@@ -239,8 +241,8 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     // Deploy 'stage' to 'live'.
     \Drupal::service('workspace.replication_manager')->replicate(
-      \Drupal::service('plugin.manager.workspace.upstream')->createInstance('local_workspace:stage'),
-      \Drupal::service('plugin.manager.workspace.upstream')->createInstance('local_workspace:live')
+      $stage->getLocalUpstreamPlugin(),
+      $stage->getUpstreamPlugin()
     );
     $this->assertWorkspaceStatus($test_scenarios['deploy_stage_to_live'], 'node');
   }

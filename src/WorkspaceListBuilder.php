@@ -91,7 +91,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
       ];
     }
 
-    if (!empty($entity->upstream->value) && 'local_workspace:' . $entity->id() != $entity->upstream->value) {
+    if ($entity->getUpstreamPlugin()) {
       $operations['deploy'] = [
         'title' => $this->t('Deploy content'),
         'weight' => 20,

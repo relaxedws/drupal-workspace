@@ -33,18 +33,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor);
-    $session = $this->getSession();
-
-    $this->drupalGet('/admin/config/workflow/workspace/add');
-
-    $this->assertEquals(200, $session->getStatusCode());
-
-    $page = $session->getPage();
-    $page->fillField('label', 'Bears');
-    $page->fillField('id', 'bears');
-    $page->findButton(t('Save'))->click();
-
-    $session->getPage()->hasContent('Bears (bears)');
+    $this->createWorkspaceThroughUI('Bears', 'bears');
 
     // Now edit that same workspace; We shouldn't be able to do so, since
     // we don't have edit permissions.
@@ -56,7 +45,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $bears = current($entity_list);
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
 
     // @todo add Deletion checks once there's a UI for deletion.
   }
