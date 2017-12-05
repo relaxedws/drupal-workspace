@@ -21,6 +21,8 @@ class ReplicationManager {
    *
    * @param \Drupal\workspace\Replication\ReplicationInterface $replicator
    *   The replication service to add.
+   * @param int $priority
+   *   The priority of the replication service.
    */
   public function addReplicator(ReplicationInterface $replicator, $priority) {
     $this->replicators[$priority][] = $replicator;

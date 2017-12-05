@@ -39,12 +39,11 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     // Now login as a different user with permission to edit that workspace,
     // specifically.
-
     $editor2 = $this->drupalCreateUser(array_merge($permissions, ['update_workspace_' . $bears->id()]));
 
     $this->drupalLogin($editor2);
@@ -70,17 +69,16 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     // Now login as a different user and create a workspace.
-
     $editor2 = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id()]));
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();
 
-    $this->createWorkspaceThroughUI('Packers', 'packers');
+    $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
@@ -90,7 +88,6 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
 
     // But editor 1 cannot view the Packers workspace.
-
     $this->drupalLogin($editor1);
     $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
     $this->assertEquals(403, $session->getStatusCode());

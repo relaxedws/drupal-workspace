@@ -18,9 +18,11 @@ trait WorkspaceTestUtilities {
    * The UI approach to creating a workspace doesn't make it easy to know what
    * the ID is, so this lets us make paths for a workspace after it's created.
    *
-   * @param $label
+   * @param string $label
    *   The label of the workspace to load.
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The workspace entity.
    */
   protected function getOneWorkspaceByLabel($label) {
     return $this->getOneEntityByLabel('workspace', $label);
@@ -34,9 +36,11 @@ trait WorkspaceTestUtilities {
    *
    * @param string $type
    *   The type of entity to load.
-   * @param $label
+   * @param string $label
    *   The label of the entity to load.
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The entity.
    */
   protected function getOneEntityByLabel($type, $label) {
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
@@ -65,12 +69,12 @@ trait WorkspaceTestUtilities {
    * @param string $upstream
    *   The ID of the upstream plugin of the workspace.
    *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
+   * @return \Drupal\Core\Entity\EntityInterface
    *   The workspace that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createWorkspaceThroughUI($label, $id, $upstream = 'local_workspace:live') {
+  protected function createWorkspaceThroughUi($label, $id, $upstream = 'local_workspace:live') {
     $this->drupalGet('/admin/config/workflow/workspace/add');
 
     $session = $this->getSession();
@@ -153,19 +157,22 @@ trait WorkspaceTestUtilities {
     $node_type->save();
   }
 
-
   /**
    * Creates a node by "clicking" buttons.
    *
    * @param string $label
+   *   The label of the Node to create.
    * @param string $bundle
+   *   The bundle of the Node to create.
    * @param bool $publish
+   *   The publishing status to set.
    *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The Node that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createNodeThroughUI($label, $bundle, $publish = TRUE) {
+  protected function createNodeThroughUi($label, $bundle, $publish = TRUE) {
     $this->drupalGet('/node/add/' . $bundle);
 
     /** @var \Behat\Mink\Session $session */
@@ -186,26 +193,6 @@ trait WorkspaceTestUtilities {
     $session->getPage()->hasContent("{$label} has been created");
 
     return $this->getOneEntityByLabel('node', $label);
-  }
-
-  /**
-   * Returns a pointer to the specified workspace.
-   *
-   * @todo Replace this with a common method in the module somewhere.
-   *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
-   *   The workspace for which we want a pointer.
-   * @return \Drupal\workspace\WorkspacePointerInterface
-   *   The pointer to the provided workspace.
-   */
-  protected function getPointerToWorkspace(WorkspaceInterface $workspace) {
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
-    $etm = \Drupal::service('entity_type.manager');
-
-    $pointers = $etm->getStorage('workspace_pointer')
-      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
-    $pointer = reset($pointers);
-    return $pointer;
   }
 
   /**

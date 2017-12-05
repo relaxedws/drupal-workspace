@@ -19,11 +19,15 @@ class EntityAccess implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
+   * The entity type manager service.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The workspace manager service.
+   *
    * @var \Drupal\workspace\WorkspaceManagerInterface
    */
   protected $workspaceManager;
@@ -31,9 +35,9 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Constructs a new EntityAccess.
    *
-   * @param EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager) {
@@ -52,15 +56,19 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to check access for.
+   * @param string $operation
+   *   The operation being performed.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user account making the to check access for.
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   *   The result of the access check.
    *
    * @see hook_entity_access()
-   *
-   * @param EntityInterface $entity
-   * @param string $operation
-   * @param AccountInterface $account
-   *
-   * @return AccessResult
    */
   public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
@@ -77,15 +85,19 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
    *
-   * @see hook_entity_create_access()
-   *
-   * @param AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user account making the to check access for.
    * @param array $context
-   * @param $entity_bundle
+   *   The context of the access check.
+   * @param string $entity_bundle
+   *   The bundle of the entity.
    *
    * @return \Drupal\Core\Access\AccessResult
+   *   The result of the access check.
+   *
+   * @see hook_entity_create_access()
    */
   public function entityCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
     // Workspaces themselves are handled by another hook. Ignore them here.
@@ -97,8 +109,13 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * @param AccountInterface $account
-   * @return AccessResult
+   * Checks the 'bypass' permissions.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user account making the to check access for.
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   *   The result of the access check.
    */
   protected function bypassAccessResult(AccountInterface $account) {
     // This approach assumes that the current "global" active workspace is
@@ -151,6 +168,7 @@ class EntityAccess implements ContainerInjectionInterface {
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -168,6 +186,7 @@ class EntityAccess implements ContainerInjectionInterface {
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -185,6 +204,7 @@ class EntityAccess implements ContainerInjectionInterface {
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -202,6 +222,7 @@ class EntityAccess implements ContainerInjectionInterface {
    *
    * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */

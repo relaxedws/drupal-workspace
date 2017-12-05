@@ -15,6 +15,8 @@ class WorkspacePermissionsTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
   /**
+   * The modules to enable.
+   *
    * @var array
    */
   public static $modules = ['workspace', 'workspace'];
@@ -33,11 +35,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor);
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We shouldn't be able to do so, since
     // we don't have edit permissions.
-
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
     /** @var \Drupal\workspace\Entity\WorkspaceInterface $bears */
@@ -66,10 +67,9 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
-
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     $session = $this->getSession();
@@ -85,13 +85,12 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Now login as a different user and ensure they don't have edit access,
     // and vice versa.
-
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();
 
-    $this->createWorkspaceThroughUI('Packers', 'packers');
+    $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
@@ -118,10 +117,9 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
-
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     $session = $this->getSession();
@@ -137,13 +135,12 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Now login as a different user and ensure they don't have edit access,
     // and vice versa.
-
     $admin = $this->drupalCreateUser(array_merge($permissions, ['edit any workspace']));
 
     $this->drupalLogin($admin);
     $session = $this->getSession();
 
-    $this->createWorkspaceThroughUI('Packers', 'packers');
+    $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 

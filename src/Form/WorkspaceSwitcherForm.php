@@ -76,7 +76,7 @@ class WorkspaceSwitcherForm extends FormBase {
       '#markup' => $active_workspace->label(),
       '#wrapper_attributes' => [
         'class' => ['container-inline'],
-      ]
+      ],
     ];
 
     $form['workspace_id'] = [

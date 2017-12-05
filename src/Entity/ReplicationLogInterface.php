@@ -4,6 +4,9 @@ namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 
+/**
+ * Defines an interface for the Replication log entity type.
+ */
 interface ReplicationLogInterface extends ContentEntityInterface {
 
   /**
@@ -22,7 +25,7 @@ interface ReplicationLogInterface extends ContentEntityInterface {
    *
    * @return $this
    */
-  public function setHistory($history);
+  public function setHistory(array $history);
 
   /**
    * Gets the session ID.

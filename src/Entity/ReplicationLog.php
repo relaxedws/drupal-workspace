@@ -39,7 +39,7 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
   /**
    * {@inheritdoc}
    */
-  public function setHistory($history) {
+  public function setHistory(array $history) {
     $histories = array_merge([$history], $this->getHistory());
     $this->set('history', $histories);
     return $this;

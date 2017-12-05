@@ -6,10 +6,11 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * Provides a 'Workspace switcher' block.
+ *
  * @Block(
  *   id = "workspace_switcher_block",
  *   admin_label = @Translation("Workspace switcher"),
@@ -19,21 +20,32 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
+   * The form builder.
+   *
    * @var \Drupal\Core\Form\FormBuilderInterface
    */
   protected $formBuilder;
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * Constructs a new WorkspaceBlock instance.
+   *
    * @param array $configuration
+   *   The plugin configuration.
    * @param string $plugin_id
+   *   The plugin ID.
    * @param mixed $plugin_definition
+   *   The plugin definition.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

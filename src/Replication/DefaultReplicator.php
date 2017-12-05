@@ -112,8 +112,8 @@ class DefaultReplicator implements ReplicationInterface {
       $revision_difference = $select->execute()->fetchCol();
 
       if (!empty($revision_difference)) {
-        // Get the content workspace IDs for all of the entity revision IDs which
-        // are not yet in the target workspace.
+        // Get the content workspace IDs for all of the entity revision IDs
+        // which are not yet in the target workspace.
         $content_workspace_ids[$entity_type_id] = $this->entityTypeManager
           ->getStorage('content_workspace')
           ->getQuery()

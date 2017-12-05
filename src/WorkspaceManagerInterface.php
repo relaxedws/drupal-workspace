@@ -32,7 +32,7 @@ interface WorkspaceManagerInterface {
   public function getSupportedEntityTypes();
 
   /**
-   * Adds workspace negotiator services
+   * Adds workspace negotiator services.
    *
    * @param \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface $negotiator
    *   The negotiator service to add.

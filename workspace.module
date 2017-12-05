@@ -155,8 +155,8 @@ function workspace_entity_presave(EntityInterface $entity) {
 
   // When a new published entity is inserted in a non-default workspace, we
   // actually want two revisions to be saved:
-  //  - An unpublished default revision in the default ('live') workspace.
-  //  - A published pending revision in the current workspace.
+  // - An unpublished default revision in the default ('live') workspace.
+  // - A published pending revision in the current workspace.
   if ($entity->isNew() && $entity->isPublished()) {
     // Keep track of the publishing status for workspace_entity_insert() and
     // unpublish the default revision.

@@ -39,7 +39,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   protected $blacklist = [
     'content_workspace',
     'replication_log',
-    'workspace'
+    'workspace',
   ];
 
   /**
@@ -213,7 +213,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     else {
       $content_workspace = ContentWorkspace::create([
         'content_entity_type_id' => $entity->getEntityTypeId(),
-        'content_entity_id' => $entity->id()
+        'content_entity_id' => $entity->id(),
       ]);
     }
 
@@ -226,7 +226,10 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   }
 
   /**
+   * Sorts the negotiator services by priority.
+   *
    * @return \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
+   *   An array of sorted workspace negotiators.
    */
   protected function getSortedNegotiators() {
     if (!isset($this->sortedNegotiators)) {

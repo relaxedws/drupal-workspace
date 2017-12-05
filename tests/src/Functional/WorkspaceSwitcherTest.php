@@ -19,8 +19,7 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
   public static $modules = ['block', 'workspace'];
 
   /**
-   * Test that the block displays and switches workspaces.
-   * Then test the admin page displays workspaces and allows switching.
+   * Test switching workspace via the switcher block and admin page.
    */
   public function testSwitchingWorkspaces() {
     $permissions = [
@@ -35,10 +34,10 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
     $mayer = $this->drupalCreateUser($permissions);
     $this->drupalLogin($mayer);
 
-    $vultures = $this->createWorkspaceThroughUI('Vultures', 'vultures');
+    $vultures = $this->createWorkspaceThroughUi('Vultures', 'vultures');
     $this->switchToWorkspace($vultures);
 
-    $gravity = $this->createWorkspaceThroughUI('Gravity', 'gravity');
+    $gravity = $this->createWorkspaceThroughUi('Gravity', 'gravity');
 
     $this->drupalGet('/admin/config/workflow/workspace/' . $gravity->id() . '/activate');
 

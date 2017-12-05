@@ -32,7 +32,15 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['field', 'filter', 'node', 'text', 'user', 'system', 'views'];
+  protected static $modules = [
+    'field',
+    'filter',
+    'node',
+    'text',
+    'user',
+    'system',
+    'views',
+  ];
 
   /**
    * {@inheritdoc}
@@ -103,18 +111,34 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $revision_state = [
       'live' => [
         1 => [
-          1 => ['title' => 'live - 1 - r1 - published', 'status' => TRUE, 'default_revision' => TRUE],
+          1 => [
+            'title' => 'live - 1 - r1 - published',
+            'status' => TRUE,
+            'default_revision' => TRUE,
+          ],
         ],
         2 => [
-          2 => ['title' => 'live - 2 - r2 - unpublished', 'status' => FALSE, 'default_revision' => TRUE],
+          2 => [
+            'title' => 'live - 2 - r2 - unpublished',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
       'stage' => [
         1 => [
-          1 => ['title' => 'live - 1 - r1 - published', 'status' => TRUE, 'default_revision' => TRUE],
+          1 => [
+            'title' => 'live - 1 - r1 - published',
+            'status' => TRUE,
+            'default_revision' => TRUE,
+          ],
         ],
         2 => [
-          2 => ['title' => 'live - 2 - r2 - unpublished', 'status' => FALSE, 'default_revision' => TRUE],
+          2 => [
+            'title' => 'live - 2 - r2 - unpublished',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
     ];
@@ -125,13 +149,21 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $revision_state = array_replace_recursive($revision_state, [
       'live' => [
         1 => [
-          3 => ['title' => 'stage - 1 - r3 - unpublished', 'status' => FALSE, 'default_revision' => FALSE],
+          3 => [
+            'title' => 'stage - 1 - r3 - unpublished',
+            'status' => FALSE,
+            'default_revision' => FALSE,
+          ],
         ],
       ],
       'stage' => [
         1 => [
           1 => ['default_revision' => FALSE],
-          3 => ['title' => 'stage - 1 - r3 - unpublished', 'status' => FALSE, 'default_revision' => TRUE],
+          3 => [
+            'title' => 'stage - 1 - r3 - unpublished',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
     ]);
@@ -142,13 +174,21 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $revision_state = array_replace_recursive($revision_state, [
       'live' => [
         2 => [
-          4 => ['title' => 'stage - 2 - r4 - published', 'status' => TRUE, 'default_revision' => FALSE],
+          4 => [
+            'title' => 'stage - 2 - r4 - published',
+            'status' => TRUE,
+            'default_revision' => FALSE,
+          ],
         ],
       ],
       'stage' => [
         2 => [
           2 => ['default_revision' => FALSE],
-          4 => ['title' => 'stage - 2 - r4 - published', 'status' => TRUE, 'default_revision' => TRUE],
+          4 => [
+            'title' => 'stage - 2 - r4 - published',
+            'status' => TRUE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
     ]);
@@ -159,12 +199,20 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $revision_state = array_replace_recursive($revision_state, [
       'live' => [
         3 => [
-          5 => ['title' => 'stage - 3 - r5 - unpublished', 'status' => FALSE, 'default_revision' => TRUE],
+          5 => [
+            'title' => 'stage - 3 - r5 - unpublished',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
       'stage' => [
         3 => [
-          5 => ['title' => 'stage - 3 - r5 - unpublished', 'status' => FALSE, 'default_revision' => TRUE],
+          5 => [
+            'title' => 'stage - 3 - r5 - unpublished',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
     ]);
@@ -175,14 +223,30 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $revision_state = array_replace_recursive($revision_state, [
       'live' => [
         4 => [
-          6 => ['title' => 'stage - 4 - r6 - published', 'status' => FALSE, 'default_revision' => TRUE],
-          7 => ['title' => 'stage - 4 - r6 - published', 'status' => TRUE, 'default_revision' => FALSE],
+          6 => [
+            'title' => 'stage - 4 - r6 - published',
+            'status' => FALSE,
+            'default_revision' => TRUE,
+          ],
+          7 => [
+            'title' => 'stage - 4 - r6 - published',
+            'status' => TRUE,
+            'default_revision' => FALSE,
+          ],
         ],
       ],
       'stage' => [
         4 => [
-          6 => ['title' => 'stage - 4 - r6 - published', 'status' => FALSE, 'default_revision' => FALSE],
-          7 => ['title' => 'stage - 4 - r6 - published', 'status' => TRUE, 'default_revision' => TRUE],
+          6 => [
+            'title' => 'stage - 4 - r6 - published',
+            'status' => FALSE,
+            'default_revision' => FALSE,
+          ],
+          7 => [
+            'title' => 'stage - 4 - r6 - published',
+            'status' => TRUE,
+            'default_revision' => TRUE,
+          ],
         ],
       ],
     ]);

@@ -51,10 +51,10 @@ class WorkspaceTest extends BrowserTestBase {
   public function testSpecialCharacters() {
     $this->drupalLogin($this->editor1);
 
-    // Test a valid workspace name
-    $this->createWorkspaceThroughUI('Workspace 1', 'a0_$()+-/');
+    // Test a valid workspace name.
+    $this->createWorkspaceThroughUi('Workspace 1', 'a0_$()+-/');
 
-    // Test and invaid workspace name
+    // Test and invalid workspace name.
     $this->drupalGet('/admin/config/workflow/workspace/add');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());

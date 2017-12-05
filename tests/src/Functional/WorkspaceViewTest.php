@@ -4,7 +4,6 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BrowserTestBase;
 
-
 /**
  * Tests permission controls on workspaces.
  *
@@ -34,18 +33,17 @@ class WorkspaceViewTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
 
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     // Now login as a different user and create a workspace.
-
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();
 
-    $this->createWorkspaceThroughUI('Packers', 'packers');
+    $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
@@ -76,18 +74,17 @@ class WorkspaceViewTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
 
-    $this->createWorkspaceThroughUI('Bears', 'bears');
+    $this->createWorkspaceThroughUi('Bears', 'bears');
 
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     // Now login as a different user and create a workspace.
-
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();
 
-    $this->createWorkspaceThroughUI('Packers', 'packers');
+    $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = $this->getOneWorkspaceByLabel('Packers');
 
