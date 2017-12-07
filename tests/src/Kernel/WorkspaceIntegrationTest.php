@@ -326,8 +326,14 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     foreach ($expected as $workspace_id => $expected_values) {
       $this->switchToWorkspace($workspace_id);
 
+      // Check that default revisions are swapped with the workspace revision.
+      $this->assertEntityLoad($expected_values, $entity_type_id);
+
+      // Check that non-default revisions are not changed.
+      $this->assertEntityRevisionLoad($expected_values, $entity_type_id);
+
       foreach ($expected_values as $expected_entity_values) {
-        $this->assertEntityValues(
+        $this->assertEntityQuery(
           $entity_type_id,
           $expected_entity_values[$entity_keys['id']],
           $expected_entity_values[$entity_keys['revision']],
@@ -361,7 +367,73 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   }
 
   /**
-   * Asserts that a given entity has the correct values in a specific workspace.
+   * Asserts that default revisions are properly swapped in a workspace.
+   *
+   * @param array $expected_values
+   *   An array of expected values, as defined in ::testWorkspaces().
+   * @param string $entity_type_id
+   *   The ID of the entity type to check.
+   */
+  protected function assertEntityLoad(array $expected_values, $entity_type_id) {
+    // Filter the expected values so we can check only the default revisions.
+    $expected_default_revisions = array_filter($expected_values, function ($expected_value) {
+      return $expected_value['default_revision'] === TRUE;
+    });
+
+    $entity_keys = $this->entityTypeManager->getDefinition($entity_type_id)->getKeys();
+    $id_key = $entity_keys['id'];
+    $revision_key = $entity_keys['revision'];
+    $label_key = $entity_keys['label'];
+    $published_key = $entity_keys['published'];
+
+    // Check \Drupal\Core\Entity\EntityStorageInterface::loadMultiple().
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+    $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadMultiple(array_column($expected_default_revisions, $id_key));
+    foreach ($expected_default_revisions as $expected_default_revision) {
+      $entity_id = $expected_default_revision[$id_key];
+      $this->assertEquals($expected_default_revision[$revision_key], $entities[$entity_id]->getRevisionId());
+      $this->assertEquals($expected_default_revision[$label_key], $entities[$entity_id]->label());
+      $this->assertEquals($expected_default_revision[$published_key], $entities[$entity_id]->isPublished());
+    }
+
+    // Check \Drupal\Core\Entity\EntityStorageInterface::loadUnchanged().
+    foreach ($expected_default_revisions as $expected_default_revision) {
+      /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+      $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadUnchanged($expected_default_revision[$id_key]);
+      $this->assertEquals($expected_default_revision[$revision_key], $entity->getRevisionId());
+      $this->assertEquals($expected_default_revision[$label_key], $entity->label());
+      $this->assertEquals($expected_default_revision[$published_key], $entity->isPublished());
+    }
+  }
+
+  /**
+   * Asserts that non-default revisions are not changed.
+   *
+   * @param array $expected_values
+   *   An array of expected values, as defined in ::testWorkspaces().
+   * @param string $entity_type_id
+   *   The ID of the entity type to check.
+   */
+  protected function assertEntityRevisionLoad(array $expected_values, $entity_type_id) {
+    $entity_keys = $this->entityTypeManager->getDefinition($entity_type_id)->getKeys();
+    $id_key = $entity_keys['id'];
+    $revision_key = $entity_keys['revision'];
+    $label_key = $entity_keys['label'];
+    $published_key = $entity_keys['published'];
+
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+    $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadMultipleRevisions(array_column($expected_values, $revision_key));
+    foreach ($expected_values as $expected_default_revision) {
+      $revision_id = $expected_default_revision[$revision_key];
+      $this->assertEquals($expected_default_revision[$id_key], $entities[$revision_id]->id());
+      $this->assertEquals($expected_default_revision[$revision_key], $entities[$revision_id]->getRevisionId());
+      $this->assertEquals($expected_default_revision[$label_key], $entities[$revision_id]->label());
+      $this->assertEquals($expected_default_revision[$published_key], $entities[$revision_id]->isPublished());
+    }
+  }
+
+  /**
+   * Asserts that entity queries are giving the correct results in a workspace.
    *
    * @param string $entity_type_id
    *   The ID of the entity type to check.
@@ -376,16 +448,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
    * @param bool $default_revision
    *   Whether this should be the default revision of the entity.
    */
-  protected function assertEntityValues($entity_type_id, $entity_id, $revision_id, $label, $status, $default_revision) {
-    // Entity::load() only deals with the default revision.
-    if ($default_revision) {
-      /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
-      $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-      $this->assertEquals($revision_id, $entity->getRevisionId());
-      $this->assertEquals($label, $entity->label());
-      $this->assertEquals($status, $entity->isPublished());
-    }
-
+  protected function assertEntityQuery($entity_type_id, $entity_id, $revision_id, $label, $status, $default_revision) {
     // Check entity query.
     $entity_keys = $this->entityTypeManager->getDefinition($entity_type_id)->getKeys();
     $query = $this->entityTypeManager->getStorage($entity_type_id)->getQuery();
