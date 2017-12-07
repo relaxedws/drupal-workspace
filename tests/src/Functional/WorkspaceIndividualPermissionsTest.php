@@ -44,7 +44,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
 
     // Now login as a different user with permission to edit that workspace,
     // specifically.
-    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['update_workspace_' . $bears->id()]));
+    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['update workspace ' . $bears->id()]));
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();
@@ -73,7 +73,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $bears = $this->getOneWorkspaceByLabel('Bears');
 
     // Now login as a different user and create a workspace.
-    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['view_workspace_' . $bears->id()]));
+    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['view workspace ' . $bears->id()]));
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();

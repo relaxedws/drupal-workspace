@@ -35,7 +35,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
         AccessResult::allowedIf($entity->getOwnerId() == $account->id())->addCacheableDependency($entity)
           ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
       )
-      ->orIf(AccessResult::allowedIfHasPermission($account, $operation . '_workspace_' . $entity->id()));
+      ->orIf(AccessResult::allowedIfHasPermission($account, $operation . ' workspace ' . $entity->id()));
 
     return $result;
   }
