@@ -1,30 +1,41 @@
 <?php
 
-namespace Drupal\workspace\Replication;
+namespace Drupal\workspace\Plugin\RepositoryHandler;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\UpstreamPluginInterface;
+use Drupal\workspace\RepositoryHandlerBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\workspace\RepositoryHandlerInterface;
 use Drupal\workspace\WorkspaceManager;
 use Drupal\workspace\WorkspaceManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Defines the default replicator service.
+ * Defines a repository handler plugin that provides local content replication.
  *
- * This replicator synchronizes entity revisions between workspaces on the same
- * site.
+ * This plugin provides the ability to replicate content between workspaces that
+ * are defined in the same Drupal installation.
+ *
+ * @RepositoryHandler(
+ *   id = "local_workspace",
+ *   label = @Translation("Local workspace"),
+ *   description = @Translation("A workspace that is defined in the local Drupal installation."),
+ *   remote = FALSE,
+ *   deriver = "Drupal\workspace\Plugin\Deriver\LocalWorkspaceRepositoryHandlerDeriver",
+ * )
  */
-class DefaultReplicator implements ReplicationInterface {
+class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements RepositoryHandlerInterface, ContainerFactoryPluginInterface {
 
   /**
-   * The workspace manager.
+   * The local workspace entity for the upstream.
    *
-   * @var \Drupal\workspace\WorkspaceManagerInterface
+   * @var \Drupal\workspace\Entity\WorkspaceInterface
    */
-  protected $workspaceManager;
+  protected $upstreamWorkspace;
 
   /**
    * The entity type manager.
@@ -34,6 +45,13 @@ class DefaultReplicator implements ReplicationInterface {
   protected $entityTypeManager;
 
   /**
+   * The workspace manager.
+   *
+   * @var \Drupal\workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
    * The database connection.
    *
    * @var \Drupal\Core\Database\Connection
@@ -41,38 +59,64 @@ class DefaultReplicator implements ReplicationInterface {
   protected $database;
 
   /**
-   * Constructs the default replicator service.
+   * Constructs a new LocalWorkspaceRepositoryHandler.
    *
-   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
-   *   The workspace manager.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, Connection $database) {
-    $this->workspaceManager = $workspace_manager;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, Connection $database) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
+    $this->workspaceManager = $workspace_manager;
     $this->database = $database;
+    $this->upstreamWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->getDerivativeId());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
-    // This replicator service is only used if the source and the target are
-    // workspaces on the local site.
-    // @see \Drupal\workspace\Plugin\Upstream\LocalWorkspaceUpstream
-    if ($source->getBaseId() === 'local_workspace' && $target->getBaseId() === 'local_workspace') {
-      return TRUE;
-    }
-    return FALSE;
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('workspace.manager'),
+      $container->get('database')
+    );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function replicate(UpstreamPluginInterface $source, UpstreamPluginInterface $target) {
+  public function getLabel() {
+    return $this->upstreamWorkspace->label();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    $this->dependencies = parent::calculateDependencies();
+    $this->addDependency($this->upstreamWorkspace->getConfigDependencyKey(), $this->upstreamWorkspace->getConfigDependencyName());
+
+    return $this->dependencies;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function replicate(RepositoryHandlerInterface $source, RepositoryHandlerInterface $target) {
     // Replicating content from one workspace to another on the same site
     // roughly follows the CouchDB replication protocol.
     // @see http://docs.couchdb.org/en/2.1.0/replication/protocol.html

@@ -12,20 +12,20 @@ use Drupal\user\EntityOwnerInterface;
 interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   /**
-   * Gets an instance of the upstream plugin configured for the workspace.
+   * Gets an instance of the repository handler configured for the workspace.
    *
-   * @return \Drupal\workspace\UpstreamPluginInterface
+   * @return \Drupal\workspace\RepositoryHandlerInterface
    *   An upstream plugin object.
    */
-  public function getUpstreamPlugin();
+  public function getRepositoryHandlerPlugin();
 
   /**
-   * Gets an instance of the local upstream plugin for the workspace.
+   * Gets an instance of the local repository handler plugin for the workspace.
    *
-   * @return \Drupal\workspace\Plugin\Upstream\LocalWorkspaceUpstream
+   * @return \Drupal\workspace\Plugin\RepositoryHandler\LocalWorkspaceRepositoryHandler
    *   A local upstream plugin object.
    */
-  public function getLocalUpstreamPlugin();
+  public function getLocalRepositoryHandlerPlugin();
 
   /**
    * Sets the workspace creation timestamp.

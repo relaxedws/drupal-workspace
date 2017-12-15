@@ -304,10 +304,8 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
-    \Drupal::service('workspace.replication_manager')->replicate(
-      $stage->getLocalUpstreamPlugin(),
-      $stage->getUpstreamPlugin()
-    );
+    $repository_handler = $stage->getRepositoryHandlerPlugin();
+    $repository_handler->replicate($stage->getLocalRepositoryHandlerPlugin(), $repository_handler);
     $this->assertWorkspaceStatus($test_scenarios['deploy_stage_to_live'], 'node');
   }
 

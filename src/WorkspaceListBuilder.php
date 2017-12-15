@@ -91,7 +91,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
       ];
     }
 
-    if ($entity->getUpstreamPlugin()) {
+    if ($entity->getRepositoryHandlerPlugin()) {
       $operations['deploy'] = [
         'title' => $this->t('Deploy content'),
         'weight' => 20,

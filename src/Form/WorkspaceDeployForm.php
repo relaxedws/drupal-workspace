@@ -5,7 +5,6 @@ namespace Drupal\workspace\Form;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\workspace\Replication\ReplicationManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -13,13 +12,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * Provides the workspace deploy form.
  */
 class WorkspaceDeployForm extends ContentEntityForm {
-
-  /**
-   * The workspace replication manager.
-   *
-   * @var \Drupal\workspace\Replication\ReplicationManager
-   */
-  protected $workspaceReplicationManager;
 
   /**
    * The time service.
@@ -31,13 +23,10 @@ class WorkspaceDeployForm extends ContentEntityForm {
   /**
    * Constructs a new WorkspaceDeployForm.
    *
-   * @param \Drupal\workspace\Replication\ReplicationManager $replication_manager
-   *   The workspace replication manager.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(ReplicationManager $replication_manager, TimeInterface $time) {
-    $this->workspaceReplicationManager = $replication_manager;
+  public function __construct(TimeInterface $time) {
     $this->time = $time;
   }
 
@@ -46,7 +35,6 @@ class WorkspaceDeployForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('workspace.replication_manager'),
       $container->get('datetime.time')
     );
   }
@@ -61,12 +49,12 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     // We can not deploy if we do not have an upstream workspace.
-    if (!$workspace->getUpstreamPlugin()) {
+    if (!$workspace->getRepositoryHandlerPlugin()) {
       throw new BadRequestHttpException();
     }
 
     $form['help'] = [
-      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or update %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalUpstreamPlugin()->getLabel(), '%target_upstream_label' => $workspace->getUpstreamPlugin()->getLabel()]),
+      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or update %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalRepositoryHandlerPlugin()->getLabel(), '%target_upstream_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
     ];
 
     return $form;
@@ -80,13 +68,13 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
     $workspace = $this->entity;
-    $upstream_plugin_label = $workspace->getUpstreamPlugin()->getLabel();
+    $upstream_label = $workspace->getRepositoryHandlerPlugin()->getLabel();
 
-    $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_plugin_label]);
+    $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_label]);
     $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
     $elements['update'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Update from @upstream', ['@upstream' => $upstream_plugin_label]),
+      '#value' => $this->t('Update from @upstream', ['@upstream' => $upstream_label]),
       '#submit' => ['::submitForm', '::update'],
     ];
     $elements['cancel'] = [
@@ -112,10 +100,8 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     try {
-      $this->workspaceReplicationManager->replicate(
-        $workspace->getLocalUpstreamPlugin(),
-        $workspace->getUpstreamPlugin()
-      );
+      $repository_handler = $workspace->getRepositoryHandlerPlugin();
+      $repository_handler->replicate($workspace->getLocalRepositoryHandlerPlugin(), $repository_handler);
       drupal_set_message($this->t('Successful deployment.'));
     }
     catch (\Exception $e) {
@@ -137,10 +123,8 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     try {
-      $this->workspaceReplicationManager->replicate(
-        $workspace->getUpstreamPlugin(),
-        $workspace->getLocalUpstreamPlugin()
-      );
+      $repository_handler = $workspace->getRepositoryHandlerPlugin();
+      $repository_handler->replicate($repository_handler, $workspace->getLocalRepositoryHandlerPlugin());
       drupal_set_message($this->t('Update successful.'));
     }
     catch (\Exception $e) {

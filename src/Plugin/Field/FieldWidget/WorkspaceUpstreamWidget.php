@@ -9,15 +9,15 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
-use Drupal\workspace\UpstreamPluginInterface;
+use Drupal\workspace\RepositoryHandlerInterface;
 use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'workspace_upstream_plugin' widget.
+ * Plugin implementation of the 'workspace_upstream' widget.
  *
  * @FieldWidget(
- *   id = "workspace_upstream_plugin",
+ *   id = "workspace_upstream",
  *   label = @Translation("Workspace upstream widget"),
  *   description = @Translation("A Workspace upstream plugin field widget."),
  *   field_types = {
@@ -25,12 +25,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class UpstreamPluginWidget extends WidgetBase implements ContainerFactoryPluginInterface {
+class WorkspaceUpstreamWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
    * The upstream plugin manager.
    *
-   * @var \Drupal\workspace\UpstreamPluginManager
+   * @var \Drupal\workspace\RepositoryHandlerManager
    */
   protected $upstreamPluginManager;
 
@@ -65,7 +65,7 @@ class UpstreamPluginWidget extends WidgetBase implements ContainerFactoryPluginI
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('plugin.manager.workspace.upstream')
+      $container->get('plugin.manager.workspace.repository_handler')
     );
   }
 
@@ -93,11 +93,11 @@ class UpstreamPluginWidget extends WidgetBase implements ContainerFactoryPluginI
 
     // In case we don't have any options to display, just provide the existing
     // value. This can happen for example when editing the 'Live' workspace and
-    // the only available upstream plugin is 'local_workspace'.
+    // the only available repository handler plugin is 'local_workspace'.
     if (!$upstream_options) {
       $element += [
         '#type' => 'value',
-        '#value' => isset($items[$delta]->value) ? $items[$delta]->value : UpstreamPluginInterface::UPSTREAM_FIELD_EMPTY,
+        '#value' => isset($items[$delta]->value) ? $items[$delta]->value : RepositoryHandlerInterface::EMPTY_VALUE,
       ];
     }
     else {

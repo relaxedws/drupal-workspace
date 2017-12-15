@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
-use Drupal\workspace\UpstreamPluginInterface;
+use Drupal\workspace\RepositoryHandlerInterface;
 
 /**
  * The workspace entity class.
@@ -111,7 +111,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setDisplayOptions('form', [
-        'type' => 'workspace_upstream_plugin',
+        'type' => 'workspace_upstream',
         'weight' => 4,
       ])
       ->setDisplayConfigurable('form', TRUE)
@@ -125,17 +125,17 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   /**
    * {@inheritdoc}
    */
-  public function getUpstreamPlugin() {
-    if (($upstream = $this->upstream->value) && $upstream !== UpstreamPluginInterface::UPSTREAM_FIELD_EMPTY) {
-      return \Drupal::service('plugin.manager.workspace.upstream')->createInstance($upstream);
+  public function getRepositoryHandlerPlugin() {
+    if (($upstream = $this->upstream->value) && $upstream !== RepositoryHandlerInterface::EMPTY_VALUE) {
+      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($upstream);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLocalUpstreamPlugin() {
-    return \Drupal::service('plugin.manager.workspace.upstream')->createInstance('local_workspace:' . $this->id());
+  public function getLocalRepositoryHandlerPlugin() {
+    return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance('local_workspace:' . $this->id());
   }
 
   /**

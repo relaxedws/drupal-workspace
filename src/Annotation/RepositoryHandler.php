@@ -5,11 +5,11 @@ namespace Drupal\workspace\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a Upstream annotation object.
+ * Defines a RepositoryHandler annotation object.
  *
  * @Annotation
  */
-class Upstream extends Plugin {
+class RepositoryHandler extends Plugin {
 
   /**
    * The plugin ID.
@@ -19,7 +19,7 @@ class Upstream extends Plugin {
   public $id;
 
   /**
-   * The human-readable name of the upstream plugin.
+   * The human-readable name of the repository handler plugin.
    *
    * @var \Drupal\Core\Annotation\Translation
    *
@@ -28,7 +28,7 @@ class Upstream extends Plugin {
   public $label;
 
   /**
-   * A short description of the upstream plugin.
+   * A short description of the repository handler plugin.
    *
    * @var \Drupal\Core\Annotation\Translation
    *
@@ -46,7 +46,7 @@ class Upstream extends Plugin {
   public $category = '';
 
   /**
-   * Whether the upstream plugin is a remote destination or not.
+   * Whether the repository handles a remote destination or not.
    *
    * @var bool
    */

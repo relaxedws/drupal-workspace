@@ -9,18 +9,18 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
- * Provides a plugin manager for upstreams.
+ * Provides a Repository Handler Manager for Repository Handlers.
  *
- * @see \Drupal\workspace\Annotation\Upstream
- * @see \Drupal\workspace\UpstreamPluginInterface
+ * @see \Drupal\workspace\Annotation\RepositoryHandler
+ * @see \Drupal\workspace\RepositoryHandlerInterface
  * @see plugin_api
  */
-class UpstreamPluginManager extends DefaultPluginManager implements CategorizingPluginManagerInterface {
+class RepositoryHandlerManager extends DefaultPluginManager implements CategorizingPluginManagerInterface {
 
   use CategorizingPluginManagerTrait;
 
   /**
-   * Constructs a new UpstreamPluginManager.
+   * Constructs a new RepositoryHandlerManager.
    *
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
@@ -31,9 +31,9 @@ class UpstreamPluginManager extends DefaultPluginManager implements Categorizing
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/Upstream', $namespaces, $module_handler, 'Drupal\workspace\UpstreamPluginInterface', 'Drupal\workspace\Annotation\Upstream');
-    $this->alterInfo('workspace_upstream_info');
-    $this->setCacheBackend($cache_backend, 'workspace_upstream');
+    parent::__construct('Plugin/RepositoryHandler', $namespaces, $module_handler, 'Drupal\workspace\RepositoryHandlerInterface', 'Drupal\workspace\Annotation\RepositoryHandler');
+    $this->alterInfo('workspace_repository_handler_info');
+    $this->setCacheBackend($cache_backend, 'workspace_repository_handler');
   }
 
   /**

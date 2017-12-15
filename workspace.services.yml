@@ -4,18 +4,9 @@ services:
     arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@logger.channel.workspace']
     tags:
       - { name: service_collector, tag: workspace_negotiator, call: addNegotiator }
-  plugin.manager.workspace.upstream:
-    class: Drupal\workspace\UpstreamPluginManager
+  plugin.manager.workspace.repository_handler:
+    class: Drupal\workspace\RepositoryHandlerManager
     parent: default_plugin_manager
-  workspace.replication_manager:
-    class: Drupal\workspace\Replication\ReplicationManager
-    tags:
-      - { name: service_collector, tag: workspace_replicator, call: addReplicator }
-  workspace.default_replicator:
-    class: Drupal\workspace\Replication\DefaultReplicator
-    arguments: ['@workspace.manager', '@entity_type.manager', '@database']
-    tags:
-      - { name: workspace_replicator, priority: 0 }
   workspace.negotiator.default:
     class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
     tags:

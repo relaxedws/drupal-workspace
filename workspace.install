@@ -6,7 +6,7 @@
  */
 
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\UpstreamPluginInterface;
+use Drupal\workspace\RepositoryHandlerInterface;
 
 /**
  * Implements hook_install().
@@ -34,7 +34,7 @@ function workspace_install() {
   Workspace::create([
     'id' => 'live',
     'label' => 'Live',
-    'upstream' => UpstreamPluginInterface::UPSTREAM_FIELD_EMPTY,
+    'upstream' => RepositoryHandlerInterface::EMPTY_VALUE,
     'uid' => $owner_id,
   ])->save();
 

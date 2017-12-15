@@ -87,7 +87,7 @@ class WorkspaceForm extends ContentEntityForm {
     $workspace->setNewRevision(TRUE);
     $status = $workspace->save();
 
-    \Drupal::service('plugin.manager.workspace.upstream')->clearCachedDefinitions();
+    \Drupal::service('plugin.manager.workspace.repository_handler')->clearCachedDefinitions();
 
     $info = ['%info' => $workspace->label()];
     $context = ['@type' => $workspace->bundle(), '%info' => $workspace->label()];

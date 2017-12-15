@@ -67,7 +67,7 @@ trait WorkspaceTestUtilities {
    * @param string $id
    *   The ID of the workspace to create.
    * @param string $upstream
-   *   The ID of the upstream plugin of the workspace.
+   *   The ID of the replication handler plugin of the workspace.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   The workspace that was just created.

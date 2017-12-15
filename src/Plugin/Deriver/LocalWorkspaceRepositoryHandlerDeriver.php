@@ -8,9 +8,9 @@ use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a local upstream plugin for each workspace.
+ * Provides a local repository handler plugin for each workspace.
  */
-class LocalWorkspaceUpstreamDeriver extends DeriverBase implements ContainerDeriverInterface {
+class LocalWorkspaceRepositoryHandlerDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
    * The workspace entity storage handler.
@@ -20,7 +20,7 @@ class LocalWorkspaceUpstreamDeriver extends DeriverBase implements ContainerDeri
   protected $workspaceStorage;
 
   /**
-   * Constructs a new LocalWorkspaceUpstreamDeriver.
+   * Constructs a new LocalWorkspaceRepositoryHandlerDeriver..
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $workspace_storage
    *   The workspace entity storage handler.
@@ -44,7 +44,7 @@ class LocalWorkspaceUpstreamDeriver extends DeriverBase implements ContainerDeri
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
 
-    // Provide a local upstream plugin for each workspace.
+    // Provide a local repository handler plugin for each workspace.
     foreach ($this->workspaceStorage->loadMultiple() as $workspace_id => $workspace) {
       $this->derivatives[$workspace_id] = $base_plugin_definition;
       $this->derivatives[$workspace_id]['label'] = $workspace->label();
