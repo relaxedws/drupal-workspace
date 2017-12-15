@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace\Controller;
 
+use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -246,16 +247,48 @@ class ChangesListController extends ControllerBase {
     $chunks = array_chunk($entities, $this->changesPerPage);
     // Get changes for the current page:
     $current_page_changes = isset($chunks[$page]) ? $chunks[$page] : [];
-    $headers = [t('Entities'), t('Entity type'), t('Operations')];
+    $headers = [
+      $this->t('Entities'),
+      $this->t('Entity type'),
+      $this->t('Status'),
+      $this->t('Author'),
+      $this->t('Changed time'),
+      $this->t('Operations')
+    ];
     $rows = [];
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $current_page_changes */
     foreach ($current_page_changes as $entity) {
       $row = [
-        $entity->label() ?: '*** ' . $this->t('No label for this entity') . ' ***',
+        $entity->label() ?: '* ' . $this->t('No label') . ' *',
         $entity->getEntityTypeId(),
       ];
+      //Set status.
+      if ($entity->_deleted->value) {
+        $row[] = $this->t('Deleted');
+      }
+      elseif (!empty($entity->_rev->value) && $entity->_rev->value[0] == 1) {
+        $row[] = $this->t('Added');
+      }
+      else {
+        $row[] = $this->t('Changed');
+      }
+      // Set the author.
+      if (method_exists($entity, 'getOwner')) {
+        $row[] = ($name = $entity->getOwner()->get('name')->value) ? $name : '* ' . $this->t('No author') . ' *';
+      }
+      else {
+        $row[] = '* ' . $this->t('No author') . ' *';
+      }
+      // Set changed value.
+      if (method_exists($entity, 'getChangedTime') && $changed = $entity->getChangedTime()) {
+        $row[] = DateTimePlus::createFromTimestamp($changed)->format('m/d/Y | H:i:s | e');
+      }
+      else {
+        $row[] = '* ' . $this->t('No changed time') . ' *';
+      }
+      // Set operations.
       $links = [];
-      if ($entity->hasLinkTemplate('canonical')) {
+      if ($entity->hasLinkTemplate('canonical') && !$entity->_deleted->value) {
         $links['view'] = [
           'title' => t('View'),
           'url' => $entity->toUrl('canonical', ['absolute' => TRUE]),
@@ -263,7 +296,7 @@ class ChangesListController extends ControllerBase {
       }
       else {
         $links['view'] = [
-          'title' => t('No view link for this entity'),
+          'title' => '* ' . $this->t('No view link') . ' *',
         ];
       }
       $row[] = [
@@ -275,7 +308,7 @@ class ChangesListController extends ControllerBase {
       $rows[] = $row;
     }
 
-    $build['prefix']['#markup'] = '<p>' . t('The array is sorted by last change first.') . '</p>';
+    $build['prefix']['#markup'] = '<p>' . $this->t('The array is sorted by last change first.') . '</p>';
     $build['changes-list'] = [
       '#type' => 'table',
       '#header' => $headers,
