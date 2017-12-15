@@ -67,6 +67,32 @@ class Toolbar {
 
     $active = $this->workspaceManager->getActiveWorkspace();
 
+    $user = \Drupal::currentUser();
+    $access = $user->hasPermission('view_any_workspace');
+    if ($access) {
+      $items['changes'] = [
+        '#type' => 'toolbar_item',
+        '#weight' => 130,
+        'tab' => [
+          '#type' => 'link',
+          '#title' => $this->t('Changes'),
+          '#url' => Url::fromRoute('entity.workspace.changes', ['workspace' => $active->id()]),
+          '#attributes' => [
+            'title' => $this->t('View changes on the current workspace'),
+            'class' => ['toolbar-icon', 'toolbar-icon-changes'],
+          ],
+        ],
+        '#wrapper_attributes' => [
+          'class' => ['workspace-toolbar-tab'],
+        ],
+        '#attached' => [
+          'library' => [
+            'workspace/drupal.workspace.toolbar',
+          ],
+        ],
+      ];
+    }
+
     $items['workspace_switcher'] = [
       // Include the toolbar_tab_wrapper to style the link like a toolbar tab.
       // Exclude the theme wrapper if custom styling is desired.
@@ -114,7 +140,6 @@ class Toolbar {
       ],
     ];
 
-    $user = \Drupal::currentUser();
     $update_access = $user->hasPermission('update any workspace from upstream');
     $has_upstream = isset($active->upstream) && !$active->upstream->isEmpty();
     if ($update_access && $has_upstream) {

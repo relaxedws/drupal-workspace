@@ -10,7 +10,6 @@ use Drupal\Core\State\StateInterface;
 use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
-use Drupal\relaxed\CouchdbReplicator;
 use Drupal\replication\ChangesFactoryInterface;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\RevisionDiffFactoryInterface;
@@ -59,11 +58,6 @@ class ChangesListController extends ControllerBase {
   protected $state;
 
   /**
-   * @var \Drupal\relaxed\CouchdbReplicator
-   */
-  private $couchDbReplicator;
-
-  /**
    * ChangesListController constructor.
    *
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
@@ -72,16 +66,14 @@ class ChangesListController extends ControllerBase {
    * @param \Drupal\multiversion\Entity\Index\RevisionIndexInterface $rev_index
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\State\StateInterface $state
-   * @param \Drupal\relaxed\CouchdbReplicator $couch_db_replicator
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, CouchdbReplicator $couch_db_replicator) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
     $this->workspaceManager = $workspace_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
     $this->revIndex = $rev_index;
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
-    $this->couchDbReplicator = $couch_db_replicator;
   }
 
   /**
@@ -94,8 +86,7 @@ class ChangesListController extends ControllerBase {
       $container->get('replication.revisiondiff_factory'),
       $container->get('multiversion.entity_index.rev'),
       $container->get('entity_type.manager'),
-      $container->get('state'),
-      $container->get('relaxed.couchdb_replicator')
+      $container->get('state')
     );
   }
 
@@ -171,10 +162,12 @@ class ChangesListController extends ControllerBase {
    */
   protected function getChangesBetweenRemoteWorkspaces($source_workspace_pointer, $target_workspace_pointer) {
     $since = $this->state->get('last_sequence.workspace.' . $source_workspace_pointer->getWorkspaceId(), 0);
+    /** @var \Drupal\relaxed\CouchdbReplicator $couch_db_replicator */
+    $couch_db_replicator = \Drupal::service('relaxed.couchdb_replicator');
     /** @var \Doctrine\CouchDB\CouchDBClient $source */
-    $source = $this->couchDbReplicator->setupEndpoint($source_workspace_pointer);
+    $source = $couch_db_replicator->setupEndpoint($source_workspace_pointer);
     /** @var \Doctrine\CouchDB\CouchDBClient $target */
-    $target = $this->couchDbReplicator->setupEndpoint($target_workspace_pointer);
+    $target = $couch_db_replicator->setupEndpoint($target_workspace_pointer);
     $revs_diff = [];
     $source_workspace = $source_workspace_pointer->getWorkspace();
     $task = $this->getTask($source_workspace, 'push_replication_settings');

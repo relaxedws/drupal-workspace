@@ -3,6 +3,14 @@
  * Styling for Workspace toolbar.
  */
 
+.toolbar .toolbar-icon-changes:before {
+  background-image: url("../icons/bebebe/changes.svg");
+}
+
+.toolbar .toolbar-icon-changes.is-active:before {
+  background-image: url("../icons/ffffff/changes.svg");
+}
+
 .toolbar .toolbar-icon-workspace:before {
   background-image: url("../icons/bebebe/workspace.svg");
 }
