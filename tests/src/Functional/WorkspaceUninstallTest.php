@@ -9,7 +9,7 @@ use Drupal\Tests\BrowserTestBase;
  *
  * @group workspace
  */
-class UninstallTest extends BrowserTestBase {
+class WorkspaceUninstallTest extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
