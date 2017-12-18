@@ -40,6 +40,13 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   protected $workspaces = [];
 
   /**
+   * Creation timestamp that should be incremented for each new entity.
+   *
+   * @var int
+   */
+  protected $createdTimestamp;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -76,8 +83,9 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     // Create two nodes, a published and an unpublished one, so we can test the
     // behavior of the module with default/existing content.
-    $this->createNode(['title' => 'live - 1 - r1 - published', 'status' => TRUE]);
-    $this->createNode(['title' => 'live - 2 - r2 - unpublished', 'status' => FALSE]);
+    $this->createdTimestamp = \Drupal::time()->getRequestTime();
+    $this->createNode(['title' => 'live - 1 - r1 - published', 'created' => $this->createdTimestamp++, 'status' => TRUE]);
+    $this->createNode(['title' => 'live - 2 - r2 - unpublished', 'created' => $this->createdTimestamp++, 'status' => FALSE]);
   }
 
   /**
@@ -314,12 +322,12 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     // Add a new unpublished node on 'stage'.
     $this->switchToWorkspace('stage');
-    $this->createNode(['title' => 'stage - 3 - r5 - unpublished', 'status' => FALSE]);
+    $this->createNode(['title' => 'stage - 3 - r5 - unpublished', 'created' => $this->createdTimestamp++, 'status' => FALSE]);
     $this->assertWorkspaceStatus($test_scenarios['add_unpublished_node_in_stage'], 'node');
 
     // Add a new published node on 'stage'.
     $this->switchToWorkspace('stage');
-    $this->createNode(['title' => 'stage - 4 - r6 - published', 'status' => TRUE]);
+    $this->createNode(['title' => 'stage - 4 - r6 - published', 'created' => $this->createdTimestamp++, 'status' => TRUE]);
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
@@ -437,19 +445,25 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       $expected_frontpage = array_filter($expected_values, function ($expected_value) {
         return $expected_value['status'] === TRUE && $expected_value['default_revision'] === TRUE;
       });
+      // The 'Frontpage' view will output nodes in reverse creation order.
+      usort($expected_frontpage, function ($a, $b) {
+        return $b['nid'] - $a['nid'];
+      });
       $view = Views::getView('frontpage');
       $view->execute();
-      // $this->assertIdenticalResultset($view, $expected_frontpage, ['nid' => 'nid']);
+      $this->assertIdenticalResultset($view, $expected_frontpage, ['nid' => 'nid']);
 
       $rendered_view = $view->render('page_1');
       $output = \Drupal::service('renderer')->renderRoot($rendered_view);
       $this->setRawContent($output);
       foreach ($expected_values as $expected_entity_values) {
         if ($expected_entity_values[$entity_keys['published']] === TRUE && $expected_entity_values['default_revision'] === TRUE) {
-          // $this->assertRaw($expected_entity_values[$entity_keys['label']]);
+          $this->assertRaw($expected_entity_values[$entity_keys['label']]);
         }
-        else {
-          // $this->assertNoRaw($expected_entity_values[$entity_keys['label']]);
+        // Node 4 will always appear in the 'stage' workspace because it has
+        // both an unpublished revision as well as a published one.
+        elseif ($workspace_id != 'stage' && $expected_entity_values[$entity_keys['id']] != 4) {
+          $this->assertNoRaw($expected_entity_values[$entity_keys['label']]);
         }
       }
     }
