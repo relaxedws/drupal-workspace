@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace;
 
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -11,9 +12,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\ContentWorkspace;
 use Drupal\workspace\Entity\ContentWorkspaceInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -85,6 +84,20 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   protected $logger;
 
   /**
+   * The class resolver.
+   *
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
+   */
+  protected $classResolver;
+
+  /**
+   * The workspace negotiator service IDs.
+   *
+   * @var array
+   */
+  protected $negotiatorIds;
+
+  /**
    * Constructs a new WorkspaceManager.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
@@ -95,12 +108,18 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    *   The current user.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   *   The class resolver.
+   * @param array $negotiator_ids
+   *   The workspace negotiator service IDs.
    */
-  public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerInterface $logger = NULL) {
+  public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerInterface $logger, ClassResolverInterface $class_resolver, array $negotiator_ids) {
     $this->requestStack = $request_stack;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
-    $this->logger = $logger ?: new NullLogger();
+    $this->logger = $logger;
+    $this->classResolver = $class_resolver;
+    $this->negotiatorIds = $negotiator_ids;
   }
 
   /**
@@ -131,20 +150,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
   /**
    * {@inheritdoc}
-   */
-  public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority) {
-    $this->negotiators[$priority][] = $negotiator;
-    $this->sortedNegotiators = NULL;
-  }
-
-  /**
-   * {@inheritdoc}
    *
    * @todo {@link https://www.drupal.org/node/2600382 Access check.}
    */
   public function getActiveWorkspace($object = FALSE) {
     $request = $this->requestStack->getCurrentRequest();
-    foreach ($this->getSortedNegotiators() as $negotiator) {
+    foreach ($this->negotiatorIds as $negotiator_id) {
+      $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
       if ($negotiator->applies($request)) {
         if ($workspace_id = $negotiator->getWorkspaceId($request)) {
           if ($object) {
@@ -172,7 +184,8 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
     // Set the workspace on the proper negotiator.
     $request = $this->requestStack->getCurrentRequest();
-    foreach ($this->getSortedNegotiators() as $negotiator) {
+    foreach ($this->negotiatorIds as $negotiator_id) {
+      $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
       if ($negotiator->applies($request)) {
         $negotiator->setWorkspace($workspace);
         break;
@@ -223,26 +236,6 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
     // Save without updating the content entity.
     $content_workspace->save();
-  }
-
-  /**
-   * Sorts the negotiator services by priority.
-   *
-   * @return \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
-   *   An array of sorted workspace negotiators.
-   */
-  protected function getSortedNegotiators() {
-    if (!isset($this->sortedNegotiators)) {
-      // Sort the negotiators according to priority.
-      krsort($this->negotiators);
-      // Merge nested negotiators from $this->negotiators into
-      // $this->sortedNegotiators.
-      $this->sortedNegotiators = [];
-      foreach ($this->negotiators as $builders) {
-        $this->sortedNegotiators = array_merge($this->sortedNegotiators, $builders);
-      }
-    }
-    return $this->sortedNegotiators;
   }
 
 }

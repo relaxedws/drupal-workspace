@@ -5,7 +5,6 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\workspace\Entity\WorkspaceInterface;
-use Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface;
 
 /**
  * Provides an interface for managing Workspaces.
@@ -30,16 +29,6 @@ interface WorkspaceManagerInterface {
    *   The entity types what can belong to workspaces.
    */
   public function getSupportedEntityTypes();
-
-  /**
-   * Adds workspace negotiator services.
-   *
-   * @param \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface $negotiator
-   *   The negotiator service to add.
-   * @param int $priority
-   *   The priority of the negotiator service.
-   */
-  public function addNegotiator(WorkspaceNegotiatorInterface $negotiator, $priority);
 
   /**
    * Gets the active workspace.
