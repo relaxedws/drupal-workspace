@@ -3,6 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\workspace\Entity\Workspace;
 
 /**
  * Tests permission controls on workspaces.
@@ -70,7 +71,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
-    $bears = $this->getOneWorkspaceByLabel('Bears');
+    $bears = Workspace::load('bears');
 
     $session = $this->getSession();
 
@@ -92,7 +93,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $packers = $this->getOneWorkspaceByLabel('Packers');
+    $packers = Workspace::load('packers');
 
     $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());
@@ -120,7 +121,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
-    $bears = $this->getOneWorkspaceByLabel('Bears');
+    $bears = Workspace::load('bears');
 
     $session = $this->getSession();
 
@@ -142,7 +143,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $packers = $this->getOneWorkspaceByLabel('Packers');
+    $packers = Workspace::load('packers');
 
     $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
     $this->assertEquals(200, $session->getStatusCode());

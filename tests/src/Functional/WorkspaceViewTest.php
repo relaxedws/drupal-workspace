@@ -3,6 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BrowserTestBase;
+use Drupal\workspace\Entity\Workspace;
 
 /**
  * Tests permission controls on workspaces.
@@ -35,7 +36,7 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
-    $bears = $this->getOneWorkspaceByLabel('Bears');
+    $bears = Workspace::load('bears');
 
     // Now login as a different user and create a workspace.
     $editor2 = $this->drupalCreateUser($permissions);
@@ -45,7 +46,7 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $packers = $this->getOneWorkspaceByLabel('Packers');
+    $packers = Workspace::load('packers');
 
     // Load the activate form for the Bears workspace. It should fail because
     // the workspace belongs to someone else.
@@ -76,7 +77,7 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
-    $bears = $this->getOneWorkspaceByLabel('Bears');
+    $bears = Workspace::load('bears');
 
     // Now login as a different user and create a workspace.
     $editor2 = $this->drupalCreateUser($permissions);
@@ -86,7 +87,7 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $packers = $this->getOneWorkspaceByLabel('Packers');
+    $packers = Workspace::load('packers');
 
     // Load the activate form for the Bears workspace. This user should be
     // able to see both workspaces because of the "view any" permission.

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\node\Entity\NodeType;
+use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
@@ -11,22 +12,6 @@ use Drupal\workspace\Entity\WorkspaceInterface;
  * This trait will not work if not used in a child of BrowserTestBase.
  */
 trait WorkspaceTestUtilities {
-
-  /**
-   * Loads a single workspace by its label.
-   *
-   * The UI approach to creating a workspace doesn't make it easy to know what
-   * the ID is, so this lets us make paths for a workspace after it's created.
-   *
-   * @param string $label
-   *   The label of the workspace to load.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   The workspace entity.
-   */
-  protected function getOneWorkspaceByLabel($label) {
-    return $this->getOneEntityByLabel('workspace', $label);
-  }
 
   /**
    * Loads a single entity by its label.
@@ -43,15 +28,11 @@ trait WorkspaceTestUtilities {
    *   The entity.
    */
   protected function getOneEntityByLabel($type, $label) {
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
-    $etm = \Drupal::service('entity_type.manager');
-
-    $property = $etm->getDefinition($type)->getKey('label');
-
-    $entity_list = $etm->getStorage($type)->loadByProperties([$property => $label]);
-
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $property = $entity_type_manager->getDefinition($type)->getKey('label');
+    $entity_list = $entity_type_manager->getStorage($type)->loadByProperties([$property => $label]);
     $entity = current($entity_list);
-
     if (!$entity) {
       $this->fail("No {$type} entity named {$label} found.");
     }
@@ -75,21 +56,15 @@ trait WorkspaceTestUtilities {
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function createWorkspaceThroughUi($label, $id, $upstream = 'local_workspace:live') {
-    $this->drupalGet('/admin/config/workflow/workspace/add');
+    $this->drupalPostForm('/admin/config/workflow/workspace/add', [
+      'id' => $id,
+      'label' => $label,
+      'upstream[0][value]' => $upstream,
+    ], 'Save');
 
-    $session = $this->getSession();
-    $this->assertSession()->statusCodeEquals(200);
+    $this->getSession()->getPage()->hasContent("$label ($id)");
 
-    /** @var \Behat\Mink\Element\DocumentElement $page */
-    $page = $session->getPage();
-    $page->fillField('label', $label);
-    $page->fillField('id', $id);
-    $page->selectFieldOption('upstream[0][value]', $upstream);
-    $page->findButton('Save')->click();
-
-    $session->getPage()->hasContent("$label ($id)");
-
-    return $this->getOneWorkspaceByLabel($label);
+    return Workspace::load($id);
   }
 
   /**
