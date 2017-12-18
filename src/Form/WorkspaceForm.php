@@ -2,10 +2,15 @@
 
 namespace Drupal\workspace\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form controller for the workspace edit forms.
@@ -13,11 +18,47 @@ use Drupal\Core\Url;
 class WorkspaceForm extends ContentEntityForm {
 
   /**
-   * The workspace content entity.
+   * The workspace entity.
    *
    * @var \Drupal\workspace\WorkspaceInterface
    */
   protected $entity;
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
+   * Constructs a new WorkspaceForm.
+   *
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   */
+  public function __construct(EntityManagerInterface $entity_manager, MessengerInterface $messenger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL) {
+    parent::__construct($entity_manager, $entity_type_bundle_info, $time);
+    $this->messenger = $messenger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity.manager'),
+      $container->get('messenger'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('datetime.time')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -95,11 +136,11 @@ class WorkspaceForm extends ContentEntityForm {
 
     if ($status == SAVED_UPDATED) {
       $logger->notice('@type: updated %info.', $context);
-      drupal_set_message($this->t('Workspace %info has been updated.', $info));
+      $this->messenger->addMessage($this->t('Workspace %info has been updated.', $info));
     }
     else {
       $logger->notice('@type: added %info.', $context);
-      drupal_set_message($this->t('Workspace %info has been created.', $info));
+      $this->messenger->addMessage($this->t('Workspace %info has been created.', $info));
     }
 
     if ($workspace->id()) {
@@ -109,7 +150,7 @@ class WorkspaceForm extends ContentEntityForm {
       $form_state->setRedirectUrl($redirect);
     }
     else {
-      drupal_set_message($this->t('The workspace could not be saved.'), 'error');
+      $this->messenger->addError($this->t('The workspace could not be saved.'));
       $form_state->setRebuild();
     }
   }

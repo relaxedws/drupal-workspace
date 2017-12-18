@@ -4,6 +4,7 @@ namespace Drupal\workspace\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -13,6 +14,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceActivateForm extends EntityConfirmFormBase {
 
   /**
+   * The workspace entity.
+   *
+   * @var \Drupal\workspace\WorkspaceInterface
+   */
+  protected $entity;
+
+  /**
    * The workspace replication manager.
    *
    * @var \Drupal\workspace\WorkspaceManagerInterface
@@ -20,13 +28,23 @@ class WorkspaceActivateForm extends EntityConfirmFormBase {
   protected $workspaceManager;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new WorkspaceActivateForm.
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, MessengerInterface $messenger) {
     $this->workspaceManager = $workspace_manager;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -34,7 +52,8 @@ class WorkspaceActivateForm extends EntityConfirmFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('workspace.manager')
+      $container->get('workspace.manager'),
+      $container->get('messenger')
     );
   }
 
@@ -77,12 +96,12 @@ class WorkspaceActivateForm extends EntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
       $this->workspaceManager->setActiveWorkspace($this->entity);
-      drupal_set_message($this->t("@workspace is now the active workspace.", ['@workspace' => $this->entity->label()]));
+      $this->messenger->addMessage($this->t("@workspace is now the active workspace.", ['@workspace' => $this->entity->label()]));
       $form_state->setRedirectUrl($this->entity->toUrl('collection'));
     }
     catch (\Exception $e) {
       watchdog_exception('workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
+      $this->messenger->addError($e->getMessage());
     }
   }
 

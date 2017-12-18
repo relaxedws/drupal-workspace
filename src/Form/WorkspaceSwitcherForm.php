@@ -5,6 +5,7 @@ namespace Drupal\workspace\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,16 +29,26 @@ class WorkspaceSwitcherForm extends FormBase {
   protected $entityTypeManager;
 
   /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new WorkspaceSwitcherForm.
    *
    * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger) {
     $this->workspaceManager = $workspace_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -46,7 +57,8 @@ class WorkspaceSwitcherForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('workspace.manager'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('messenger')
     );
   }
 
@@ -116,16 +128,18 @@ class WorkspaceSwitcherForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $id = $form_state->getValue('workspace_id');
+
+    /** @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
 
     try {
       $this->workspaceManager->setActiveWorkspace($workspace);
-      drupal_set_message($this->t("@workspace is now the active workspace.", ['@workspace' => $workspace->label()]));
+      $this->messenger->addMessage($this->t("@workspace is now the active workspace.", ['@workspace' => $workspace->label()]));
       $form_state->setRedirect('<front>');
     }
     catch (\Exception $e) {
       watchdog_exception('workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
+      $this->messenger->addError($e->getMessage());
     }
   }
 

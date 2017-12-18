@@ -4,7 +4,10 @@ namespace Drupal\workspace\Form;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -14,20 +17,34 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class WorkspaceDeployForm extends ContentEntityForm {
 
   /**
-   * The time service.
+   * The workspace entity.
    *
-   * @var \Drupal\Component\Datetime\TimeInterface
+   * @var \Drupal\workspace\WorkspaceInterface
    */
-  protected $time;
+  protected $entity;
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
 
   /**
    * Constructs a new WorkspaceDeployForm.
    *
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager service.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(TimeInterface $time) {
-    $this->time = $time;
+  public function __construct(EntityManagerInterface $entity_manager, MessengerInterface $messenger, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, TimeInterface $time = NULL) {
+    parent::__construct($entity_manager, $entity_type_bundle_info, $time);
+    $this->messenger = $messenger;
   }
 
   /**
@@ -35,6 +52,9 @@ class WorkspaceDeployForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('entity.manager'),
+      $container->get('messenger'),
+      $container->get('entity_type.bundle.info'),
       $container->get('datetime.time')
     );
   }
@@ -96,17 +116,16 @@ class WorkspaceDeployForm extends ContentEntityForm {
    *   The current state of the form.
    */
   public function deploy(array &$form, FormStateInterface $form_state) {
-    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
     try {
       $repository_handler = $workspace->getRepositoryHandlerPlugin();
       $repository_handler->replicate($workspace->getLocalRepositoryHandlerPlugin(), $repository_handler);
-      drupal_set_message($this->t('Successful deployment.'));
+      $this->messenger->addMessage($this->t('Successful deployment.'));
     }
     catch (\Exception $e) {
       watchdog_exception('workspace', $e);
-      drupal_set_message($this->t('Deployment error'), 'error');
+      $this->messenger->addMessage($this->t('Deployment error'), 'error');
     }
   }
 
@@ -119,17 +138,16 @@ class WorkspaceDeployForm extends ContentEntityForm {
    *   The current state of the form.
    */
   public function update(array &$form, FormStateInterface $form_state) {
-    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
     try {
       $repository_handler = $workspace->getRepositoryHandlerPlugin();
       $repository_handler->replicate($repository_handler, $workspace->getLocalRepositoryHandlerPlugin());
-      drupal_set_message($this->t('Update successful.'));
+      $this->messenger->addMessage($this->t('Update successful.'));
     }
     catch (\Exception $e) {
       watchdog_exception('workspace', $e);
-      drupal_set_message($this->t('Update error'), 'error');
+      $this->messenger->addMessage($this->t('Update error'), 'error');
     }
   }
 
