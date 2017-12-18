@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\workspace\Kernel;
 
+use Drupal\entity_test\Entity\EntityTestMulRev;
+use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
@@ -18,9 +20,10 @@ use Drupal\workspace\Entity\Workspace;
 class WorkspaceIntegrationTest extends KernelTestBase {
 
   use ContentTypeCreationTrait;
+  use EntityReferenceTestTrait;
   use NodeCreationTrait;
-  use ViewResultAssertionTrait;
   use UserCreationTrait;
+  use ViewResultAssertionTrait;
 
   /**
    * The entity type manager.
@@ -30,9 +33,17 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   protected $entityTypeManager;
 
   /**
+   * An array of test workspaces, keyed by workspace ID.
+   *
+   * @var \Drupal\workspace\Entity\WorkspaceInterface[]
+   */
+  protected $workspaces = [];
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
+    'entity_test',
     'field',
     'filter',
     'node',
@@ -55,6 +66,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->installSchema('system', ['key_value_expire', 'sequences']);
     $this->installSchema('node', ['node_access']);
 
+    $this->installEntitySchema('entity_test_mulrev');
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
 
@@ -69,9 +81,9 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   }
 
   /**
-   * Tests various scenarios for creating and deploying content in workspaces.
+   * Enables the Workspace module and creates two workspaces.
    */
-  public function testWorkspaces() {
+  protected function initializeWorkspaceModule() {
     // Enable the Workspace module here instead of the static::$modules array so
     // we can test it with default content.
     $this->enableModules(['workspace']);
@@ -83,10 +95,10 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->installEntitySchema('replication_log');
 
     // Create two workspaces by default, 'live' and 'stage'.
-    $live = Workspace::create(['id' => 'live']);
-    $live->save();
-    $stage = Workspace::create(['id' => 'stage', 'upstream' => 'local_workspace:live']);
-    $stage->save();
+    $this->workspaces['live'] = Workspace::create(['id' => 'live']);
+    $this->workspaces['live']->save();
+    $this->workspaces['stage'] = Workspace::create(['id' => 'stage', 'upstream' => 'local_workspace:live']);
+    $this->workspaces['stage']->save();
 
     $permissions = [
       'administer nodes',
@@ -95,6 +107,13 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       'view any workspace',
     ];
     $this->setCurrentUser($this->createUser($permissions));
+  }
+
+  /**
+   * Tests various scenarios for creating and deploying content in workspaces.
+   */
+  public function testWorkspaces() {
+    $this->initializeWorkspaceModule();
 
     // Notes about the structure of the test scenarios:
     // - 'default_revision' indicates the entity revision that should be
@@ -304,9 +323,89 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
-    $repository_handler = $stage->getRepositoryHandlerPlugin();
-    $repository_handler->replicate($stage->getLocalRepositoryHandlerPlugin(), $repository_handler);
+    $repository_handler = $this->workspaces['stage']->getRepositoryHandlerPlugin();
+    $repository_handler->replicate($this->workspaces['stage']->getLocalRepositoryHandlerPlugin(), $repository_handler);
     $this->assertWorkspaceStatus($test_scenarios['deploy_stage_to_live'], 'node');
+  }
+
+  /**
+   * Tests the Entity Query relationship API with workspaces.
+   */
+  public function testEntityQueryRelationship() {
+    $this->initializeWorkspaceModule();
+
+    // Add an entity reference field that targets 'entity_test_mulrev' entities.
+    $this->createEntityReferenceField('node', 'page', 'field_test_entity', 'Test entity reference', 'entity_test_mulrev');
+
+    // Add an entity reference field that targets 'node' entities so we can test
+    // references to the same base tables.
+    $this->createEntityReferenceField('node', 'page', 'field_test_node', 'Test node reference', 'node');
+
+    $this->switchToWorkspace('live');
+    $node_1 = $this->createNode([
+      'title' => 'live node 1'
+    ]);
+    $entity_test = EntityTestMulRev::create([
+      'name' => 'live entity_test_mulrev',
+      'non_rev_field' => 'live non-revisionable value',
+    ]);
+    $entity_test->save();
+
+    $node_2 = $this->createNode([
+      'title' => 'live node 2',
+      'field_test_entity' => $entity_test->id(),
+      'field_test_node' => $node_1->id(),
+    ]);
+
+    // Switch to the 'stage' workspace and change some values for the referenced
+    // entities.
+    $this->switchToWorkspace('stage');
+    $node_1->title->value = 'stage node 1';
+    $node_1->save();
+
+    $node_2->title->value = 'stage node 2';
+    $node_2->save();
+
+    $entity_test->name->value = 'stage entity_test_mulrev';
+    $entity_test->non_rev_field->value = 'stage non-revisionable value';
+    $entity_test->save();
+
+    // Make sure that we're requesting the default revision.
+    $query = $this->entityTypeManager->getStorage('node')->getQuery();
+    $query->currentRevision();
+
+    $query
+      // Check a condition on the revision data table.
+      ->condition('title', 'stage node 2')
+      // Check a condition on the revision table.
+      ->condition('revision_uid', $node_2->getRevisionUserId())
+      // Check a condition on the data table.
+      ->condition('type', $node_2->bundle())
+      // Check a condition on the base table.
+      ->condition('uuid', $node_2->uuid());
+
+    // Add conditions for a reference to the same entity type.
+    $query
+      // Check a condition on the revision data table.
+      ->condition('field_test_node.entity.title', 'stage node 1')
+      // Check a condition on the revision table.
+      ->condition('field_test_node.entity.revision_uid', $node_1->getRevisionUserId())
+      // Check a condition on the data table.
+      ->condition('field_test_node.entity.type', $node_1->bundle())
+      // Check a condition on the base table.
+      ->condition('field_test_node.entity.uuid', $node_1->uuid());
+
+    // Add conditions for a reference to a different entity type.
+    $query
+      // Check a condition on the revision data table.
+      ->condition('field_test_entity.entity.name', 'stage entity_test_mulrev')
+      // Check a condition on the data table.
+      ->condition('field_test_entity.entity.non_rev_field', 'stage non-revisionable value')
+      // Check a condition on the base table.
+      ->condition('field_test_entity.entity.uuid', $entity_test->uuid());
+
+    $result = $query->execute();
+    $this->assertSame([$node_2->getRevisionId() => $node_2->id()], $result);
   }
 
   /**
@@ -330,16 +429,8 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       // Check that non-default revisions are not changed.
       $this->assertEntityRevisionLoad($expected_values, $entity_type_id);
 
-      foreach ($expected_values as $expected_entity_values) {
-        $this->assertEntityQuery(
-          $entity_type_id,
-          $expected_entity_values[$entity_keys['id']],
-          $expected_entity_values[$entity_keys['revision']],
-          $expected_entity_values[$entity_keys['label']],
-          $expected_entity_values[$entity_keys['published']],
-          $expected_entity_values['default_revision']
-        );
-      }
+      // Check that entity queries return the correct results.
+      $this->assertEntityQuery($expected_values, $entity_type_id);
 
       // Check that the 'Frontpage' view only shows published content that is
       // also considered as the default revision in the given workspace.
@@ -421,48 +512,65 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
     $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadMultipleRevisions(array_column($expected_values, $revision_key));
-    foreach ($expected_values as $expected_default_revision) {
-      $revision_id = $expected_default_revision[$revision_key];
-      $this->assertEquals($expected_default_revision[$id_key], $entities[$revision_id]->id());
-      $this->assertEquals($expected_default_revision[$revision_key], $entities[$revision_id]->getRevisionId());
-      $this->assertEquals($expected_default_revision[$label_key], $entities[$revision_id]->label());
-      $this->assertEquals($expected_default_revision[$published_key], $entities[$revision_id]->isPublished());
+    foreach ($expected_values as $expected_revision) {
+      $revision_id = $expected_revision[$revision_key];
+      $this->assertEquals($expected_revision[$id_key], $entities[$revision_id]->id());
+      $this->assertEquals($expected_revision[$revision_key], $entities[$revision_id]->getRevisionId());
+      $this->assertEquals($expected_revision[$label_key], $entities[$revision_id]->label());
+      $this->assertEquals($expected_revision[$published_key], $entities[$revision_id]->isPublished());
     }
   }
 
   /**
    * Asserts that entity queries are giving the correct results in a workspace.
    *
+   * @param array $expected_values
+   *   An array of expected values, as defined in ::testWorkspaces().
    * @param string $entity_type_id
    *   The ID of the entity type to check.
-   * @param int $entity_id
-   *   The ID of the entity.
-   * @param int $revision_id
-   *   The expected revision ID of the entity.
-   * @param string $label
-   *   The expected label of the entity.
-   * @param bool $status
-   *   The expected publishing status of the entity.
-   * @param bool $default_revision
-   *   Whether this should be the default revision of the entity.
    */
-  protected function assertEntityQuery($entity_type_id, $entity_id, $revision_id, $label, $status, $default_revision) {
-    // Check entity query.
+  protected function assertEntityQuery(array $expected_values, $entity_type_id) {
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
     $entity_keys = $this->entityTypeManager->getDefinition($entity_type_id)->getKeys();
-    $query = $this->entityTypeManager->getStorage($entity_type_id)->getQuery();
-    $query
-      ->condition($entity_keys['id'], $entity_id)
-      ->condition($entity_keys['label'], $label)
-      ->condition($entity_keys['published'], $status);
+    $id_key = $entity_keys['id'];
+    $revision_key = $entity_keys['revision'];
+    $label_key = $entity_keys['label'];
+    $published_key = $entity_keys['published'];
 
-    // If the entity is not expected to be the default revision, we need to
-    // query all revisions if we want to find it.
-    if (!$default_revision) {
-      $query->allRevisions();
+    // Filter the expected values so we can check only the default revisions.
+    $expected_default_revisions = array_filter($expected_values, function ($expected_value) {
+      return $expected_value['default_revision'] === TRUE;
+    });
+
+    // Check entity query counts.
+    $result = $storage->getQuery()->count()->execute();
+    $this->assertEquals(count($expected_default_revisions), $result);
+
+    $result = $storage->getAggregateQuery()->count()->execute();
+    $this->assertEquals(count($expected_default_revisions), $result);
+
+    // Check entity queries with no conditions.
+    $result = $storage->getQuery()->execute();
+    $expected_result = array_combine(array_column($expected_default_revisions, $revision_key), array_column($expected_default_revisions, $id_key));
+    $this->assertEquals($expected_result, $result);
+
+    // Check querying each revision individually.
+    foreach ($expected_values as $expected_value) {
+      $query = $storage->getQuery();
+      $query
+        ->condition($entity_keys['id'], $expected_value[$id_key])
+        ->condition($entity_keys['label'], $expected_value[$label_key])
+        ->condition($entity_keys['published'], $expected_value[$published_key]);
+
+      // If the entity is not expected to be the default revision, we need to
+      // query all revisions if we want to find it.
+      if (!$expected_value['default_revision']) {
+        $query->allRevisions();
+      }
+
+      $result = $query->execute();
+      $this->assertEquals([$expected_value[$revision_key] => $expected_value[$id_key]], $result);
     }
-
-    $result = $query->execute();
-    $this->assertEquals([$revision_id => $entity_id], $result);
   }
 
   /**

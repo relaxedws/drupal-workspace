@@ -20,13 +20,6 @@ trait QueryTrait {
   protected $workspaceManager;
 
   /**
-   * Flag indicating whether to query a workspace-specific revision.
-   *
-   * @var bool
-   */
-  protected $workspaceRevision = FALSE;
-
-  /**
    * Constructs a Query object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -45,26 +38,6 @@ trait QueryTrait {
     parent::__construct($entity_type, $conjunction, $connection, $namespaces);
 
     $this->workspaceManager = $workspace_manager;
-
-    // Only alter the query if the active workspace is not the default one and
-    // the entity type is supported.
-    if ($workspace_manager->getActiveWorkspace() !== WorkspaceManager::DEFAULT_WORKSPACE
-        && $workspace_manager->entityTypeCanBelongToWorkspaces($entity_type)) {
-      $this->workspaceRevision = TRUE;
-      $this->allRevisions = TRUE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function allRevisions() {
-    // Do not alter entity revision queries.
-    // @todo How about queries for the latest revision? Should we alter them to
-    //   look for the latest workspace-specific revision?
-    $this->workspaceRevision = FALSE;
-
-    return parent::allRevisions();
   }
 
   /**
@@ -73,14 +46,25 @@ trait QueryTrait {
   public function prepare() {
     parent::prepare();
 
-    if ($this->workspaceRevision) {
-      $active_workspace = $this->workspaceManager->getActiveWorkspace();
-      $id_field = $this->entityType->getKey('id');
+    // Do not alter entity revision queries.
+    // @todo How about queries for the latest revision? Should we alter them to
+    //   look for the latest workspace-specific revision?
+    if ($this->allRevisions) {
+      return $this;
+    }
 
-      // LEFT join the Content Workspace entity's field revision table so we can
+    // Only alter the query if the active workspace is not the default one and
+    // the entity type is supported.
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
+    if ($active_workspace !== WorkspaceManager::DEFAULT_WORKSPACE && $this->workspaceManager->entityTypeCanBelongToWorkspaces($this->entityType)) {
+      $this->sqlQuery->addMetaData('active_workspace', $active_workspace);
+      $this->sqlQuery->addMetaData('simple_query', FALSE);
+
+      // LEFT JOIN 'content_workspace' to the base table of the query so we can
       // properly include live content along with a possible workspace-specific
       // revision.
-      $this->sqlQuery->leftJoin('content_workspace_revision', 'cwr', "cwr.content_entity_type_id = '{$this->entityTypeId}' AND cwr.content_entity_id = base_table.$id_field AND cwr.workspace = '$active_workspace'");
+      $id_field = $this->entityType->getKey('id');
+      $this->sqlQuery->leftJoin('content_workspace', 'content_workspace', "%alias.content_entity_type_id = '{$this->entityTypeId}' AND %alias.content_entity_id = base_table.$id_field AND %alias.workspace = '$active_workspace'");
     }
 
     return $this;

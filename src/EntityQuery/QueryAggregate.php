@@ -9,6 +9,19 @@ use Drupal\Core\Entity\Query\Sql\QueryAggregate as BaseQueryAggregate;
  */
 class QueryAggregate extends BaseQueryAggregate {
 
-  use QueryTrait;
+  use QueryTrait {
+    prepare as traitPrepare;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function prepare() {
+    $this->traitPrepare();
+
+    // Throw away the ID fields.
+    $this->sqlFields = [];
+    return $this;
+  }
 
 }
