@@ -3,7 +3,7 @@
 namespace Drupal\workspace\Negotiator;
 
 use Drupal\Core\Session\AccountInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceInterface;
 use Drupal\user\PrivateTempStoreFactory;
 use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\HttpFoundation\Request;

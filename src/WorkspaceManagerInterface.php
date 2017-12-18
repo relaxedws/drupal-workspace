@@ -4,7 +4,6 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
 
 /**
  * Provides an interface for managing Workspaces.
@@ -37,7 +36,7 @@ interface WorkspaceManagerInterface {
    *   TRUE for the active workspace to be returned as an object, FALSE
    *   otherwise.
    *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface|string
+   * @return \Drupal\workspace\WorkspaceInterface|string
    *   The active workspace entity object or workspace ID, depending on the
    *   $object parameter.
    */
@@ -46,7 +45,7 @@ interface WorkspaceManagerInterface {
   /**
    * Sets the active workspace via the workspace negotiators.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace to set as active.
    *
    * @return $this

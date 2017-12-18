@@ -63,7 +63,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
+    /** @var \Drupal\workspace\WorkspaceInterface $entity */
     $row['label'] = $entity->label() . ' (' . $entity->id() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
@@ -76,7 +76,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function getDefaultOperations(EntityInterface $entity) {
-    /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
+    /** @var \Drupal\workspace\WorkspaceInterface $entity */
     $operations = parent::getDefaultOperations($entity);
     if (isset($operations['edit'])) {
       $operations['edit']['query']['destination'] = $entity->toUrl('collection')->toString();

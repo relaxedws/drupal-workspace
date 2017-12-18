@@ -2,7 +2,7 @@
 
 namespace Drupal\workspace\Negotiator;
 
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -37,7 +37,7 @@ interface WorkspaceNegotiatorInterface {
   /**
    * Sets the active workspace.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace entity.
    */
   public function setWorkspace(WorkspaceInterface $workspace);

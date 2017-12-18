@@ -9,6 +9,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 use Drupal\workspace\RepositoryHandlerInterface;
+use Drupal\workspace\WorkspaceInterface;
 
 /**
  * The workspace entity class.

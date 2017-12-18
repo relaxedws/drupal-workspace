@@ -4,7 +4,7 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\node\Entity\NodeType;
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceInterface;
 
 /**
  * Utility methods for use in BrowserTestBase tests.
@@ -93,7 +93,7 @@ trait WorkspaceTestUtilities {
    * This assumes that the switcher block has already been setup by calling
    * setupWorkspaceSwitcherBlock().
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace to set active.
    */
   protected function switchToWorkspace(WorkspaceInterface $workspace) {

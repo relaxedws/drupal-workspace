@@ -15,7 +15,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * The workspace content entity.
    *
-   * @var \Drupal\workspace\Entity\WorkspaceInterface
+   * @var \Drupal\workspace\WorkspaceInterface
    */
   protected $entity;
 

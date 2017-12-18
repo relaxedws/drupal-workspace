@@ -40,7 +40,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // we don't have edit permissions.
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $etm */
     $etm = \Drupal::service('entity_type.manager');
-    /** @var \Drupal\workspace\Entity\WorkspaceInterface $bears */
+    /** @var \Drupal\workspace\WorkspaceInterface $bears */
     $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => 'Bears']);
     $bears = current($entity_list);
 

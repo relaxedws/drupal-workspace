@@ -35,7 +35,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   /**
    * An array of test workspaces, keyed by workspace ID.
    *
-   * @var \Drupal\workspace\Entity\WorkspaceInterface[]
+   * @var \Drupal\workspace\WorkspaceInterface[]
    */
   protected $workspaces = [];
 

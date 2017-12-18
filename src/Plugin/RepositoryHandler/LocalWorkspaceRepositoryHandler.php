@@ -4,8 +4,7 @@ namespace Drupal\workspace\Plugin\RepositoryHandler;
 
 use Drupal\Core\Database\Connection;
 use Drupal\workspace\Entity\ReplicationLog;
-use Drupal\workspace\Entity\ReplicationLogInterface;
-use Drupal\workspace\Entity\Workspace;
+use Drupal\workspace\ReplicationLogInterface;
 use Drupal\workspace\RepositoryHandlerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -33,7 +32,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
   /**
    * The local workspace entity for the upstream.
    *
-   * @var \Drupal\workspace\Entity\WorkspaceInterface
+   * @var \Drupal\workspace\WorkspaceInterface
    */
   protected $upstreamWorkspace;
 
@@ -120,8 +119,8 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // Replicating content from one workspace to another on the same site
     // roughly follows the CouchDB replication protocol.
     // @see http://docs.couchdb.org/en/2.1.0/replication/protocol.html
-    $source_workspace = Workspace::load($source->getDerivativeId());
-    $target_workspace = Workspace::load($target->getDerivativeId());
+    $source_workspace = $this->entityTypeManager->getStorage('workspace')->load($source->getDerivativeId());
+    $target_workspace = $this->entityTypeManager->getStorage('workspace')->load($target->getDerivativeId());
     $start_time = new \DateTime();
     $session_id = \md5((\microtime(TRUE) * 1000000));
     // @todo Figure out if we want to include more information in the
@@ -174,7 +173,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
       foreach ($ids as $revision_id => $entity_id) {
         // Get the content workspace entity for revision that is in the source
         // workspace.
-        /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
         $content_workspace = $this->entityTypeManager->getStorage('content_workspace')->loadRevision($revision_id);
         if (WorkspaceManager::DEFAULT_WORKSPACE === $target_workspace->id()) {
           // If the target workspace is the default workspace (generally 'live')
@@ -227,7 +226,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
   /**
    * Gets the last sequence ID from a replication log entity.
    *
-   * @param \Drupal\workspace\Entity\ReplicationLogInterface $replication_log
+   * @param \Drupal\workspace\ReplicationLogInterface $replication_log
    *   The replication log entity to get the last sequence ID from.
    *
    * @return int
@@ -241,12 +240,12 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
   /**
    * Updates the replication log entity with the given history.
    *
-   * @param \Drupal\workspace\Entity\ReplicationLogInterface $replication_log
+   * @param \Drupal\workspace\ReplicationLogInterface $replication_log
    *   The replication log entity to be updated.
    * @param array $history
    *   The new history items.
    *
-   * @return \Drupal\workspace\Entity\ReplicationLogInterface
+   * @return \Drupal\workspace\ReplicationLogInterface
    *   The updated replication log entity.
    */
   protected function updateReplicationLog(ReplicationLogInterface $replication_log, array $history) {

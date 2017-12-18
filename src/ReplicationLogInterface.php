@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\workspace\Entity;
+namespace Drupal\workspace;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 

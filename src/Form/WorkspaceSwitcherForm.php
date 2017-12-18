@@ -104,7 +104,7 @@ class WorkspaceSwitcherForm extends FormBase {
     $id = $form_state->getValue('workspace_id');
 
     // Ensure the workspace by that id exists.
-    /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    /** @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
     if (!$workspace) {
       $form_state->setErrorByName('workspace_id', $this->t('This workspace does not exist.'));

@@ -53,7 +53,7 @@ abstract class RepositoryHandlerBase extends PluginBase implements RepositoryHan
    * @param \Drupal\workspace\RepositoryHandlerInterface $target
    *   The repository handler to replicate to.
    *
-   * @return \Drupal\workspace\Entity\ReplicationLogInterface
+   * @return \Drupal\workspace\ReplicationLogInterface
    *   The replication log for the replication.
    */
   abstract public function replicate(RepositoryHandlerInterface $source, RepositoryHandlerInterface $target);

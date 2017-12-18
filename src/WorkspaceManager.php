@@ -10,8 +10,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\workspace\Entity\ContentWorkspace;
-use Drupal\workspace\Entity\ContentWorkspaceInterface;
-use Drupal\workspace\Entity\WorkspaceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -214,13 +212,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
           'content_entity_id' => $entity->id(),
         ]);
 
-      /** @var \Drupal\workspace\Entity\ContentWorkspaceInterface $content_workspace */
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
       $content_workspace = reset($content_workspaces);
     }
 
     // If there was a ContentWorkspace entry create a new revision, otherwise
     // create a new entity with the type and ID.
-    if (!empty($content_workspace) && $content_workspace instanceof ContentWorkspaceInterface) {
+    if (!empty($content_workspace)) {
       $content_workspace->setNewRevision(TRUE);
     }
     else {

@@ -45,7 +45,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
     // We can not deploy if we do not have an upstream workspace.
@@ -66,7 +66,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
 
-    /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
     $upstream_label = $workspace->getRepositoryHandlerPlugin()->getLabel();
 
@@ -96,7 +96,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
    *   The current state of the form.
    */
   public function deploy(array &$form, FormStateInterface $form_state) {
-    /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
     try {
@@ -119,7 +119,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
    *   The current state of the form.
    */
   public function update(array &$form, FormStateInterface $form_state) {
-    /* @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
     try {

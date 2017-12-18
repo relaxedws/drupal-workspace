@@ -18,7 +18,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\workspace\Entity\WorkspaceInterface $entity */
+    /** @var \Drupal\workspace\WorkspaceInterface $entity */
     $operations = [
       'view' => ['any' => 'view any workspace', 'own' => 'view own workspace'],
       'update' => ['any' => 'edit any workspace', 'own' => 'edit own workspace'],

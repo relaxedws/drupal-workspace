@@ -2,7 +2,7 @@
 
 namespace Drupal\workspace\Negotiator;
 
-use Drupal\workspace\Entity\WorkspaceInterface;
+use Drupal\workspace\WorkspaceInterface;
 use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\HttpFoundation\Request;
 

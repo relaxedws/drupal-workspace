@@ -27,7 +27,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   }
  * )
  */
-class ContentWorkspace extends ContentEntityBase implements ContentWorkspaceInterface {
+class ContentWorkspace extends ContentEntityBase {
 
   /**
    * {@inheritdoc}

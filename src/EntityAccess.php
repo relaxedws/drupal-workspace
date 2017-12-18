@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\workspace\Entity\WorkspaceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -144,7 +143,7 @@ class EntityAccess implements ContainerInjectionInterface {
     $perms = [];
 
     foreach ($this->entityTypeManager->getStorage('workspace')->loadMultiple() as $workspace) {
-      /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
+      /** @var \Drupal\workspace\WorkspaceInterface $workspace */
       $perms += $this->createWorkspaceViewPermission($workspace)
       + $this->createWorkspaceEditPermission($workspace)
       + $this->createWorkspaceDeletePermission($workspace)
@@ -157,7 +156,7 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Derives the view permission for a specific workspace.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    *
    * @return array
@@ -175,7 +174,7 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Derives the edit permission for a specific workspace.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    *
    * @return array
@@ -193,7 +192,7 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Derives the delete permission for a specific workspace.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    *
    * @return array
@@ -211,7 +210,7 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Derives the delete permission for a specific workspace.
    *
-   * @param \Drupal\workspace\Entity\WorkspaceInterface $workspace
+   * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
    *
    * @return array
