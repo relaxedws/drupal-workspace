@@ -21,7 +21,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['workspace', 'workspace'];
+  public static $modules = ['workspace'];
 
   /**
    * Verifies that a user can create and edit only their own workspace.
@@ -45,7 +45,7 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
 
     // Now login as a different user with permission to edit that workspace,
     // specifically.
-    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['update workspace ' . $bears->id()]));
+    $editor2 = $this->drupalCreateUser(array_merge($permissions, ['edit workspace ' . $bears->id()]));
 
     $this->drupalLogin($editor2);
     $session = $this->getSession();

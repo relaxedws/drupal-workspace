@@ -9,8 +9,6 @@ use Drupal\workspace\Entity\Workspace;
  * Tests permission controls on workspaces.
  *
  * @group workspace
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
  */
 class WorkspacePermissionsTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
@@ -20,7 +18,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['workspace', 'workspace'];
+  public static $modules = ['workspace'];
 
   /**
    * Verifies that a user can create but not edit a workspace.

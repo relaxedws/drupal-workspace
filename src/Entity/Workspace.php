@@ -57,7 +57,6 @@ use Drupal\workspace\RepositoryHandlerInterface;
  *     "deploy-form" = "/admin/config/workflow/workspace/{workspace}/deploy",
  *     "collection" = "/admin/config/workflow/workspace",
  *   },
- *   field_ui_base_route = "entity.workspace.collection",
  * )
  */
 class Workspace extends ContentEntityBase implements WorkspaceInterface {

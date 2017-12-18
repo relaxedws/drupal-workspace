@@ -25,8 +25,9 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
       'delete' => ['any' => 'delete any workspace', 'own' => 'delete own workspace'],
     ];
 
+    $permission_operation = $operation === 'update' ? 'edit' : 'view';
     // The default workspace is always viewable, no matter what.
-    $result = AccessResult::allowedIf($operation == 'view' && $entity->id() == WorkspaceManager::DEFAULT_WORKSPACE)->addCacheableDependency($entity)
+    return AccessResult::allowedIf($operation == 'view' && $entity->id() == WorkspaceManager::DEFAULT_WORKSPACE)->addCacheableDependency($entity)
       // Or if the user has permission to access any workspace at all.
       ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
       // Or if it's their own workspace, and they have permission to access
@@ -35,9 +36,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
         AccessResult::allowedIf($entity->getOwnerId() == $account->id())->addCacheableDependency($entity)
           ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
       )
-      ->orIf(AccessResult::allowedIfHasPermission($account, $operation . ' workspace ' . $entity->id()));
-
-    return $result;
+      ->orIf(AccessResult::allowedIfHasPermission($account, $permission_operation . ' workspace ' . $entity->id()));
   }
 
   /**

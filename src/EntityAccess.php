@@ -143,7 +143,8 @@ class EntityAccess implements ContainerInjectionInterface {
   public function workspacePermissions() {
     $perms = [];
 
-    foreach ($this->getAllWorkspaces() as $workspace) {
+    foreach ($this->entityTypeManager->getStorage('workspace')->loadMultiple() as $workspace) {
+      /** @var \Drupal\workspace\Entity\WorkspaceInterface $workspace */
       $perms += $this->createWorkspaceViewPermission($workspace)
       + $this->createWorkspaceEditPermission($workspace)
       + $this->createWorkspaceDeletePermission($workspace)
@@ -151,16 +152,6 @@ class EntityAccess implements ContainerInjectionInterface {
     }
 
     return $perms;
-  }
-
-  /**
-   * Returns a list of all workspace entities in the system.
-   *
-   * @return \Drupal\workspace\Entity\WorkspaceInterface[]
-   *   An array of workspace entities, keyed by their IDs.
-   */
-  protected function getAllWorkspaces() {
-    return $this->entityTypeManager->getStorage('workspace')->loadMultiple();
   }
 
   /**
@@ -191,7 +182,7 @@ class EntityAccess implements ContainerInjectionInterface {
    *   A single-item array with the permission to define.
    */
   protected function createWorkspaceEditPermission(WorkspaceInterface $workspace) {
-    $perms['update workspace ' . $workspace->id()] = [
+    $perms['edit workspace ' . $workspace->id()] = [
       'title' => $this->t('Edit the %workspace workspace', ['%workspace' => $workspace->label()]),
       'description' => $this->t('Edit the %workspace workspace itself', ['%workspace' => $workspace->label()]),
     ];
