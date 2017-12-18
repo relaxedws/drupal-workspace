@@ -26,6 +26,10 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "uuid" = "uuid",
  *   }
  * )
+ *
+ * @internal
+ *   This entity is marked internal because it should not be used directly to
+ *   alter the workspace an entity belongs to.
  */
 class ContentWorkspace extends ContentEntityBase {
 

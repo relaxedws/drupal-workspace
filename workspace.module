@@ -539,3 +539,13 @@ function _workspace_move_entity_table(Sql $query, $content_workspace_table, $ali
     $splice +
     array_slice($query->tableQueue, $index, NULL, TRUE);
 }
+
+/**
+ * Implements hook_rest_resource_alter().
+ */
+function workspace_rest_resource_alter(&$definitions) {
+  // ContentWorkspace and ReplicationLog are internal entity types, therefore
+  // they should not be exposed via REST.
+  unset($definitions['entity:content_workspace']);
+  unset($definitions['entity:replication_log']);
+}

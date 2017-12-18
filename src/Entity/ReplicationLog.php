@@ -27,6 +27,10 @@ use Drupal\workspace\ReplicationLogInterface;
  *     "revision" = "revision_id",
  *   },
  * )
+ *
+ * @internal
+ *   This entity is marked internal because it should only be created, read,
+ *   updated, or deleted, by the content replication process.
  */
 class ReplicationLog extends ContentEntityBase implements ReplicationLogInterface {
 
