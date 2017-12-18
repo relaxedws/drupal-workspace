@@ -146,7 +146,6 @@ class EntityAccess implements ContainerInjectionInterface {
       /** @var \Drupal\workspace\WorkspaceInterface $workspace */
       $perms += $this->createWorkspaceViewPermission($workspace)
       + $this->createWorkspaceEditPermission($workspace)
-      + $this->createWorkspaceDeletePermission($workspace)
       + $this->createWorkspaceBypassPermission($workspace);
     }
 
@@ -184,24 +183,6 @@ class EntityAccess implements ContainerInjectionInterface {
     $perms['edit workspace ' . $workspace->id()] = [
       'title' => $this->t('Edit the %workspace workspace', ['%workspace' => $workspace->label()]),
       'description' => $this->t('Edit the %workspace workspace itself', ['%workspace' => $workspace->label()]),
-    ];
-
-    return $perms;
-  }
-
-  /**
-   * Derives the delete permission for a specific workspace.
-   *
-   * @param \Drupal\workspace\WorkspaceInterface $workspace
-   *   The workspace from which to derive the permission.
-   *
-   * @return array
-   *   A single-item array with the permission to define.
-   */
-  protected function createWorkspaceDeletePermission(WorkspaceInterface $workspace) {
-    $perms['delete workspace ' . $workspace->id()] = [
-      'title' => $this->t('Delete the %workspace workspace', ['%workspace' => $workspace->label()]),
-      'description' => $this->t('View the %workspace workspace and all content within it', ['%workspace' => $workspace->label()]),
     ];
 
     return $perms;

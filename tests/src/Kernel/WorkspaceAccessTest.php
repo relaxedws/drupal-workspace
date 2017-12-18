@@ -68,6 +68,13 @@ class WorkspaceAccessTest extends KernelTestBase {
       ['update', 'edit workspace oak'],
       ['update', 'edit any workspace'],
       ['update', 'edit own workspace'],
+      ['delete', 'create workspace'],
+      ['delete', 'view workspace oak'],
+      ['delete', 'view any workspace'],
+      ['delete', 'view own workspace'],
+      ['delete', 'edit workspace oak'],
+      ['delete', 'edit any workspace'],
+      ['delete', 'edit own workspace'],
     ];
   }
 

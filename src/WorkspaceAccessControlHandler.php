@@ -22,8 +22,12 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
     $operations = [
       'view' => ['any' => 'view any workspace', 'own' => 'view own workspace'],
       'update' => ['any' => 'edit any workspace', 'own' => 'edit own workspace'],
-      'delete' => ['any' => 'delete any workspace', 'own' => 'delete own workspace'],
     ];
+
+    // It is not possible to delete a workspace yet.
+    if ($operation === 'delete') {
+      return AccessResult::forbidden();
+    }
 
     $permission_operation = $operation === 'update' ? 'edit' : 'view';
     // The default workspace is always viewable, no matter what.
