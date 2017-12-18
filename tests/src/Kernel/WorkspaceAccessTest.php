@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\workspace\Functional;
+namespace Drupal\Tests\workspace\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
