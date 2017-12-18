@@ -55,7 +55,7 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * Hook bridge.
+   * Implements a hook bridge for hook_entity_access().
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to check access for.
@@ -69,14 +69,11 @@ class EntityAccess implements ContainerInjectionInterface {
    *
    * @see hook_entity_access()
    */
-  public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\workspace\WorkspaceManagerInterface $workspace_manager */
-    $workspace_manager = \Drupal::service('workspace.manager');
-
+  public function entityOperationAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     // Workspaces themselves are handled by their own access handler and we
     // should not try to do any access checks for entity types that can not
     // belong to a workspace.
-    if ($entity->getEntityTypeId() === 'workspace' || !$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
+    if ($entity->getEntityTypeId() === 'workspace' || !$this->workspaceManager->entityTypeCanBelongToWorkspaces($entity->getEntityType())) {
       return AccessResult::neutral();
     }
 
@@ -84,7 +81,7 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * Hook bridge.
+   * Implements a hook bridge for hook_entity_create_access().
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The user account making the to check access for.
@@ -99,8 +96,11 @@ class EntityAccess implements ContainerInjectionInterface {
    * @see hook_entity_create_access()
    */
   public function entityCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
-    // Workspaces themselves are handled by another hook. Ignore them here.
-    if ($entity_bundle == 'workspace') {
+    // Workspaces themselves are handled by their own access handler and we
+    // should not try to do any access checks for entity types that can not
+    // belong to a workspace.
+    $entity_type = $this->entityTypeManager->getDefinition($context['entity_type_id']);
+    if ($entity_type->id() === 'workspace' || !$this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type)) {
       return AccessResult::neutral();
     }
 

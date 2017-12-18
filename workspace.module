@@ -232,7 +232,7 @@ function workspace_entity_update(EntityInterface $entity) {
 function workspace_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
   return \Drupal::service('class_resolver')
     ->getInstanceFromDefinition(EntityAccess::class)
-    ->entityAccess($entity, $operation, $account);
+    ->entityOperationAccess($entity, $operation, $account);
 }
 
 /**
