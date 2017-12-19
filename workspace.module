@@ -558,6 +558,15 @@ function workspace_rest_resource_alter(&$definitions) {
  */
 function workspace_toolbar() {
   $items = [];
+
+  /** @var \Drupal\workspace\WorkspaceInterface $active_workspace */
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
+
+  // When the module is uninstalled, there is no active workspace anymore.
+  if (!$active_workspace) {
+    return $items;
+  }
+
   $items['workspace'] = [
     '#cache' => [
       'contexts' => [
@@ -572,9 +581,6 @@ function workspace_toolbar() {
     || !$current_user->hasPermission('view any workspace')) {
     return $items;
   }
-
-  /** @var \Drupal\workspace\WorkspaceInterface $active_workspace */
-  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
 
   $configure_link = NULL;
   if ($current_user->hasPermission('administer workspaces')) {
