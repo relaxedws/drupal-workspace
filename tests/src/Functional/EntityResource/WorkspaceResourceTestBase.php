@@ -208,7 +208,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
    * {@inheritdoc}
    */
   public function testDelete() {
-    / @todo Workspaces can not yet be deleted.
+    // @todo Workspaces can not yet be deleted.
   }
 
 }
