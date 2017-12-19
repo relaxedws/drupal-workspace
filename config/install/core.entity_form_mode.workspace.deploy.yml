@@ -4,6 +4,6 @@ dependencies:
   module:
     - workspace
 id: workspace.deploy
-label: Edit
+label: Deploy
 targetEntityType: workspace
 cache: true

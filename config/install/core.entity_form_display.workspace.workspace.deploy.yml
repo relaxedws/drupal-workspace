@@ -1,6 +1,8 @@
 langcode: en
 status: true
 dependencies:
+  config:
+    - core.entity_form_mode.workspace.deploy
   module:
     - workspace
 id: workspace.workspace.deploy
