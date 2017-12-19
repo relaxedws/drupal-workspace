@@ -30,14 +30,14 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
   protected static $patchProtectedFieldNames = ['changed'];
 
   /**
-   * The entity ID for the first created entity in testPost().
-   *
-   * @var string
-   *
-   * @see ::testPost()
-   * @see ::getNormalizedPostEntity()
+   * {@inheritdoc}
    */
   protected static $firstCreatedEntityId = 'running_on_faith';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $secondCreatedEntityId = 'running_on_faith_1';
 
   /**
    * {@inheritdoc}
@@ -51,7 +51,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
         $this->grantPermissionsToTestedRole(['view workspace layla', 'create workspace']);
         break;
       case 'PATCH':
-        $this->grantPermissionsToTestedRole(['view workspace layla', 'update workspace layla']);
+        $this->grantPermissionsToTestedRole(['view workspace layla', 'edit workspace layla']);
         break;
       case 'DELETE':
         $this->grantPermissionsToTestedRole(['view workspace layla', 'delete workspace layla']);
@@ -68,6 +68,17 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
       'label' => 'Layla',
       'upstream' => 'local_workspace:live',
     ]);
+    $workspace->save();
+    return $workspace;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function createAnotherEntity() {
+    $workspace = $this->entity->createDuplicate();
+    $workspace->id = 'layla_dupe';
+    $workspace->label = 'Layla_dupe';
     $workspace->save();
     return $workspace;
   }
@@ -123,11 +134,11 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function getNormalizedPostEntity() {
+  protected function getNormalizedPostEntity($which = NULL) {
     return [
       'id' => [
         [
-          'value' => 'running_on_faith',
+          'value' => 'running_on_faith' . ($which === 1 ? '_1' : ''),
         ],
       ],
       'label' => [
@@ -177,7 +188,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
         return "The 'create workspace' permission is required.";
         break;
       case 'PATCH':
-        return "The 'update workspace layla' permission is required.";
+        return "The 'edit workspace layla' permission is required.";
         break;
       case 'DELETE':
         return "The 'delete workspace layla' permission is required.";
@@ -191,6 +202,13 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
    */
   protected function getExpectedUnauthorizedAccessCacheability() {
     return parent::getExpectedUnauthorizedAccessCacheability()->addCacheTags($this->entity->getCacheTags());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function testDelete() {
+    / @todo Workspaces can not yet be deleted.
   }
 
 }
