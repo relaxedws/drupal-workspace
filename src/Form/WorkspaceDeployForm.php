@@ -74,7 +74,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
     }
 
     $form['help'] = [
-      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or update %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalRepositoryHandlerPlugin()->getLabel(), '%target_upstream_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
+      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or refresh %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalRepositoryHandlerPlugin()->getLabel(), '%target_upstream_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
     ];
 
     return $form;
@@ -94,7 +94,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
     $elements['update'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Update from @upstream', ['@upstream' => $upstream_label]),
+      '#value' => $this->t('Refresh from @upstream', ['@upstream' => $upstream_label]),
       '#submit' => ['::submitForm', '::update'],
     ];
     $elements['cancel'] = [
