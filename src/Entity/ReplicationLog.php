@@ -44,7 +44,9 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
   /**
    * {@inheritdoc}
    */
-  public function setHistory(array $history) {
+  public function addHistory(array $history) {
+    // We need to wrap the passed-in argument in another array in order for it
+    // to be set as the first item (i.e. delta = 0) of the field item list.
     $histories = array_merge([$history], $this->getHistory());
     $this->set('history', $histories);
     return $this;
@@ -84,12 +86,12 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
    * {@inheritdoc}
    */
   public static function loadOrCreate($id) {
-    if ($entity = static::load($id)) {
-      return $entity;
+    $entity = static::load($id);
+    if ($entity === FALSE) {
+      $entity = static::create(['id' => $id]);
     }
-    else {
-      return static::create(['id' => $id]);
-    }
+
+    return $entity;
   }
 
   /**

@@ -32,7 +32,7 @@ class EntityAccess implements ContainerInjectionInterface {
   protected $workspaceManager;
 
   /**
-   * Constructs a new EntityAccess.
+   * Constructs a new EntityAccess instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
@@ -132,9 +132,9 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Returns an array of workspace-specific permissions.
    *
-   * Note: This approach assumes that a site will have only a small number
-   * of workspace entities, under a dozen. If there are many dozens of
-   * workspaces defined then this approach will have scaling issues.
+   * Note: This approach assumes that a site will have only a small number of
+   * workspace entities, under a dozen. If there are many dozens of workspaces
+   * defined then this approach will have scaling issues.
    *
    * @return array
    *   The workspace permissions.

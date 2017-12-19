@@ -188,8 +188,8 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    *
    * @see ::baseFieldDefinitions()
    *
-   * @return array
-   *   An array of default values.
+   * @return int[]
+   *   An array containing the ID of the current user.
    */
   public static function getCurrentUserId() {
     return [\Drupal::currentUser()->id()];

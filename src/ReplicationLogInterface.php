@@ -18,14 +18,14 @@ interface ReplicationLogInterface extends ContentEntityInterface {
   public function getHistory();
 
   /**
-   * Sets the entire replication history.
+   * Adds a new set of data to the replication history.
    *
    * @param array $history
-   *   List containing replication history items.
+   *   An array of values for the 'history' field.
    *
    * @return $this
    */
-  public function setHistory(array $history);
+  public function addHistory(array $history);
 
   /**
    * Gets the session ID.

@@ -249,7 +249,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    *   The updated replication log entity.
    */
   protected function updateReplicationLog(ReplicationLogInterface $replication_log, array $history) {
-    $replication_log->setHistory($history);
+    $replication_log->addHistory($history);
     $replication_log->save();
     return $replication_log;
   }

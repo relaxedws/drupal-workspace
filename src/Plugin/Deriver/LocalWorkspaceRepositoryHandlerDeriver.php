@@ -20,7 +20,7 @@ class LocalWorkspaceRepositoryHandlerDeriver extends DeriverBase implements Cont
   protected $workspaceStorage;
 
   /**
-   * Constructs a new LocalWorkspaceRepositoryHandlerDeriver..
+   * Constructs a new LocalWorkspaceRepositoryHandlerDeriver.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $workspace_storage
    *   The workspace entity storage handler.

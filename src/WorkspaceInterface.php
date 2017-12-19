@@ -14,8 +14,10 @@ interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterf
   /**
    * Gets an instance of the repository handler configured for the workspace.
    *
-   * @return \Drupal\workspace\RepositoryHandlerInterface
-   *   An upstream plugin object.
+   * @return \Drupal\workspace\RepositoryHandlerInterface|null
+   *   An upstream plugin object or NULL if there is no upstream configured for
+   *   the workspace. A NULL return value can only be returned for the default
+   *   (i.e. Live) workspace.
    */
   public function getRepositoryHandlerPlugin();
 

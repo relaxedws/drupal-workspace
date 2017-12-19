@@ -86,9 +86,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
 
-    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
-    $workspace = $this->entity;
-    $upstream_label = $workspace->getRepositoryHandlerPlugin()->getLabel();
+    $upstream_label = $this->entity->getRepositoryHandlerPlugin()->getLabel();
 
     $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_label]);
     $elements['submit']['#submit'] = ['::submitForm', '::deploy'];

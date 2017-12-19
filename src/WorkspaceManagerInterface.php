@@ -58,7 +58,7 @@ interface WorkspaceManagerInterface {
   /**
    * Update or create a ContentWorkspace entity from another entity.
    *
-   * If the entity passed in can belong to a workspace and already has a
+   * If the passed-in entity can belong to a workspace and already has a
    * ContentWorkspace entity, then a new revision of this will be created with
    * the new information. Otherwise, a new ContentWorkspace entity is created to
    * store the passed-in entity's information.
