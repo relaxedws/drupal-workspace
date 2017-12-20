@@ -148,24 +148,20 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * @todo {@link https://www.drupal.org/node/2600382 Access check.}
    */
-  public function getActiveWorkspace($object = FALSE) {
+  public function getActiveWorkspace() {
     $request = $this->requestStack->getCurrentRequest();
     foreach ($this->negotiatorIds as $negotiator_id) {
       $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
       if ($negotiator->applies($request)) {
-        if ($workspace_id = $negotiator->getWorkspaceId($request)) {
-          if ($object) {
-            return $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
-          }
-          else {
-            return $workspace_id;
-          }
+        if ($active_workspace = $negotiator->getWorkspace($request)) {
+          break;
         }
       }
     }
+
+    // The default workspace negotiator always returns a valid workspace.
+    return $active_workspace;
   }
 
   /**
@@ -174,8 +170,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   public function setActiveWorkspace(WorkspaceInterface $workspace) {
     // If the current user doesn't have access to view the workspace, they
     // shouldn't be allowed to switch to it.
-    // @todo Could this be handled better?
-    if (!$workspace->access('view') && ($workspace->id() != static::DEFAULT_WORKSPACE)) {
+    if (!$workspace->access('view') && !$workspace->isDefaultWorkspace()) {
       $this->logger->error('Denied access to view workspace {workspace}', ['workspace' => $workspace->label()]);
       throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
     }
@@ -230,7 +225,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
 
     // Add the revision ID and the workspace ID.
     $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
-    $content_workspace->set('workspace', $this->getActiveWorkspace());
+    $content_workspace->set('workspace', $this->getActiveWorkspace()->id());
 
     // Save without updating the content entity.
     $content_workspace->save();

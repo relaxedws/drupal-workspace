@@ -16,7 +16,6 @@ use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Drupal\workspace\EntityAccess;
-use Drupal\workspace\WorkspaceManager;
 
 /**
  * Implements hook_help().
@@ -48,7 +47,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
 
   // Don't alter the loaded entities if the active workspace is the default one.
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
+  if ($active_workspace->isDefaultWorkspace()) {
     return;
   }
 
@@ -65,7 +64,7 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
     ->groupBy('content_entity_id')
     ->condition('content_entity_type_id', $entity_type_id)
     ->condition('content_entity_id', $entity_ids, 'IN')
-    ->condition('workspace', $active_workspace, '=')
+    ->condition('workspace', $active_workspace->id(), '=')
     ->execute();
 
   // Since hook_entity_load() is called on both regular entity load as well as
@@ -106,7 +105,7 @@ function workspace_entity_presave(EntityInterface $entity) {
   // Only run if the entity type can belong to a workspace and we are in a
   // non-default workspace.
   if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+     || $workspace_manager->getActiveWorkspace()->isDefaultWorkspace()) {
     return;
   }
 
@@ -146,7 +145,7 @@ function workspace_entity_insert(EntityInterface $entity) {
   // Only run if the entity type can belong to a workspace and we are in a
   // non-default workspace.
   if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+     || $workspace_manager->getActiveWorkspace()->isDefaultWorkspace()) {
     return;
   }
 
@@ -175,7 +174,7 @@ function workspace_entity_update(EntityInterface $entity) {
   // Only run if the entity type can belong to a workspace and we are in a
   // non-default workspace.
   if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-     || $workspace_manager->getActiveWorkspace() === WorkspaceManager::DEFAULT_WORKSPACE) {
+     || $workspace_manager->getActiveWorkspace()->isDefaultWorkspace()) {
     return;
   }
 
@@ -213,7 +212,7 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
 
   // Don't alter any views queries if we're in the default workspace.
   $active_workspace = $workspace_manager->getActiveWorkspace();
-  if ($active_workspace == WorkspaceManager::DEFAULT_WORKSPACE) {
+  if ($active_workspace->isDefaultWorkspace()) {
     return;
   }
 
@@ -414,7 +413,7 @@ function _workspace_ensure_content_workspace_table($entity_type_id, Sql $query, 
       ],
       [
         'field' => 'workspace',
-        'value' => \Drupal::service('workspace.manager')->getActiveWorkspace(),
+        'value' => \Drupal::service('workspace.manager')->getActiveWorkspace()->id(),
       ],
     ],
     'type' => 'LEFT',
@@ -558,15 +557,6 @@ function workspace_rest_resource_alter(&$definitions) {
  */
 function workspace_toolbar() {
   $items = [];
-
-  /** @var \Drupal\workspace\WorkspaceInterface $active_workspace */
-  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
-
-  // When the module is uninstalled, there is no active workspace anymore.
-  if (!$active_workspace) {
-    return $items;
-  }
-
   $items['workspace'] = [
     '#cache' => [
       'contexts' => [
@@ -581,6 +571,9 @@ function workspace_toolbar() {
     || !$current_user->hasPermission('view any workspace')) {
     return $items;
   }
+
+  /** @var \Drupal\workspace\WorkspaceInterface $active_workspace */
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
 
   $configure_link = NULL;
   if ($current_user->hasPermission('administer workspaces')) {
@@ -619,7 +612,7 @@ function workspace_toolbar() {
 
   // Add a special class to the wrapper if we are in the default workspace so we
   // can highlight it with a different color.
-  if ($active_workspace->id() === WorkspaceManager::DEFAULT_WORKSPACE) {
+  if ($active_workspace->isDefaultWorkspace()) {
     $items['workspace']['#wrapper_attributes']['class'][] = 'is-live';
   }
 
@@ -637,7 +630,7 @@ function workspace_renderable_links() {
   /** @var \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository */
   $entity_repository = \Drupal::service('entity.repository');
   /** @var \Drupal\workspace\WorkspaceInterface $active_workspace */
-  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace(TRUE);
+  $active_workspace = \Drupal::service('workspace.manager')->getActiveWorkspace();
 
   $links = $cache_tags = [];
   foreach ($entity_type_manager->getStorage('workspace')->loadMultiple() as $workspace) {

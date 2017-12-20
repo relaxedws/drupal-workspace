@@ -87,7 +87,7 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
    */
   public static function loadOrCreate($id) {
     $entity = static::load($id);
-    if ($entity === FALSE) {
+    if (!$entity) {
       $entity = static::create(['id' => $id]);
     }
 

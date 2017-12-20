@@ -99,7 +99,7 @@ trait WorkspaceTestUtilities {
   protected function switchToWorkspace(WorkspaceInterface $workspace) {
     /** @var \Drupal\workspace\WorkspaceManager $workspace_manager */
     $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->getActiveWorkspace() !== $workspace->id()) {
+    if ($workspace_manager->getActiveWorkspace()->id() !== $workspace->id()) {
       // Switch the system under test to the specified workspace.
       /** @var \Drupal\Tests\WebAssert $session */
       $session = $this->assertSession();

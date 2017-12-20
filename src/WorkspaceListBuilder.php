@@ -66,7 +66,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var \Drupal\workspace\WorkspaceInterface $entity */
     $row['label'] = $entity->label() . ' (' . $entity->id() . ')';
     $row['owner'] = $entity->getOwner()->getDisplayname();
-    $active_workspace = $this->workspaceManager->getActiveWorkspace();
+    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
     $row['status'] = $active_workspace == $entity->id() ? $this->t('Active') : $this->t('Inactive');
 
     return $row + parent::buildRow($entity);
@@ -83,7 +83,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
     }
 
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
-    if ($entity->id() != $active_workspace) {
+    if ($entity->id() != $active_workspace->id()) {
       $operations['activate'] = [
         'title' => $this->t('Set Active'),
         'weight' => 20,

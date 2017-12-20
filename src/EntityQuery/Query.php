@@ -33,7 +33,7 @@ class Query extends BaseQuery {
     // If the prepare() method from the trait decided that we need to alter this
     // query, we need to re-define the the key fields for fetchAllKeyed() as SQL
     // expressions.
-    if ($active_workspace = $this->sqlQuery->getMetaData('active_workspace')) {
+    if ($this->sqlQuery->getMetaData('active_workspace_id')) {
       $id_field = $this->entityType->getKey('id');
       $revision_field = $this->entityType->getKey('revision');
 

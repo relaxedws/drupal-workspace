@@ -119,8 +119,11 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // Replicating content from one workspace to another on the same site
     // roughly follows the CouchDB replication protocol.
     // @see http://docs.couchdb.org/en/2.1.0/replication/protocol.html
+    /** @var \Drupal\workspace\WorkspaceInterface $source_workspace */
     $source_workspace = $this->entityTypeManager->getStorage('workspace')->load($source->getDerivativeId());
+    /** @var \Drupal\workspace\WorkspaceInterface $target_workspace */
     $target_workspace = $this->entityTypeManager->getStorage('workspace')->load($target->getDerivativeId());
+
     $start_time = new \DateTime();
     $session_id = \md5((\microtime(TRUE) * 1000000));
     // @todo Figure out if we want to include more information in the
@@ -133,7 +136,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
 
     // Get the current active workspace, so we can set it back as the active
     // after the replication has completed.
-    $current_active = $this->workspaceManager->getActiveWorkspace(TRUE);
+    $current_active = $this->workspaceManager->getActiveWorkspace();
 
     // Set the source as the active workspace, so we can fetch all the entities
     // relative to the source workspace.
@@ -175,9 +178,9 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
         // workspace.
         /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
         $content_workspace = $this->entityTypeManager->getStorage('content_workspace')->loadRevision($revision_id);
-        if (WorkspaceManager::DEFAULT_WORKSPACE === $target_workspace->id()) {
-          // If the target workspace is the default workspace (generally 'live')
-          // the revision needs to be set to the default revision.
+        if ($target_workspace->isDefaultWorkspace()) {
+          // If the target workspace is the default workspace, the revision
+          // needs to be set to the default revision.
           /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
           $entity = $this->entityTypeManager
             ->getStorage($content_workspace->content_entity_type_id->value)

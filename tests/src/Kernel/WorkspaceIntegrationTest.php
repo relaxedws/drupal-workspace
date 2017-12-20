@@ -596,7 +596,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
   protected function switchToWorkspace($workspace_id) {
     /** @var \Drupal\workspace\WorkspaceManager $workspace_manager */
     $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->getActiveWorkspace() !== $workspace_id) {
+    if ($workspace_manager->getActiveWorkspace()->id() !== $workspace_id) {
       // Switch the test runner's context to the specified workspace.
       $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
       \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);

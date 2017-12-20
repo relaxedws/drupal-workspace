@@ -47,7 +47,7 @@ class Tables extends BaseTables {
     // The join between the first 'content_workspace' table and base table of
     // the query is done \Drupal\workspace\EntityQuery\QueryTrait::prepare(), so
     // we need to initialize its entry manually.
-    if ($active_workspace = $this->sqlQuery->getMetaData('active_workspace')) {
+    if ($this->sqlQuery->getMetaData('active_workspace_id')) {
       $this->contentWorkspaceTables['base_table'] = 'content_workspace';
       $this->baseTablesEntityType['base_table'] = $this->sqlQuery->getMetaData('entity_type');
     }
@@ -62,7 +62,7 @@ class Tables extends BaseTables {
     // looking for workspace-specific revisions, we have to force the parent
     // method to always pick the revision tables if the field being queried is
     // revisionable.
-    if ($active_workspace = $this->sqlQuery->getMetaData('active_workspace')) {
+    if ($active_workspace_id = $this->sqlQuery->getMetaData('active_workspace_id')) {
       $this->sqlQuery->addMetaData('all_revisions', TRUE);
     }
 
@@ -70,7 +70,7 @@ class Tables extends BaseTables {
 
     // Restore the 'all_revisions' metadata because we don't want to interfere
     // with the rest of the query.
-    if ($active_workspace) {
+    if ($active_workspace_id) {
       $this->sqlQuery->addMetaData('all_revisions', FALSE);
     }
 
@@ -81,7 +81,7 @@ class Tables extends BaseTables {
    * {@inheritdoc}
    */
   protected function addJoin($type, $table, $join_condition, $langcode, $delta = NULL) {
-    if ($active_workspace = $this->sqlQuery->getMetaData('active_workspace')) {
+    if ($this->sqlQuery->getMetaData('active_workspace_id')) {
       // The join condition for a shared or dedicated field table is in the form
       // of "%alias.$id_field = $base_table.$id_field". Whenever we join a field
       // table we have to check:
@@ -113,9 +113,9 @@ class Tables extends BaseTables {
   protected function addNextBaseTable(EntityType $entity_type, $table, $sql_column, FieldStorageDefinitionInterface $field_storage) {
     $next_base_table_alias = parent::addNextBaseTable($entity_type, $table, $sql_column, $field_storage);
 
-    $active_workspace = $this->sqlQuery->getMetaData('active_workspace');
-    if ($active_workspace && $this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type)) {
-      $this->addContentWorkspaceJoin($entity_type->id(), $next_base_table_alias, $active_workspace);
+    $active_workspace_id = $this->sqlQuery->getMetaData('active_workspace_id');
+    if ($active_workspace_id && $this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type)) {
+      $this->addContentWorkspaceJoin($entity_type->id(), $next_base_table_alias, $active_workspace_id);
     }
 
     return $next_base_table_alias;
@@ -131,20 +131,20 @@ class Tables extends BaseTables {
    *   The ID of the entity type whose base table we are joining.
    * @param string $base_table_alias
    *   The alias of the entity type's base table.
-   * @param string $active_workspace
-   *   The active workspace.
+   * @param string $active_workspace_id
+   *   The ID of the active workspace.
    *
    * @return string
    *   The alias of the joined table.
    */
-  public function addContentWorkspaceJoin($entity_type_id, $base_table_alias, $active_workspace) {
+  public function addContentWorkspaceJoin($entity_type_id, $base_table_alias, $active_workspace_id) {
     if (!isset($this->contentWorkspaceTables[$base_table_alias])) {
       $entity_type = $this->entityManager->getDefinition($entity_type_id);
       $id_field = $entity_type->getKey('id');
 
       // LEFT join the Content Workspace entity's table so we can properly
       // include live content along with a possible workspace-specific revision.
-      $this->contentWorkspaceTables[$base_table_alias] = $this->sqlQuery->leftJoin('content_workspace', NULL, "%alias.content_entity_type_id = '$entity_type_id' AND %alias.content_entity_id = $base_table_alias.$id_field AND %alias.workspace = '$active_workspace'");
+      $this->contentWorkspaceTables[$base_table_alias] = $this->sqlQuery->leftJoin('content_workspace', NULL, "%alias.content_entity_type_id = '$entity_type_id' AND %alias.content_entity_id = $base_table_alias.$id_field AND %alias.workspace = '$active_workspace_id'");
 
       $this->baseTablesEntityType[$base_table_alias] = $entity_type->id();
     }

@@ -31,7 +31,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
 
     $permission_operation = $operation === 'update' ? 'edit' : 'view';
     // The default workspace is always viewable, no matter what.
-    return AccessResult::allowedIf($operation == 'view' && $entity->id() == WorkspaceManager::DEFAULT_WORKSPACE)->addCacheableDependency($entity)
+    return AccessResult::allowedIf($operation == 'view' && $entity->isDefaultWorkspace())->addCacheableDependency($entity)
       // Or if the user has permission to access any workspace at all.
       ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
       // Or if it's their own workspace, and they have permission to access

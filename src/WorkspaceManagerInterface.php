@@ -32,15 +32,10 @@ interface WorkspaceManagerInterface {
   /**
    * Gets the active workspace.
    *
-   * @param bool $object
-   *   TRUE for the active workspace to be returned as an object, FALSE
-   *   otherwise.
-   *
-   * @return \Drupal\workspace\WorkspaceInterface|string
-   *   The active workspace entity object or workspace ID, depending on the
-   *   $object parameter.
+   * @return \Drupal\workspace\WorkspaceInterface
+   *   The active workspace entity object.
    */
-  public function getActiveWorkspace($object = FALSE);
+  public function getActiveWorkspace();
 
   /**
    * Sets the active workspace via the workspace negotiators.

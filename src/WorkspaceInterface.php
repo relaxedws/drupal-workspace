@@ -30,6 +30,14 @@ interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterf
   public function getLocalRepositoryHandlerPlugin();
 
   /**
+   * Determines whether the workspace is the default one or not.
+   *
+   * @return bool
+   *   TRUE if this workspace is the default one (e.g 'Live'), FALSE otherwise.
+   */
+  public function isDefaultWorkspace();
+
+  /**
    * Sets the workspace creation timestamp.
    *
    * @param int $timestamp

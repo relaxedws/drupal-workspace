@@ -8,12 +8,13 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Workspace negotiators provide a way to get the active workspace.
  *
- * WorkspaceManager acts as the service collector for Workspace negotiators.
+ * \Drupal\workspace\WorkspaceManager acts as the service collector for
+ * Workspace negotiators.
  */
 interface WorkspaceNegotiatorInterface {
 
   /**
-   * Checks whether the negotiator applies or not.
+   * Checks whether the negotiator applies to the current request or not.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request.
@@ -24,18 +25,22 @@ interface WorkspaceNegotiatorInterface {
   public function applies(Request $request);
 
   /**
-   * Gets the ID of the active workspace.
+   * Gets the negotiated workspace, if any.
+   *
+   * Note that it is the responsibility of each implementation to check whether
+   * the negotiated workspace actually exists in the storage.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request.
    *
-   * @return string
-   *   The workspace ID.
+   * @return \Drupal\workspace\WorkspaceInterface|null
+   *   The negotiated workspace or NULL if the negotiator could not determine a
+   *   valid workspace.
    */
-  public function getWorkspaceId(Request $request);
+  public function getWorkspace(Request $request);
 
   /**
-   * Sets the active workspace.
+   * Sets the negotiated workspace.
    *
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace entity.

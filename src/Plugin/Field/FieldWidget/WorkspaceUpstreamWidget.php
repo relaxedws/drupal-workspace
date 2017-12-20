@@ -73,12 +73,15 @@ class WorkspaceUpstreamWidget extends WidgetBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    /** @var \Drupal\workspace\WorkspaceInterface $workspace */
+    $workspace = $items->getEntity();
+
     // Gather the list of upstreams grouped by category.
     $upstream_options = [];
     foreach ($this->upstreamPluginManager->getGroupedDefinitions() as $category => $upstream_plugin_definitions) {
       foreach ($upstream_plugin_definitions as $plugin_id => $plugin_definition) {
         // Do not include the local workspace itself as an option.
-        if ($plugin_id !== 'local_workspace' . PluginBase::DERIVATIVE_SEPARATOR . $items->getEntity()->id()) {
+        if ($plugin_id !== 'local_workspace' . PluginBase::DERIVATIVE_SEPARATOR . $workspace->id()) {
           $upstream_options[$category][$plugin_id] = $plugin_definition['label'];
         }
       }
@@ -87,7 +90,7 @@ class WorkspaceUpstreamWidget extends WidgetBase implements ContainerFactoryPlug
     // The default ('Live') workspace can not have another local workspace as an
     // upstream value, so we need to remove all options from the
     // 'Local workspace' category.
-    if ($items->getEntity()->id() === WorkspaceManager::DEFAULT_WORKSPACE) {
+    if ($workspace->isDefaultWorkspace()) {
       unset($upstream_options['Local workspace']);
     }
 

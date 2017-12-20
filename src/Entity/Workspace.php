@@ -10,6 +10,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 use Drupal\workspace\RepositoryHandlerInterface;
 use Drupal\workspace\WorkspaceInterface;
+use Drupal\workspace\WorkspaceManager;
 
 /**
  * The workspace entity class.
@@ -136,6 +137,13 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public function getLocalRepositoryHandlerPlugin() {
     return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance('local_workspace:' . $this->id());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isDefaultWorkspace() {
+    return $this->id() === WorkspaceManager::DEFAULT_WORKSPACE;
   }
 
   /**

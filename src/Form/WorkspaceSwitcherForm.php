@@ -79,7 +79,7 @@ class WorkspaceSwitcherForm extends FormBase {
       $workspace_labels[$workspace->id()] = $workspace->label();
     }
 
-    $active_workspace = $this->workspaceManager->getActiveWorkspace(TRUE);
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
     unset($workspace_labels[$active_workspace->id()]);
 
     $form['current'] = [

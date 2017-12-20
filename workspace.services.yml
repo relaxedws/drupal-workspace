@@ -9,11 +9,12 @@ services:
     parent: default_plugin_manager
   workspace.negotiator.default:
     class: Drupal\workspace\Negotiator\DefaultWorkspaceNegotiator
+    arguments: ['@entity_type.manager']
     tags:
       - { name: workspace_negotiator, priority: 0 }
   workspace.negotiator.session:
     class: Drupal\workspace\Negotiator\SessionWorkspaceNegotiator
-    arguments: ['@current_user', '@user.private_tempstore']
+    arguments: ['@current_user', '@user.private_tempstore', '@entity_type.manager']
     tags:
       - { name: workspace_negotiator, priority: 100 }
   cache_context.workspace:

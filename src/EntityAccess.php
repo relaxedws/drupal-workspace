@@ -120,7 +120,7 @@ class EntityAccess implements ContainerInjectionInterface {
     // This approach assumes that the current "global" active workspace is
     // correct, ie, if you're "in" a given workspace then you get ALL THE PERMS
     // to ALL THE THINGS! That's why this is a dangerous permission.
-    $active_workspace = $this->workspaceManager->getActiveWorkspace(TRUE);
+    $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
     return AccessResult::allowedIfHasPermission($account, 'bypass entity access workspace ' . $active_workspace->id())
       ->orIf(
