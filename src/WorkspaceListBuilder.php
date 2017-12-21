@@ -86,7 +86,9 @@ class WorkspaceListBuilder extends EntityListBuilder {
     if ($entity->id() != $active_workspace->id()) {
       $operations['activate'] = [
         'title' => $this->t('Set Active'),
-        'weight' => 20,
+        // Use a weight lower than the one of the 'Edit' operation because we
+        // want the 'Activate' operation to be the primary operation.
+        'weight' => 0,
         'url' => $entity->toUrl('activate-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
       ];
     }
@@ -94,7 +96,9 @@ class WorkspaceListBuilder extends EntityListBuilder {
     if ($entity->getRepositoryHandlerPlugin()) {
       $operations['deploy'] = [
         'title' => $this->t('Deploy content'),
-        'weight' => 20,
+        // The 'Deploy' operation should be the default one for the currently
+        // active workspace.
+        'weight' => ($entity->id() == $active_workspace->id()) ? 0 : 20,
         'url' => $entity->toUrl('deploy-form', ['query' => ['destination' => $entity->toUrl('collection')->toString()]]),
       ];
     }
