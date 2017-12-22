@@ -37,7 +37,7 @@ interface WorkspaceNegotiatorInterface {
    *   The negotiated workspace or NULL if the negotiator could not determine a
    *   valid workspace.
    */
-  public function getWorkspace(Request $request);
+  public function getActiveWorkspace(Request $request);
 
   /**
    * Sets the negotiated workspace.
@@ -45,6 +45,6 @@ interface WorkspaceNegotiatorInterface {
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace entity.
    */
-  public function setWorkspace(WorkspaceInterface $workspace);
+  public function setActiveWorkspace(WorkspaceInterface $workspace);
 
 }

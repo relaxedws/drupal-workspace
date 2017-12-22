@@ -39,15 +39,10 @@ function workspace_entity_load(array &$entities, $entity_type_id) {
   $workspace_manager = \Drupal::service('workspace.manager');
   $entity_type_manager = \Drupal::entityTypeManager();
 
-  // Don't alter the loaded entities if the entity type can not belong to a
-  // workspace.
-  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity_type_manager->getDefinition($entity_type_id))) {
-    return;
-  }
-
-  // Don't alter the loaded entities if the active workspace is the default one.
-  $active_workspace = $workspace_manager->getActiveWorkspace();
-  if ($active_workspace->isDefaultWorkspace()) {
+  // Only run if the entity type can belong to a workspace and we are in a
+  // non-default workspace.
+  if (!$workspace_manager->entityTypeCanBelongToWorkspaces($entity_type_manager->getDefinition($entity_type_id))
+     || (($active_workspace = $workspace_manager->getActiveWorkspace()) && $active_workspace->isDefaultWorkspace())) {
     return;
   }
 

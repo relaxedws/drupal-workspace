@@ -18,6 +18,9 @@ class WorkspaceBypassTest extends BrowserTestBase {
     placeBlock as drupalPlaceBlock;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['node', 'user', 'block', 'workspace'];
 
   /**
@@ -38,7 +41,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($ditka);
 
-    $vanilla_node = $this->createNodeThroughUi('Vanilla node', 'test');
+    $this->createNodeThroughUi('Vanilla node', 'test');
 
     $bears = $this->createWorkspaceThroughUi('Bears', 'bears');
     $this->switchToWorkspace($bears);
@@ -56,8 +59,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     // Because Lombardi has the bypass permission, he should be able to create
     // and edit any node.
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
     $lombardi_bears_node = $this->createNodeThroughUi('Lombardi Bears node', 'test');
     $lombardi_bears_node_id = $lombardi_bears_node->id();
@@ -66,8 +68,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->switchToWorkspace($bears);
 
     $this->drupalGet('/node/' . $lombardi_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
 
     // Create a new user that should NOT be able to edit anything in the Bears
     // workspace.
@@ -76,9 +77,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $this->switchToWorkspace($bears);
 
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
-
+    $this->assertSession()->statusCodeEquals(403);
   }
 
   /**
@@ -108,8 +107,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Editing both nodes should be possible.
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
     // Create a new user that should be able to edit anything in the Bears
     // workspace.
@@ -120,8 +118,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     // Because editor 2 has the bypass permission, he should be able to create
     // and edit any node.
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
   }
 
 }

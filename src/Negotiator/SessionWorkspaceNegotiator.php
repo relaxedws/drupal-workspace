@@ -54,15 +54,14 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
    * {@inheritdoc}
    */
   public function applies(Request $request) {
-    // This negotiator only applies if the current user is authenticated,
-    // i.e. a session exists.
+    // This negotiator only applies if the current user is authenticated.
     return $this->currentUser->isAuthenticated();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getWorkspace(Request $request) {
+  public function getActiveWorkspace(Request $request) {
     $workspace_id = $this->tempstore->get('active_workspace_id');
 
     if ($workspace_id && ($workspace = $this->workspaceStorage->load($workspace_id))) {
@@ -75,7 +74,7 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setWorkspace(WorkspaceInterface $workspace) {
+  public function setActiveWorkspace(WorkspaceInterface $workspace) {
     $this->tempstore->set('active_workspace_id', $workspace->id());
   }
 

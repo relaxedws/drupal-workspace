@@ -56,13 +56,13 @@ class WorkspaceTest extends BrowserTestBase {
 
     // Test and invalid workspace name.
     $this->drupalGet('/admin/config/workflow/workspace/add');
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
+    $this->assertSession()->statusCodeEquals(200);
+
+    $page = $this->getSession()->getPage();
     $page->fillField('label', 'workspace2');
     $page->fillField('id', 'A!"£%^&*{}#~@?');
     $page->findButton(t('Save'))->click();
-    $session->getPage()->hasContent("This value is not valid");
+    $page->hasContent("This value is not valid");
   }
 
   /**

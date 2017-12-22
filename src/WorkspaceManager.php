@@ -154,7 +154,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     foreach ($this->negotiatorIds as $negotiator_id) {
       $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
       if ($negotiator->applies($request)) {
-        if ($active_workspace = $negotiator->getWorkspace($request)) {
+        if ($active_workspace = $negotiator->getActiveWorkspace($request)) {
           break;
         }
       }
@@ -180,7 +180,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     foreach ($this->negotiatorIds as $negotiator_id) {
       $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
       if ($negotiator->applies($request)) {
-        $negotiator->setWorkspace($workspace);
+        $negotiator->setActiveWorkspace($workspace);
         break;
       }
     }

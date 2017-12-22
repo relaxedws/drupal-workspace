@@ -24,4 +24,4 @@ services:
       - { name: cache.context }
   logger.channel.workspace:
     parent: logger.channel_base
-    arguments: ['cron']
+    arguments: ['workspace']

@@ -65,39 +65,33 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
-
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
     $bears = Workspace::load('bears');
 
-    $session = $this->getSession();
-
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
-    $page = $session->getPage();
+    $page = $this->getSession()->getPage();
     $page->fillField('label', 'Bears again');
     $page->fillField('id', 'bears');
     $page->findButton(t('Save'))->click();
-    $session->getPage()->hasContent('Bears again (bears)');
+    $page->hasContent('Bears again (bears)');
 
     // Now login as a different user and ensure they don't have edit access,
     // and vice versa.
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
-    $session = $this->getSession();
-
     $this->createWorkspaceThroughUi('Packers', 'packers');
-
     $packers = Workspace::load('packers');
 
     $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
   }
 
   /**
@@ -115,39 +109,34 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
-
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
     $bears = Workspace::load('bears');
 
-    $session = $this->getSession();
-
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
-    $page = $session->getPage();
+    $page = $this->getSession()->getPage();
     $page->fillField('label', 'Bears again');
     $page->fillField('id', 'bears');
     $page->findButton(t('Save'))->click();
-    $session->getPage()->hasContent('Bears again (bears)');
+    $page->hasContent('Bears again (bears)');
 
     // Now login as a different user and ensure they don't have edit access,
     // and vice versa.
     $admin = $this->drupalCreateUser(array_merge($permissions, ['edit any workspace']));
 
     $this->drupalLogin($admin);
-    $session = $this->getSession();
-
     $this->createWorkspaceThroughUi('Packers', 'packers');
-
     $packers = Workspace::load('packers');
 
     $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+
+    $this->assertSession()->statusCodeEquals(200);
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
   }
 
 }

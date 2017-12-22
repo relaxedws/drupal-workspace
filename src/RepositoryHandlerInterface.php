@@ -49,4 +49,17 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
    */
   public function isRemote();
 
+  /**
+   * Replicates content from a source repository to a target repository.
+   *
+   * @param \Drupal\workspace\RepositoryHandlerInterface $source
+   *   The repository handler to replicate from.
+   * @param \Drupal\workspace\RepositoryHandlerInterface $target
+   *   The repository handler to replicate to.
+   *
+   * @return \Drupal\workspace\ReplicationLogInterface
+   *   The replication log for the replication.
+   */
+  public function replicate(RepositoryHandlerInterface $source, RepositoryHandlerInterface $target);
+
 }

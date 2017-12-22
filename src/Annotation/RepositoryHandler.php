@@ -7,6 +7,11 @@ use Drupal\Component\Annotation\Plugin;
 /**
  * Defines a RepositoryHandler annotation object.
  *
+ * @see \Drupal\workspace\RepositoryHandlerInterface
+ * @see \Drupal\workspace\RepositoryHandlerBase
+ * @see \Drupal\workspace\RepositoryHandlerManager
+ * @see plugin_api
+ *
  * @Annotation
  */
 class RepositoryHandler extends Plugin {

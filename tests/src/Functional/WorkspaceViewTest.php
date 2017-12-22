@@ -33,7 +33,6 @@ class WorkspaceViewTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
-
     $this->createWorkspaceThroughUi('Bears', 'bears');
 
     $bears = Workspace::load('bears');
@@ -42,8 +41,6 @@ class WorkspaceViewTest extends BrowserTestBase {
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
-    $session = $this->getSession();
-
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = Workspace::load('packers');
@@ -51,11 +48,11 @@ class WorkspaceViewTest extends BrowserTestBase {
     // Load the activate form for the Bears workspace. It should fail because
     // the workspace belongs to someone else.
     $this->drupalGet("admin/config/workflow/workspace/{$bears->id()}/activate");
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
 
     // But editor 2 should be able to activate the Packers workspace.
     $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
   }
 
   /**
@@ -83,8 +80,6 @@ class WorkspaceViewTest extends BrowserTestBase {
     $editor2 = $this->drupalCreateUser($permissions);
 
     $this->drupalLogin($editor2);
-    $session = $this->getSession();
-
     $this->createWorkspaceThroughUi('Packers', 'packers');
 
     $packers = Workspace::load('packers');
@@ -92,11 +87,12 @@ class WorkspaceViewTest extends BrowserTestBase {
     // Load the activate form for the Bears workspace. This user should be
     // able to see both workspaces because of the "view any" permission.
     $this->drupalGet("admin/config/workflow/workspace/{$bears->id()}/activate");
-    $this->assertEquals(200, $session->getStatusCode());
+
+    $this->assertSession()->statusCodeEquals(200);
 
     // But editor 2 should be able to activate the Packers workspace.
     $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
   }
 
 }

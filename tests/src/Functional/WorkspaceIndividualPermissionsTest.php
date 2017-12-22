@@ -48,10 +48,9 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $editor2 = $this->drupalCreateUser(array_merge($permissions, ['edit workspace ' . $bears->id()]));
 
     $this->drupalLogin($editor2);
-    $session = $this->getSession();
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
   }
 
   /**
@@ -69,7 +68,6 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
 
     // Login as a limited-access user and create a workspace.
     $this->drupalLogin($editor1);
-
     $this->createWorkspaceThroughUi('Bears', 'bears');
     $bears = Workspace::load('bears');
 
@@ -77,21 +75,18 @@ class WorkspaceIndividualPermissionsTest extends BrowserTestBase {
     $editor2 = $this->drupalCreateUser(array_merge($permissions, ['view workspace ' . $bears->id()]));
 
     $this->drupalLogin($editor2);
-    $session = $this->getSession();
-
     $this->createWorkspaceThroughUi('Packers', 'packers');
-
     $packers = Workspace::load('packers');
 
     // Load the activate form for the Bears workspace. It should work, because
     // the user has the permission specific to that workspace.
     $this->drupalGet("admin/config/workflow/workspace/{$bears->id()}/activate");
-    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(200);
 
     // But editor 1 cannot view the Packers workspace.
     $this->drupalLogin($editor1);
     $this->drupalGet("admin/config/workflow/workspace/{$packers->id()}/activate");
-    $this->assertEquals(403, $session->getStatusCode());
+    $this->assertSession()->statusCodeEquals(403);
   }
 
 }

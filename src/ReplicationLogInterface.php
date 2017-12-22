@@ -6,6 +6,13 @@ use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
  * Defines an interface for the Replication log entity type.
+ *
+ * This entity type holds the replication history (recorded checkpoints and a
+ * few more statistics) between a source and a target repository handler.
+ *
+ * Whenever a replication is performed, a new replication log is created or an
+ * existing one is updated, based on a ID that is uniquely identifiable from the
+ * given source and target.
  */
 interface ReplicationLogInterface extends ContentEntityInterface {
 
@@ -25,7 +32,7 @@ interface ReplicationLogInterface extends ContentEntityInterface {
    *
    * @return $this
    */
-  public function addHistory(array $history);
+  public function appendHistory(array $history);
 
   /**
    * Gets the session ID.

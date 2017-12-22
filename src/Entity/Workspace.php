@@ -72,14 +72,14 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['id'] = BaseFieldDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Workaspace ID'))
+      ->setLabel(new TranslatableMarkup('Workspace ID'))
       ->setDescription(new TranslatableMarkup('The workspace ID.'))
       ->setSetting('max_length', 128)
       ->setRequired(TRUE)
       ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[\da-z_$()+-\/]*$/']]);
 
     $fields['label'] = BaseFieldDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Workaspace name'))
+      ->setLabel(new TranslatableMarkup('Workspace name'))
       ->setDescription(new TranslatableMarkup('The workspace name.'))
       ->setRevisionable(TRUE)
       ->setSetting('max_length', 128)

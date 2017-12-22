@@ -47,7 +47,7 @@ class DefaultWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getWorkspace(Request $request) {
+  public function getActiveWorkspace(Request $request) {
     if (!$this->defaultWorkspace) {
       $default_workspace = $this->workspaceStorage->create([
         'id' => WorkspaceManager::DEFAULT_WORKSPACE,
@@ -64,6 +64,6 @@ class DefaultWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setWorkspace(WorkspaceInterface $workspace) {}
+  public function setActiveWorkspace(WorkspaceInterface $workspace) {}
 
 }

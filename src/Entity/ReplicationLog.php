@@ -44,7 +44,7 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
   /**
    * {@inheritdoc}
    */
-  public function addHistory(array $history) {
+  public function appendHistory(array $history) {
     // We need to wrap the passed-in argument in another array in order for it
     // to be set as the first item (i.e. delta = 0) of the field item list.
     $histories = array_merge([$history], $this->getHistory());

@@ -41,12 +41,11 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
 
     $this->drupalGet('/admin/config/workflow/workspace/' . $gravity->id() . '/activate');
 
-    $session = $this->getSession();
-    $this->assertEquals(200, $session->getStatusCode());
-    $page = $session->getPage();
+    $this->assertSession()->statusCodeEquals(200);
+    $page = $this->getSession()->getPage();
     $page->findButton(t('Confirm'))->click();
 
-    $session->getPage()->findLink($gravity->label());
+    $page->findLink($gravity->label());
   }
 
 }
