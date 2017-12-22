@@ -76,7 +76,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDescription(new TranslatableMarkup('The workspace ID.'))
       ->setSetting('max_length', 128)
       ->setRequired(TRUE)
-      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[\da-z_$()+-\/]*$/']]);
+      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[a-z0-9_]*$/']]);
 
     $fields['label'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Workspace name'))

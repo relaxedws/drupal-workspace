@@ -144,7 +144,9 @@ class WorkspaceForm extends ContentEntityForm {
     if ($workspace->id()) {
       $form_state->setValue('id', $workspace->id());
       $form_state->set('id', $workspace->id());
-      $redirect = $this->currentUser()->hasPermission('administer workspaces') ? $workspace->toUrl('collection') : Url::fromRoute('<front>');
+
+      $collection_url = $workspace->toUrl('collection');
+      $redirect = $collection_url->access() ? $collection_url : Url::fromRoute('<front>');
       $form_state->setRedirectUrl($redirect);
     }
     else {

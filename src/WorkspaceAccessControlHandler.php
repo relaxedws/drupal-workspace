@@ -37,7 +37,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
       // Or if it's their own workspace, and they have permission to access
       // their own workspace.
       ->orIf(
-        AccessResult::allowedIf($entity->getOwnerId() == $account->id())->addCacheableDependency($entity)
+        AccessResult::allowedIf($entity->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($entity)
           ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
       )
       ->orIf(AccessResult::allowedIfHasPermission($account, $permission_operation . ' workspace ' . $entity->id()));

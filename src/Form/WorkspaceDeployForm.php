@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Provides the workspace deploy form.
@@ -70,7 +70,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     // We can not deploy if we do not have an upstream workspace.
     if (!$workspace->getRepositoryHandlerPlugin()) {
-      throw new BadRequestHttpException();
+      throw new HttpException(500, 'The specified repository handler plugin does not exist.');
     }
 
     $form['help'] = [

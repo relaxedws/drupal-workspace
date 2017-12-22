@@ -125,7 +125,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
     if (!in_array($entity_type->id(), $this->blacklist, TRUE)
-      && is_a($entity_type->getClass(), EntityPublishedInterface::class, TRUE)
+      && $entity_type->entityClassImplements(EntityPublishedInterface::class)
       && $entity_type->isRevisionable()) {
       return TRUE;
     }

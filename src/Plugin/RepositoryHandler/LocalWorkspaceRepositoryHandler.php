@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace\Plugin\RepositoryHandler;
 
+use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\workspace\Entity\ReplicationLog;
 use Drupal\workspace\ReplicationLogInterface;
@@ -9,7 +10,6 @@ use Drupal\workspace\RepositoryHandlerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\workspace\RepositoryHandlerInterface;
-use Drupal\workspace\WorkspaceManager;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -58,6 +58,13 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
   protected $database;
 
   /**
+   * The UUID service.
+   *
+   * @var \Drupal\Component\Uuid\UuidInterface
+   */
+  protected $uuidService;
+
+  /**
    * Constructs a new LocalWorkspaceRepositoryHandler.
    *
    * @param array $configuration
@@ -73,11 +80,12 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, Connection $database) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, Connection $database, UuidInterface $uuid_service) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->workspaceManager = $workspace_manager;
     $this->database = $database;
+    $this->uuidService = $uuid_service;
     $this->upstreamWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->getDerivativeId());
   }
 
@@ -91,7 +99,8 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('workspace.manager'),
-      $container->get('database')
+      $container->get('database'),
+      $container->get('uuid')
     );
   }
 
@@ -125,7 +134,6 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     $target_workspace = $this->entityTypeManager->getStorage('workspace')->load($target->getDerivativeId());
 
     $start_time = new \DateTime();
-    $session_id = \md5((\microtime(TRUE) * 1000000));
     // @todo Figure out if we want to include more information in the
     // replication log ID.
     // @see http://docs.couchdb.org/en/2.0.0/replication/protocol.html#generate-replication-id
@@ -220,7 +228,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     return $this->updateReplicationLog($replication_log, [
       'entity_write_failures' => 0,
       'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
-      'session_id' => $session_id,
+      'session_id' => $this->uuidService->generate(),
       'start_last_sequence' => $this->getLastSequenceId($replication_log),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
     ]);
@@ -253,6 +261,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    */
   protected function updateReplicationLog(ReplicationLogInterface $replication_log, array $history) {
     $replication_log->appendHistory($history);
+    $replication_log->setSessionId($history['session_id']);
     $replication_log->save();
     return $replication_log;
   }

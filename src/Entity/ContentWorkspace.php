@@ -5,6 +5,7 @@ namespace Drupal\workspace\Entity;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the Content workspace entity.
@@ -40,28 +41,29 @@ class ContentWorkspace extends ContentEntityBase {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['workspace'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('workspace'))
-      ->setDescription(t('The workspace of the referenced content.'))
+      ->setLabel(new TranslatableMarkup('workspace'))
+      ->setDescription(new TranslatableMarkup('The workspace of the referenced content.'))
       ->setSetting('target_type', 'workspace')
       ->setRequired(TRUE)
       ->setRevisionable(TRUE)
       ->addConstraint('workspace', []);
 
     $fields['content_entity_type_id'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Content entity type ID'))
-      ->setDescription(t('The ID of the content entity type this workspace is for.'))
+      ->setLabel(new TranslatableMarkup('Content entity type ID'))
+      ->setDescription(new TranslatableMarkup('The ID of the content entity type this workspace is for.'))
+      ->setSetting('max_length', EntityTypeInterface::ID_MAX_LENGTH)
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
     $fields['content_entity_id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Content entity ID'))
-      ->setDescription(t('The ID of the content entity this workspace is for.'))
+      ->setLabel(new TranslatableMarkup('Content entity ID'))
+      ->setDescription(new TranslatableMarkup('The ID of the content entity this workspace is for.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
     $fields['content_entity_revision_id'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Content entity revision ID'))
-      ->setDescription(t('The revision ID of the content entity this workspace is for.'))
+      ->setLabel(new TranslatableMarkup('Content entity revision ID'))
+      ->setDescription(new TranslatableMarkup('The revision ID of the content entity this workspace is for.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 

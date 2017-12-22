@@ -111,24 +111,20 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
     $fields['history'] = BaseFieldDefinition::create('replication_history')
       ->setLabel(new TranslatableMarkup('Replication log history'))
       ->setDescription(new TranslatableMarkup('The version id of the test entity.'))
-      ->setReadOnly(TRUE)
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
-    $fields['session_id'] = BaseFieldDefinition::create('string')
+    $fields['session_id'] = BaseFieldDefinition::create('uuid')
       ->setLabel(new TranslatableMarkup('Replication session ID'))
-      ->setDescription(new TranslatableMarkup('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'))
-      ->setReadOnly(TRUE);
+      ->setDescription(new TranslatableMarkup('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'));
 
     $fields['source_last_sequence'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Last processed checkpoint'))
-      ->setDescription(new TranslatableMarkup('The last processed checkpoint. Shortcut to the source_last_sequence in the last history item.'))
-      ->setReadOnly(TRUE);
+      ->setDescription(new TranslatableMarkup('The last processed checkpoint. Shortcut to the source_last_sequence in the last history item.'));
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(new TranslatableMarkup('Status'))
       ->setDescription(new TranslatableMarkup('Replication status'))
-      ->setDefaultValue(TRUE)
-      ->setReadOnly(TRUE);
+      ->setDefaultValue(TRUE);
 
     return $fields;
   }

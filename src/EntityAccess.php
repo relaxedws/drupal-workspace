@@ -124,7 +124,7 @@ class EntityAccess implements ContainerInjectionInterface {
 
     return AccessResult::allowedIfHasPermission($account, 'bypass entity access workspace ' . $active_workspace->id())
       ->orIf(
-        AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())
+        AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($active_workspace)
           ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass entity access own workspace'))
       );
   }

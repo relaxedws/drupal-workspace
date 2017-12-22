@@ -22,11 +22,11 @@ class WorkspaceSwitcherForm extends FormBase {
   protected $workspaceManager;
 
   /**
-   * The entity type manager.
+   * The workspace entity storage handler.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $entityTypeManager;
+  protected $workspaceStorage;
 
   /**
    * The messenger service.
@@ -47,7 +47,7 @@ class WorkspaceSwitcherForm extends FormBase {
    */
   public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger) {
     $this->workspaceManager = $workspace_manager;
-    $this->entityTypeManager = $entity_type_manager;
+    $this->workspaceStorage = $entity_type_manager->getStorage('workspace');
     $this->messenger = $messenger;
   }
 
@@ -73,7 +73,7 @@ class WorkspaceSwitcherForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $workspaces = $this->entityTypeManager->getStorage('workspace')->loadMultiple();
+    $workspaces = $this->workspaceStorage->loadMultiple();
     $workspace_labels = [];
     foreach ($workspaces as $workspace) {
       $workspace_labels[$workspace->id()] = $workspace->label();
@@ -115,10 +115,8 @@ class WorkspaceSwitcherForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $id = $form_state->getValue('workspace_id');
 
-    // Ensure the workspace by that id exists.
-    /** @var \Drupal\workspace\WorkspaceInterface $workspace */
-    $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
-    if (!$workspace) {
+    // Ensure the workspace by that ID exists.
+    if (!$this->workspaceStorage->load($id)) {
       $form_state->setErrorByName('workspace_id', $this->t('This workspace does not exist.'));
     }
   }
@@ -130,7 +128,7 @@ class WorkspaceSwitcherForm extends FormBase {
     $id = $form_state->getValue('workspace_id');
 
     /** @var \Drupal\workspace\WorkspaceInterface $workspace */
-    $workspace = $this->entityTypeManager->getStorage('workspace')->load($id);
+    $workspace = $this->workspaceStorage->load($id);
 
     try {
       $this->workspaceManager->setActiveWorkspace($workspace);
