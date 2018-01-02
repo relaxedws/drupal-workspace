@@ -19,28 +19,35 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\workspace\WorkspaceInterface $entity */
-    $operations = [
-      'view' => ['any' => 'view any workspace', 'own' => 'view own workspace'],
-      'update' => ['any' => 'edit any workspace', 'own' => 'edit own workspace'],
-    ];
-
-    // It is not possible to delete a workspace yet.
-    if ($operation === 'delete') {
-      return AccessResult::forbidden();
+    if ($account->hasPermission('administer workspaces')) {
+      return AccessResult::allowed()->cachePerPermissions();
     }
 
-    $permission_operation = $operation === 'update' ? 'edit' : 'view';
     // The default workspace is always viewable, no matter what.
-    return AccessResult::allowedIf($operation == 'view' && $entity->isDefaultWorkspace())->addCacheableDependency($entity)
-      // Or if the user has permission to access any workspace at all.
-      ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
-      // Or if it's their own workspace, and they have permission to access
-      // their own workspace.
-      ->orIf(
-        AccessResult::allowedIf($entity->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($entity)
-          ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
-      )
-      ->orIf(AccessResult::allowedIfHasPermission($account, $permission_operation . ' workspace ' . $entity->id()));
+    if ($operation == 'view' && $entity->isDefaultWorkspace()) {
+      return AccessResult::allowed()->addCacheableDependency($entity);
+    }
+
+    $permission_operation = $operation === 'update' ? 'edit' : $operation;
+
+    // Check if the user has permission to access any workspace at all.
+    $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' any workspace');
+
+    // Check if it's their own workspace, and they have permission to access
+    // their own workspace.
+    if ($access_result->isNeutral() && $account->isAuthenticated() && $account->id() === $entity->getOwnerId()) {
+      $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' own workspace')
+        ->cachePerUser()
+        ->addCacheableDependency($entity);
+    }
+
+    // Check if the user has permission to access an individual workspace.
+    if ($access_result->isNeutral()) {
+      $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' workspace ' . $entity->id())
+        ->addCacheableDependency($entity);
+    }
+
+    return $access_result;
   }
 
   /**

@@ -48,13 +48,13 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
         $this->grantPermissionsToTestedRole(['view workspace layla']);
         break;
       case 'POST':
-        $this->grantPermissionsToTestedRole(['view workspace layla', 'create workspace']);
+        $this->grantPermissionsToTestedRole(['create workspace']);
         break;
       case 'PATCH':
-        $this->grantPermissionsToTestedRole(['view workspace layla', 'edit workspace layla']);
+        $this->grantPermissionsToTestedRole(['edit workspace layla']);
         break;
       case 'DELETE':
-        $this->grantPermissionsToTestedRole(['view workspace layla', 'delete workspace layla']);
+        $this->grantPermissionsToTestedRole(['delete workspace layla']);
         break;
     }
   }

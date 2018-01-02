@@ -48,33 +48,12 @@ class WorkspaceAccessTest extends KernelTestBase {
   public function operationCases() {
     return [
       ['create', 'create workspace'],
-      ['create', 'view workspace oak'],
-      ['create', 'view any workspace'],
-      ['create', 'view own workspace'],
-      ['create', 'edit workspace oak'],
-      ['create', 'edit any workspace'],
-      ['create', 'edit own workspace'],
-      ['view', 'create workspace'],
       ['view', 'view workspace oak'],
       ['view', 'view any workspace'],
       ['view', 'view own workspace'],
-      ['view', 'edit workspace oak'],
-      ['view', 'edit any workspace'],
-      ['view', 'edit own workspace'],
-      ['update', 'create workspace'],
-      ['update', 'view workspace oak'],
-      ['update', 'view any workspace'],
-      ['update', 'view own workspace'],
       ['update', 'edit workspace oak'],
       ['update', 'edit any workspace'],
       ['update', 'edit own workspace'],
-      ['delete', 'create workspace'],
-      ['delete', 'view workspace oak'],
-      ['delete', 'view any workspace'],
-      ['delete', 'view own workspace'],
-      ['delete', 'edit workspace oak'],
-      ['delete', 'edit any workspace'],
-      ['delete', 'edit own workspace'],
     ];
   }
 
@@ -95,13 +74,7 @@ class WorkspaceAccessTest extends KernelTestBase {
     $workspace->save();
     $role = $this->createRole([$permission]);
     $user->addRole($role);
-    $operation_permission = $operation === 'update' ? 'edit' : $operation;
-    if (strpos($permission, $operation_permission) === FALSE || $operation === 'delete') {
-      $this->assertFalse($workspace->access($operation, $user));
-    }
-    else {
-      $this->assertTrue($workspace->access($operation, $user));
-    }
+    $this->assertTrue($workspace->access($operation, $user));
   }
 
 }
