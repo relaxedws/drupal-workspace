@@ -38,11 +38,11 @@ class Query extends BaseQuery {
       $revision_field = $this->entityType->getKey('revision');
 
       // Since the query is against the base table, we have to take into account
-      // that the revision ID might come from the content_workspace
+      // that the revision ID might come from the workspace_association
       // relationship, and, as a consequence, the revision ID field is no longer
       // a simple SQL field but an expression.
       $this->sqlFields = [];
-      $this->sqlExpressions[$revision_field] = "COALESCE(content_workspace.content_entity_revision_id, base_table.$revision_field)";
+      $this->sqlExpressions[$revision_field] = "COALESCE(workspace_association.content_entity_revision_id, base_table.$revision_field)";
       $this->sqlExpressions[$id_field] = "base_table.$id_field";
     }
 

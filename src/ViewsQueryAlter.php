@@ -152,9 +152,9 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     $move_workspace_tables = [];
     $table_queue =& $query->getTableQueue();
     foreach ($table_queue as $alias => &$table_info) {
-      // If we reach the content_workspace array item before any candidates, then
-      // we do not need to move it.
-      if ($table_info['table'] == 'content_workspace') {
+      // If we reach the workspace_association array item before any candidates,
+      // then we do not need to move it.
+      if ($table_info['table'] == 'workspace_association') {
         break;
       }
 
@@ -171,13 +171,13 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
         // Get the dedicated revision table name.
         $new_table_name = $table_mapping->getDedicatedRevisionTableName($field_storage_definitions[$field_name]);
 
-        // Now add the content_workspace table.
-        $content_workspace_table = $this->ensureContentWorkspaceTable($entity_type->id(), $query, $relationship);
+        // Now add the workspace_association table.
+        $workspace_association_table = $this->ensureWorkspaceAssociationTable($entity_type->id(), $query, $relationship);
 
         // Update the join to use our COALESCE.
         $revision_field = $entity_type->getKey('revision');
         $table_info['join']->leftTable = NULL;
-        $table_info['join']->leftField = "COALESCE($content_workspace_table.content_entity_revision_id, $relationship.$revision_field)";
+        $table_info['join']->leftField = "COALESCE($workspace_association_table.content_entity_revision_id, $relationship.$revision_field)";
 
         // Update the join and the table info to our new table name, and to join
         // on the revision key.
@@ -185,22 +185,22 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
         $table_info['join']->table = $new_table_name;
         $table_info['join']->field = 'revision_id';
 
-        // Finally, if we added the content_workspace table we have to move it in
-        // the table queue so that it comes before this field.
-        if (empty($move_workspace_tables[$content_workspace_table])) {
-          $move_workspace_tables[$content_workspace_table] = $alias;
+        // Finally, if we added the workspace_association table we have to move
+        // it in the table queue so that it comes before this field.
+        if (empty($move_workspace_tables[$workspace_association_table])) {
+          $move_workspace_tables[$workspace_association_table] = $alias;
         }
       }
     }
 
     // JOINs must be in order. i.e, any tables you mention in the ON clause of a
-    // JOIN must appear prior to that JOIN. Since we're modifying a JOIN in place,
-    // and adding a new table, we must ensure that the new table appears prior to
-    // this one. So we recorded at what index we saw that table, and then use
-    // array_splice() to move the content_workspace table join to the correct
-    // position.
-    foreach ($move_workspace_tables as $content_workspace_table => $alias) {
-      $this->moveEntityTable($query, $content_workspace_table, $alias);
+    // JOIN must appear prior to that JOIN. Since we're modifying a JOIN in
+    // place, and adding a new table, we must ensure that the new table appears
+    // prior to this one. So we recorded at what index we saw that table, and
+    // then use array_splice() to move the workspace_association table join to
+    // the correct position.
+    foreach ($move_workspace_tables as $workspace_association_table => $alias) {
+      $this->moveEntityTable($query, $workspace_association_table, $alias);
     }
 
     $base_entity_table = $entity_type->isTranslatable() ? $entity_type->getDataTable() : $entity_type->getBaseTable();
@@ -255,11 +255,12 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
       }
     }
 
-    // @todo Handle $query->orderby, $query->groupby, $query->having, $query->count_field
+    // @todo Handle $query->orderby, $query->groupby, $query->having,
+    //   $query->count_field.
   }
 
   /**
-   * Adds the 'content_workspace' table to a views query.
+   * Adds the 'workspace_association' table to a views query.
    *
    * @param string $entity_type_id
    *   The ID of the entity type to join.
@@ -269,18 +270,18 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
    *   The primary table alias this table is related to.
    *
    * @return string
-   *   The alias of the 'content_workspace' table.
+   *   The alias of the 'workspace_association' table.
    */
-  protected function ensureContentWorkspaceTable($entity_type_id, Sql $query, $relationship) {
-    if (isset($query->tables[$relationship]['content_workspace'])) {
-      return $query->tables[$relationship]['content_workspace']['alias'];
+  protected function ensureWorkspaceAssociationTable($entity_type_id, Sql $query, $relationship) {
+    if (isset($query->tables[$relationship]['workspace_association'])) {
+      return $query->tables[$relationship]['workspace_association']['alias'];
     }
 
     $table_data = $this->viewsData->get($query->relationships[$relationship]['base']);
 
     // Construct the join.
     $definition = [
-      'table' => 'content_workspace',
+      'table' => 'workspace_association',
       'field' => 'content_entity_id',
       'left_table' => $relationship,
       'left_field' => $table_data['table']['base']['field'],
@@ -300,7 +301,7 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     $join = $this->viewsJoinPluginManager->createInstance('standard', $definition);
     $join->adjusted = TRUE;
 
-    return $query->queueTable('content_workspace', $relationship, $join);
+    return $query->queueTable('workspace_association', $relationship, $join);
   }
 
   /**
@@ -317,9 +318,9 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
    *   The alias of the relationship.
    */
   protected function ensureRevisionTable(EntityTypeInterface $entity_type, Sql $query, $relationship) {
-    // Get the alias for the 'content_workspace' table we chain off of in the
+    // Get the alias for the 'workspace_association' table we chain off of in the
     // COALESCE.
-    $content_workspace_table = $this->ensureContentWorkspaceTable($entity_type->id(), $query, $relationship);
+    $workspace_association_table = $this->ensureWorkspaceAssociationTable($entity_type->id(), $query, $relationship);
 
     // Get the name of the revision table and revision key.
     $base_revision_table = $entity_type->isTranslatable() ? $entity_type->getRevisionDataTable() : $entity_type->getRevisionTable();
@@ -332,12 +333,12 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
       $alias = $query->tables[$relationship][$base_revision_table]['alias'];
       if (isset($table_queue[$alias]['join']->field) && $table_queue[$alias]['join']->field == $revision_field) {
         // If this table previously existed, but was not added by us, we need
-        // to modify the join and make sure that 'content_workspace' comes first.
+        // to modify the join and make sure that 'workspace_association' comes first.
         if (empty($table_queue[$alias]['join']->workspace_adjusted)) {
-          $table_queue[$alias]['join'] = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $content_workspace_table);
-          // We also have to ensure that our 'content_workspace' comes before
+          $table_queue[$alias]['join'] = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $workspace_association_table);
+          // We also have to ensure that our 'workspace_association' comes before
           // this.
-          $this->moveEntityTable($query, $content_workspace_table, $alias);
+          $this->moveEntityTable($query, $workspace_association_table, $alias);
         }
 
         return $alias;
@@ -345,12 +346,12 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     }
 
     // Construct a new join.
-    $join = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $content_workspace_table);
+    $join = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $workspace_association_table);
     return $query->queueTable($base_revision_table, $relationship, $join);
   }
 
   /**
-   * Fetches a join for a revision table using the 'content_workspace' table.
+   * Fetches a join for a revision table using the workspace_association table.
    *
    * @param string $relationship
    *   The relationship to use in the view.
@@ -358,19 +359,20 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
    *   The table name.
    * @param string $field
    *   The field to join on.
-   * @param string $content_workspace_table
-   *   The alias of the 'content_workspace' table joined to the main entity table.
+   * @param string $workspace_association_table
+   *   The alias of the 'workspace_association' table joined to the main entity
+   *   table.
    *
    * @return \Drupal\views\Plugin\views\join\JoinPluginInterface
    *   An adjusted views join object to add to the query.
    */
-  protected function getRevisionTableJoin($relationship, $table, $field, $content_workspace_table) {
+  protected function getRevisionTableJoin($relationship, $table, $field, $workspace_association_table) {
     $definition = [
       'table' => $table,
       'field' => $field,
       // Making this explicitly null allows the left table to be a formula.
       'left_table' => NULL,
-      'left_field' => "COALESCE($content_workspace_table.content_entity_revision_id, $relationship.$field)",
+      'left_field' => "COALESCE($workspace_association_table.content_entity_revision_id, $relationship.$field)",
     ];
 
     /** @var \Drupal\views\Plugin\views\join\JoinPluginInterface $join */
@@ -382,24 +384,25 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
   }
 
   /**
-   * Moves a 'content_workspace' table to appear before the given alias.
+   * Moves a 'workspace_association' table to appear before the given alias.
    *
    * Because Workspace chains possibly pre-existing tables onto the
-   * 'content_workspace' table, we have to ensure that the 'content_workspace'
-   * table appears in the query before the alias it's chained on or the SQL is
-   * invalid. This uses array_slice() to reconstruct the table queue of the query.
+   * 'workspace_association' table, we have to ensure that the
+   * 'workspace_association' table appears in the query before the alias it's
+   * chained on or the SQL is invalid. This uses array_slice() to reconstruct
+   * the table queue of the query.
    *
    * @param \Drupal\views\Plugin\views\query\Sql $query
    *   The SQL query object.
-   * @param string $content_workspace_table
-   *   The alias of the 'content_workspace' table.
+   * @param string $workspace_association_table
+   *   The alias of the 'workspace_association' table.
    * @param string $alias
    *   The alias of the table it needs to appear before.
    */
-  protected function moveEntityTable(Sql $query, $content_workspace_table, $alias) {
+  protected function moveEntityTable(Sql $query, $workspace_association_table, $alias) {
     $table_queue =& $query->getTableQueue();
     $keys = array_keys($table_queue);
-    $current_index = array_search($content_workspace_table, $keys);
+    $current_index = array_search($workspace_association_table, $keys);
     $index = array_search($alias, $keys);
 
     // If it's already before our table, we don't need to move it, as we could
@@ -407,8 +410,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     if ($current_index < $index) {
       return;
     }
-    $splice = [$content_workspace_table => $table_queue[$content_workspace_table]];
-    unset($table_queue[$content_workspace_table]);
+    $splice = [$workspace_association_table => $table_queue[$workspace_association_table]];
+    unset($table_queue[$workspace_association_table]);
 
     // Now move the item to the proper location in the array. Don't use
     // array_splice() because that breaks indices.

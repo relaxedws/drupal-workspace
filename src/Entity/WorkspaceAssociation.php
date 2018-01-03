@@ -8,19 +8,19 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
- * Defines the Content workspace entity.
+ * Defines the Workspace association entity.
  *
  * @ContentEntityType(
- *   id = "content_workspace",
- *   label = @Translation("Content workspace"),
- *   label_singular = @Translation("content workspace"),
- *   label_plural = @Translation("content workspaces"),
+ *   id = "workspace_association",
+ *   label = @Translation("Workspace association"),
+ *   label_singular = @Translation("workspace association"),
+ *   label_plural = @Translation("workspace associations"),
  *   label_count = @PluralTranslation(
- *     singular = "@count content workspace",
- *     plural = "@count content workspaces"
+ *     singular = "@count workspace association",
+ *     plural = "@count workspace associations"
  *   ),
- *   base_table = "content_workspace",
- *   revision_table = "content_workspace_revision",
+ *   base_table = "workspace_association",
+ *   revision_table = "workspace_association_revision",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",
@@ -32,7 +32,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   This entity is marked internal because it should not be used directly to
  *   alter the workspace an entity belongs to.
  */
-class ContentWorkspace extends ContentEntityBase {
+class WorkspaceAssociation extends ContentEntityBase {
 
   /**
    * {@inheritdoc}

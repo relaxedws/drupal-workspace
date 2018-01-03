@@ -20,7 +20,7 @@ class Tables extends BaseTables {
   protected $workspaceManager;
 
   /**
-   * Content workspace table array, key is base table name, value is alias.
+   * Workspace association table array, key is base table name, value is alias.
    *
    * @var array
    */
@@ -44,11 +44,11 @@ class Tables extends BaseTables {
 
     $this->workspaceManager = \Drupal::service('workspace.manager');
 
-    // The join between the first 'content_workspace' table and base table of
-    // the query is done \Drupal\workspace\EntityQuery\QueryTrait::prepare(), so
-    // we need to initialize its entry manually.
+    // The join between the first 'workspace_association' table and base table
+    // of the query is done \Drupal\workspace\EntityQuery\QueryTrait::prepare(),
+    // so we need to initialize its entry manually.
     if ($this->sqlQuery->getMetaData('active_workspace_id')) {
-      $this->contentWorkspaceTables['base_table'] = 'content_workspace';
+      $this->contentWorkspaceTables['base_table'] = 'workspace_association';
       $this->baseTablesEntityType['base_table'] = $this->sqlQuery->getMetaData('entity_type');
     }
   }
@@ -98,8 +98,8 @@ class Tables extends BaseTables {
         $revision_key = $this->entityManager->getDefinition($entity_type_id)->getKey('revision');
 
         if ($id_field === $revision_key || $id_field === 'revision_id') {
-          $content_workspace_table = $this->contentWorkspaceTables[$base_table];
-          $join_condition = "{$condition_parts[0]} = COALESCE($content_workspace_table.content_entity_revision_id, {$condition_parts[1]})";
+          $workspace_association_table = $this->contentWorkspaceTables[$base_table];
+          $join_condition = "{$condition_parts[0]} = COALESCE($workspace_association_table.content_entity_revision_id, {$condition_parts[1]})";
         }
       }
     }
@@ -115,14 +115,14 @@ class Tables extends BaseTables {
 
     $active_workspace_id = $this->sqlQuery->getMetaData('active_workspace_id');
     if ($active_workspace_id && $this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type)) {
-      $this->addContentWorkspaceJoin($entity_type->id(), $next_base_table_alias, $active_workspace_id);
+      $this->addWorkspaceAssociationJoin($entity_type->id(), $next_base_table_alias, $active_workspace_id);
     }
 
     return $next_base_table_alias;
   }
 
   /**
-   * Adds a new join to the 'content_workspace' table for an entity base table.
+   * Adds a new join to the 'workspace_association' table for an entity base table.
    *
    * This method assumes that the active workspace has already been determined
    * to be a non-default workspace.
@@ -137,14 +137,14 @@ class Tables extends BaseTables {
    * @return string
    *   The alias of the joined table.
    */
-  public function addContentWorkspaceJoin($entity_type_id, $base_table_alias, $active_workspace_id) {
+  public function addWorkspaceAssociationJoin($entity_type_id, $base_table_alias, $active_workspace_id) {
     if (!isset($this->contentWorkspaceTables[$base_table_alias])) {
       $entity_type = $this->entityManager->getDefinition($entity_type_id);
       $id_field = $entity_type->getKey('id');
 
-      // LEFT join the Content Workspace entity's table so we can properly
+      // LEFT join the Workspace association entity's table so we can properly
       // include live content along with a possible workspace-specific revision.
-      $this->contentWorkspaceTables[$base_table_alias] = $this->sqlQuery->leftJoin('content_workspace', NULL, "%alias.content_entity_type_id = '$entity_type_id' AND %alias.content_entity_id = $base_table_alias.$id_field AND %alias.workspace = '$active_workspace_id'");
+      $this->contentWorkspaceTables[$base_table_alias] = $this->sqlQuery->leftJoin('workspace_association', NULL, "%alias.content_entity_type_id = '$entity_type_id' AND %alias.content_entity_id = $base_table_alias.$id_field AND %alias.workspace = '$active_workspace_id'");
 
       $this->baseTablesEntityType[$base_table_alias] = $entity_type->id();
     }

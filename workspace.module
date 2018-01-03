@@ -102,9 +102,9 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
  * Implements hook_rest_resource_alter().
  */
 function workspace_rest_resource_alter(&$definitions) {
-  // ContentWorkspace and ReplicationLog are internal entity types, therefore
-  // they should not be exposed via REST.
-  unset($definitions['entity:content_workspace']);
+  // WorkspaceAssociation and ReplicationLog are internal entity types,
+  // therefore they should not be exposed via REST.
+  unset($definitions['entity:workspace_association']);
   unset($definitions['entity:replication_log']);
 }
 

@@ -32,7 +32,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * @var string[]
    */
   protected $blacklist = [
-    'content_workspace',
+    'workspace_association',
     'replication_log',
     'workspace',
   ];

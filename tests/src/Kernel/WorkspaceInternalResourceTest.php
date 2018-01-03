@@ -20,14 +20,14 @@ class WorkspaceInternalResourceTest extends KernelTestBase {
   public static $modules = ['user', 'serialization', 'rest', 'workspace'];
 
   /**
-   * Tests enabling content workspaces for REST throws an exception.
+   * Tests enabling workspace associations for REST throws an exception.
    *
    * @see workspace_rest_resource_alter()
    */
-  public function testCreateContentWorkspaceResource() {
-    $this->setExpectedException(PluginNotFoundException::class, 'The "entity:content_workspace" plugin does not exist.');
+  public function testCreateWorkspaceAssociationResource() {
+    $this->setExpectedException(PluginNotFoundException::class, 'The "entity:workspace_association" plugin does not exist.');
     RestResourceConfig::create([
-      'id' => 'entity.content_workspace',
+      'id' => 'entity.workspace_association',
       'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
       'configuration' => [
         'methods' => ['GET'],

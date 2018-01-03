@@ -5,7 +5,7 @@ namespace Drupal\workspace;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\workspace\Entity\ContentWorkspace;
+use Drupal\workspace\Entity\WorkspaceAssociation;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -71,7 +71,7 @@ class EntityOperations implements ContainerInjectionInterface {
     $entity_ids = array_keys($entities);
     $max_revision_id = 'max_content_entity_revision_id';
     $results = $this->entityTypeManager
-      ->getStorage('content_workspace')
+      ->getStorage('workspace_association')
       ->getAggregateQuery()
       ->allRevisions()
       ->aggregate('content_entity_revision_id', 'MAX', NULL, $max_revision_id)
@@ -202,11 +202,11 @@ class EntityOperations implements ContainerInjectionInterface {
   }
 
   /**
-   * Updates or creates a ContentWorkspace entity for a given entity.
+   * Updates or creates a WorkspaceAssociation entity for a given entity.
    *
    * If the passed-in entity can belong to a workspace and already has a
-   * ContentWorkspace entity, then a new revision of this will be created with
-   * the new information. Otherwise, a new ContentWorkspace entity is created to
+   * WorkspaceAssociation entity, then a new revision of this will be created with
+   * the new information. Otherwise, a new WorkspaceAssociation entity is created to
    * store the passed-in entity's information.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
@@ -214,38 +214,38 @@ class EntityOperations implements ContainerInjectionInterface {
    */
   protected function trackEntity(EntityInterface $entity) {
     /** @var \Drupal\Core\Entity\RevisionableInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
-    // If the entity is not new, check if there's an existing ContentWorkspace
-    // entity for it.
+    // If the entity is not new, check if there's an existing
+    // WorkspaceAssociation entity for it.
     if (!$entity->isNew()) {
-      $content_workspaces = $this->entityTypeManager
-        ->getStorage('content_workspace')
+      $workspace_associations = $this->entityTypeManager
+        ->getStorage('workspace_association')
         ->loadByProperties([
           'content_entity_type_id' => $entity->getEntityTypeId(),
           'content_entity_id' => $entity->id(),
         ]);
 
-      /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
-      $content_workspace = reset($content_workspaces);
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $workspace_association */
+      $workspace_association = reset($workspace_associations);
     }
 
-    // If there was a ContentWorkspace entry create a new revision, otherwise
-    // create a new entity with the type and ID.
-    if (!empty($content_workspace)) {
-      $content_workspace->setNewRevision(TRUE);
+    // If there was a WorkspaceAssociation entry create a new revision,
+    // otherwise create a new entity with the type and ID.
+    if (!empty($workspace_association)) {
+      $workspace_association->setNewRevision(TRUE);
     }
     else {
-      $content_workspace = ContentWorkspace::create([
+      $workspace_association = WorkspaceAssociation::create([
         'content_entity_type_id' => $entity->getEntityTypeId(),
         'content_entity_id' => $entity->id(),
       ]);
     }
 
     // Add the revision ID and the workspace ID.
-    $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
-    $content_workspace->set('workspace', $this->workspaceManager->getActiveWorkspace()->id());
+    $workspace_association->set('content_entity_revision_id', $entity->getRevisionId());
+    $workspace_association->set('workspace', $this->workspaceManager->getActiveWorkspace()->id());
 
     // Save without updating the tracked content entity.
-    $content_workspace->save();
+    $workspace_association->save();
   }
 
 }

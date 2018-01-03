@@ -99,7 +99,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->entityTypeManager = \Drupal::entityTypeManager();
 
     $this->installEntitySchema('workspace');
-    $this->installEntitySchema('content_workspace');
+    $this->installEntitySchema('workspace_association');
     $this->installEntitySchema('replication_log');
 
     // Create two workspaces by default, 'live' and 'stage'.

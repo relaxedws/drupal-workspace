@@ -150,15 +150,15 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // relative to the source workspace.
     $this->workspaceManager->setActiveWorkspace($source_workspace);
 
-    $content_workspace_ids = [];
+    $workspace_association_ids = [];
     foreach ($this->workspaceManager->getSupportedEntityTypes() as $entity_type_id => $entity_type) {
       // Get all entity revision IDs for all entities which are in only one
       // of either the source or the target workspaces. We assume that this
       // means the revision is in the source, but not the target, and the
       // revision has not been replicated yet.
       $select = $this->database
-        ->select('content_workspace_revision', 'cwr')
-        ->fields('cwr', ['content_entity_revision_id']);
+        ->select('workspace_association_revision', 'war')
+        ->fields('war', ['content_entity_revision_id']);
       $select->condition('content_entity_type_id', $entity_type_id);
       $select->condition('workspace', [$source_workspace->id(), $target_workspace->id()], 'IN');
       $select->groupBy('content_entity_revision_id');
@@ -166,10 +166,10 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
       $revision_difference = $select->execute()->fetchCol();
 
       if (!empty($revision_difference)) {
-        // Get the content workspace IDs for all of the entity revision IDs
+        // Get the workspace association IDs for all of the entity revision IDs
         // which are not yet in the target workspace.
-        $content_workspace_ids[$entity_type_id] = $this->entityTypeManager
-          ->getStorage('content_workspace')
+        $workspace_association_ids[$entity_type_id] = $this->entityTypeManager
+          ->getStorage('workspace_association')
           ->getQuery()
           ->allRevisions()
           ->condition('content_entity_type_id', $entity_type_id)
@@ -180,19 +180,19 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     }
 
     $entities = [];
-    foreach ($content_workspace_ids as $entity_type_id => $ids) {
+    foreach ($workspace_association_ids as $entity_type_id => $ids) {
       foreach ($ids as $revision_id => $entity_id) {
-        // Get the content workspace entity for revision that is in the source
+        // Get the workspace association entity for revision that is in the source
         // workspace.
-        /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
-        $content_workspace = $this->entityTypeManager->getStorage('content_workspace')->loadRevision($revision_id);
+        /** @var \Drupal\Core\Entity\ContentEntityInterface $workspace_association */
+        $workspace_association = $this->entityTypeManager->getStorage('workspace_association')->loadRevision($revision_id);
         if ($target_workspace->isDefaultWorkspace()) {
           // If the target workspace is the default workspace, the revision
           // needs to be set to the default revision.
           /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
           $entity = $this->entityTypeManager
-            ->getStorage($content_workspace->content_entity_type_id->value)
-            ->loadRevision($content_workspace->content_entity_revision_id->value);
+            ->getStorage($workspace_association->content_entity_type_id->value)
+            ->loadRevision($workspace_association->content_entity_revision_id->value);
           $entity->_isReplicating = TRUE;
           $entity->isDefaultRevision(TRUE);
           $entities[] = $entity;
@@ -201,9 +201,9 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
           // If the target workspace is not the default workspace, the content
           // workspace link entity can simply be updated with the target
           // workspace.
-          $content_workspace->setNewRevision(TRUE);
-          $content_workspace->workspace->target_id = $target_workspace->id();
-          $content_workspace->save();
+          $workspace_association->setNewRevision(TRUE);
+          $workspace_association->workspace->target_id = $target_workspace->id();
+          $workspace_association->save();
         }
       }
     }

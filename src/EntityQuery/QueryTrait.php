@@ -59,11 +59,11 @@ trait QueryTrait {
       $this->sqlQuery->addMetaData('active_workspace_id', $active_workspace->id());
       $this->sqlQuery->addMetaData('simple_query', FALSE);
 
-      // LEFT JOIN 'content_workspace' to the base table of the query so we can
-      // properly include live content along with a possible workspace-specific
+      // LEFT JOIN 'workspace_association' to the base table of the query so we
+      // can properly include live content along with a possible workspace
       // revision.
       $id_field = $this->entityType->getKey('id');
-      $this->sqlQuery->leftJoin('content_workspace', 'content_workspace', "%alias.content_entity_type_id = '{$this->entityTypeId}' AND %alias.content_entity_id = base_table.$id_field AND %alias.workspace = '{$active_workspace->id()}'");
+      $this->sqlQuery->leftJoin('workspace_association', 'workspace_association', "%alias.content_entity_type_id = '{$this->entityTypeId}' AND %alias.content_entity_id = base_table.$id_field AND %alias.workspace = '{$active_workspace->id()}'");
     }
 
     return $this;
