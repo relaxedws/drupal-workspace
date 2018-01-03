@@ -16,7 +16,6 @@ use Drupal\workspace\Entity\Workspace;
  * Tests a complete deployment scenario across different workspaces.
  *
  * @group workspace
- * @group failing
  */
 class WorkspaceIntegrationTest extends KernelTestBase {
 
