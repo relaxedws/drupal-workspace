@@ -45,16 +45,16 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
   protected function setUpAuthorization($method) {
     switch ($method) {
       case 'GET':
-        $this->grantPermissionsToTestedRole(['view workspace layla']);
+        $this->grantPermissionsToTestedRole(['view any workspace']);
         break;
       case 'POST':
         $this->grantPermissionsToTestedRole(['create workspace']);
         break;
       case 'PATCH':
-        $this->grantPermissionsToTestedRole(['edit workspace layla']);
+        $this->grantPermissionsToTestedRole(['edit any workspace']);
         break;
       case 'DELETE':
-        $this->grantPermissionsToTestedRole(['delete workspace layla']);
+        $this->grantPermissionsToTestedRole(['delete any workspace']);
         break;
     }
   }
@@ -182,26 +182,19 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
 
     switch ($method) {
       case 'GET':
-        return "The 'view workspace layla' permission is required.";
+        return "The 'view any workspace' permission is required.";
         break;
       case 'POST':
         return "The 'create workspace' permission is required.";
         break;
       case 'PATCH':
-        return "The 'edit workspace layla' permission is required.";
+        return "The 'edit any workspace' permission is required.";
         break;
       case 'DELETE':
-        return "The 'delete workspace layla' permission is required.";
+        return "The 'delete any workspace' permission is required.";
         break;
     }
     return parent::getExpectedUnauthorizedAccessMessage($method);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getExpectedUnauthorizedAccessCacheability() {
-    return parent::getExpectedUnauthorizedAccessCacheability()->addCacheTags($this->entity->getCacheTags());
   }
 
   /**

@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Defines the session workspace negotiator.
+ *
+ * This implementation uses the private tempstore of a user to store the ID of
+ * the active workspace in order to make it persistent between login/logout
+ * actions.
  */
 class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
 

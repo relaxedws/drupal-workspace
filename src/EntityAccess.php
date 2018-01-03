@@ -144,46 +144,8 @@ class EntityAccess implements ContainerInjectionInterface {
 
     foreach ($this->entityTypeManager->getStorage('workspace')->loadMultiple() as $workspace) {
       /** @var \Drupal\workspace\WorkspaceInterface $workspace */
-      $perms += $this->createWorkspaceViewPermission($workspace)
-      + $this->createWorkspaceEditPermission($workspace)
-      + $this->createWorkspaceBypassPermission($workspace);
+      $perms += $this->createWorkspaceBypassPermission($workspace);
     }
-
-    return $perms;
-  }
-
-  /**
-   * Derives the view permission for a specific workspace.
-   *
-   * @param \Drupal\workspace\WorkspaceInterface $workspace
-   *   The workspace from which to derive the permission.
-   *
-   * @return array
-   *   A single-item array with the permission to define.
-   */
-  protected function createWorkspaceViewPermission(WorkspaceInterface $workspace) {
-    $perms['view workspace ' . $workspace->id()] = [
-      'title' => $this->t('View the %workspace workspace', ['%workspace' => $workspace->label()]),
-      'description' => $this->t('View the %workspace workspace and content within it', ['%workspace' => $workspace->label()]),
-    ];
-
-    return $perms;
-  }
-
-  /**
-   * Derives the edit permission for a specific workspace.
-   *
-   * @param \Drupal\workspace\WorkspaceInterface $workspace
-   *   The workspace from which to derive the permission.
-   *
-   * @return array
-   *   A single-item array with the permission to define.
-   */
-  protected function createWorkspaceEditPermission(WorkspaceInterface $workspace) {
-    $perms['edit workspace ' . $workspace->id()] = [
-      'title' => $this->t('Edit the %workspace workspace', ['%workspace' => $workspace->label()]),
-      'description' => $this->t('Edit the %workspace workspace itself', ['%workspace' => $workspace->label()]),
-    ];
 
     return $perms;
   }

@@ -48,10 +48,8 @@ class WorkspaceAccessTest extends KernelTestBase {
   public function operationCases() {
     return [
       ['create', 'create workspace'],
-      ['view', 'view workspace oak'],
       ['view', 'view any workspace'],
       ['view', 'view own workspace'],
-      ['update', 'edit workspace oak'],
       ['update', 'edit any workspace'],
       ['update', 'edit own workspace'],
     ];

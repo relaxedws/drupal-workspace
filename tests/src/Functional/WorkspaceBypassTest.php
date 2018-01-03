@@ -52,7 +52,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Create a new user that should be able to edit anything in the Bears
     // workspace.
-    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view workspace ' . $bears->id(), 'bypass entity access workspace ' . $bears->id()]));
+    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view any workspace', 'bypass entity access workspace ' . $bears->id()]));
     $this->drupalLogin($lombardi);
     $this->switchToWorkspace($bears);
 
@@ -72,7 +72,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Create a new user that should NOT be able to edit anything in the Bears
     // workspace.
-    $belichick = $this->drupalCreateUser(array_merge($permissions, ['view workspace ' . $bears->id()]));
+    $belichick = $this->drupalCreateUser(array_merge($permissions, ['view any workspace']));
     $this->drupalLogin($belichick);
     $this->switchToWorkspace($bears);
 
@@ -111,7 +111,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Create a new user that should be able to edit anything in the Bears
     // workspace.
-    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view workspace ' . $bears->id()]));
+    $lombardi = $this->drupalCreateUser(array_merge($permissions, ['view any workspace']));
     $this->drupalLogin($lombardi);
     $this->switchToWorkspace($bears);
 

@@ -41,12 +41,6 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
         ->addCacheableDependency($entity);
     }
 
-    // Check if the user has permission to access an individual workspace.
-    if ($access_result->isNeutral()) {
-      $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' workspace ' . $entity->id())
-        ->addCacheableDependency($entity);
-    }
-
     return $access_result;
   }
 
