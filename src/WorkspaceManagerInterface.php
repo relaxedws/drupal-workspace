@@ -2,7 +2,6 @@
 
 namespace Drupal\workspace;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
@@ -49,18 +48,5 @@ interface WorkspaceManagerInterface {
    *   Thrown when the current user doesn't have access to view the workspace.
    */
   public function setActiveWorkspace(WorkspaceInterface $workspace);
-
-  /**
-   * Update or create a ContentWorkspace entity from another entity.
-   *
-   * If the passed-in entity can belong to a workspace and already has a
-   * ContentWorkspace entity, then a new revision of this will be created with
-   * the new information. Otherwise, a new ContentWorkspace entity is created to
-   * store the passed-in entity's information.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to update or create from.
-   */
-  public function updateOrCreateFromEntity(EntityInterface $entity);
 
 }

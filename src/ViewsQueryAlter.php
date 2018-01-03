@@ -1,0 +1,417 @@
+<?php
+
+namespace Drupal\workspace;
+
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
+use Drupal\views\Plugin\ViewsHandlerManager;
+use Drupal\views\ViewExecutable;
+use Drupal\views\ViewsData;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+/**
+ * Defines a class for altering views queries.
+ *
+ * @internal
+ */
+class ViewsQueryAlter implements ContainerInjectionInterface {
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The entity field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * The workspace manager service.
+   *
+   * @var \Drupal\workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
+   * The views data.
+   *
+   * @var \Drupal\views\ViewsData
+   */
+  protected $viewsData;
+
+  /**
+   * A plugin manager which handles instances of views join plugins.
+   *
+   * @var \Drupal\views\Plugin\ViewsHandlerManager
+   */
+  protected $viewsJoinPluginManager;
+
+  /**
+   * Constructs a new ViewsQueryAlter instance.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
+   * @param \Drupal\workspace\WorkspaceManagerInterface $workspace_manager
+   *   The workspace manager service.
+   * @param \Drupal\views\ViewsData $views_data
+   *   The views data.
+   * @param \Drupal\views\Plugin\ViewsHandlerManager $views_join_plugin_manager
+   *   The views join plugin manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, WorkspaceManagerInterface $workspace_manager, ViewsData $views_data, ViewsHandlerManager $views_join_plugin_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+    $this->entityFieldManager = $entity_field_manager;
+    $this->workspaceManager = $workspace_manager;
+    $this->viewsData = $views_data;
+    $this->viewsJoinPluginManager = $views_join_plugin_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('entity_field.manager'),
+      $container->get('workspace.manager'),
+      $container->get('views.views_data'),
+      $container->get('plugin.manager.views.join')
+    );
+  }
+
+  /**
+   * Implements a hook bridge for hook_views_query_alter().
+   *
+   * @see hook_views_query_alter()
+   */
+  public function alterQuery(ViewExecutable $view, QueryPluginBase $query) {
+    // Don't alter any views queries if we're in the default workspace.
+    if ($this->workspaceManager->getActiveWorkspace()->isDefaultWorkspace()) {
+      return;
+    }
+
+    // Don't alter any non-sql views queries.
+    if (!$query instanceof Sql) {
+      return;
+    }
+
+    // Find out what entity types are represented in this query.
+    $entity_type_ids = [];
+    foreach ($query->relationships as $info) {
+      $table_data = $this->viewsData->get($info['base']);
+      if (empty($table_data['table']['entity type'])) {
+        continue;
+      }
+      $entity_type_id = $table_data['table']['entity type'];
+      // This construct ensures each entity type exists only once.
+      $entity_type_ids[$entity_type_id] = $entity_type_id;
+    }
+
+    $entity_type_definitions = $this->entityTypeManager->getDefinitions();
+    foreach ($entity_type_ids as $entity_type_id) {
+      if ($this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type_definitions[$entity_type_id])) {
+        $this->alterQueryForEntityType($view, $query, $entity_type_definitions[$entity_type_id]);
+      }
+    }
+  }
+
+  /**
+   * Alters the entity type tables for a Views query.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object about to be processed.
+   * @param \Drupal\views\Plugin\views\query\Sql $query
+   *   The query plugin object for the query.
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   */
+  protected function alterQueryForEntityType(ViewExecutable $view, Sql $query, EntityTypeInterface $entity_type) {
+    // This is only called after we determined that this entity type is involved
+    // in the query, and that a non-default workspace is in use.
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
+    $table_mapping = $this->entityTypeManager->getStorage($entity_type->id())->getTableMapping();
+    $field_storage_definitions = $this->entityFieldManager->getFieldStorageDefinitions($entity_type->id());
+    $dedicated_field_storage_definitions = array_filter($field_storage_definitions, function ($definition) use ($table_mapping) {
+      return $table_mapping->requiresDedicatedTableStorage($definition);
+    });
+    $dedicated_field_data_tables = array_map(function ($definition) use ($table_mapping) {
+      return $table_mapping->getDedicatedDataTableName($definition);
+    }, $dedicated_field_storage_definitions);
+
+    $move_workspace_tables = [];
+    foreach ($query->tableQueue as $alias => &$table_info) {
+      // If we reach the content_workspace array item before any candidates, then
+      // we do not need to move it.
+      if ($table_info['table'] == 'content_workspace') {
+        break;
+      }
+
+      // Any dedicated field table is a candidate.
+      if ($field_name = array_search($table_info['table'], $dedicated_field_data_tables, TRUE)) {
+        $relationship = $table_info['relationship'];
+
+        // There can be reverse relationships used. If so, Workspace can't do
+        // anything with them. Detect this and skip.
+        if ($table_info['join']->field != 'entity_id') {
+          continue;
+        }
+
+        // Get the dedicated revision table name.
+        $new_table_name = $table_mapping->getDedicatedRevisionTableName($field_storage_definitions[$field_name]);
+
+        // Now add the content_workspace table.
+        $content_workspace_table = $this->ensureContentWorkspaceTable($entity_type->id(), $query, $relationship);
+
+        // Update the join to use our COALESCE.
+        $revision_field = $entity_type->getKey('revision');
+        $table_info['join']->leftTable = NULL;
+        $table_info['join']->leftField = "COALESCE($content_workspace_table.content_entity_revision_id, $relationship.$revision_field)";
+
+        // Update the join and the table info to our new table name, and to join
+        // on the revision key.
+        $table_info['table'] = $new_table_name;
+        $table_info['join']->table = $new_table_name;
+        $table_info['join']->field = 'revision_id';
+
+        // Finally, if we added the content_workspace table we have to move it in
+        // the table queue so that it comes before this field.
+        if (empty($move_workspace_tables[$content_workspace_table])) {
+          $move_workspace_tables[$content_workspace_table] = $alias;
+        }
+      }
+    }
+
+    // JOINs must be in order. i.e, any tables you mention in the ON clause of a
+    // JOIN must appear prior to that JOIN. Since we're modifying a JOIN in place,
+    // and adding a new table, we must ensure that the new table appears prior to
+    // this one. So we recorded at what index we saw that table, and then use
+    // array_splice() to move the content_workspace table join to the correct
+    // position.
+    foreach ($move_workspace_tables as $content_workspace_table => $alias) {
+      $this->moveEntityTable($query, $content_workspace_table, $alias);
+    }
+
+    $base_entity_table = $entity_type->isTranslatable() ? $entity_type->getDataTable() : $entity_type->getBaseTable();
+
+    $base_fields = array_diff($table_mapping->getFieldNames($entity_type->getBaseTable()), [$entity_type->getKey('langcode')]);
+    $revisionable_fields = array_diff($table_mapping->getFieldNames($entity_type->getRevisionDataTable()), $base_fields);
+
+    // Go through and look to see if we have to modify fields and filters.
+    foreach ($query->fields as &$field_info) {
+      // Some fields don't actually have tables, meaning they're formulae and
+      // whatnot. At this time we are going to ignore those.
+      if (empty($field_info['table'])) {
+        continue;
+      }
+
+      // Dereference the alias into the actual table.
+      $table = $query->tableQueue[$field_info['table']]['table'];
+      if ($table == $base_entity_table && in_array($field_info['field'], $revisionable_fields)) {
+        $relationship = $query->tableQueue[$field_info['table']]['alias'];
+        $alias = $this->ensureRevisionTable($entity_type, $query, $relationship);
+        if ($alias) {
+          // Change the base table to use the revision table instead.
+          $field_info['table'] = $alias;
+        }
+      }
+    }
+
+    $relationships = [];
+    // Build a list of all relationships that might be for our table.
+    foreach ($query->relationships as $relationship => $info) {
+      if ($info['base'] == $base_entity_table) {
+        $relationships[] = $relationship;
+      }
+    }
+
+    // Now we have to go through our where clauses and modify any of our fields.
+    foreach ($query->where as &$clauses) {
+      foreach ($clauses['conditions'] as &$where_info) {
+        // Build a matrix of our possible relationships against fields we need to
+        // switch.
+        foreach ($relationships as $relationship) {
+          foreach ($revisionable_fields as $field) {
+            if (is_string($where_info['field']) && $where_info['field'] == "$relationship.$field") {
+              $alias = $this->ensureRevisionTable($entity_type, $query, $relationship);
+              if ($alias) {
+                // Change the base table to use the revision table instead.
+                $where_info['field'] = "$alias.$field";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // @todo Handle $query->orderby, $query->groupby, $query->having, $query->count_field
+  }
+
+  /**
+   * Adds the 'content_workspace' table to a views query.
+   *
+   * @param string $entity_type_id
+   *   The ID of the entity type to join.
+   * @param \Drupal\views\Plugin\views\query\Sql $query
+   *   The query plugin object for the query.
+   * @param string $relationship
+   *   The primary table alias this table is related to.
+   *
+   * @return string
+   *   The alias of the 'content_workspace' table.
+   */
+  protected function ensureContentWorkspaceTable($entity_type_id, Sql $query, $relationship) {
+    if (isset($query->tables[$relationship]['content_workspace'])) {
+      return $query->tables[$relationship]['content_workspace']['alias'];
+    }
+
+    $table_data = $this->viewsData->get($query->relationships[$relationship]['base']);
+
+    // Construct the join.
+    $definition = [
+      'table' => 'content_workspace',
+      'field' => 'content_entity_id',
+      'left_table' => $relationship,
+      'left_field' => $table_data['table']['base']['field'],
+      'extra' => [
+        [
+          'field' => 'content_entity_type_id',
+          'value' => $entity_type_id,
+        ],
+        [
+          'field' => 'workspace',
+          'value' => $this->workspaceManager->getActiveWorkspace()->id(),
+        ],
+      ],
+      'type' => 'LEFT',
+    ];
+
+    $join = $this->viewsJoinPluginManager->createInstance('standard', $definition);
+    $join->adjusted = TRUE;
+
+    return $query->queueTable('content_workspace', $relationship, $join);
+  }
+
+  /**
+   * Adds the revision table of an entity type to a query object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\views\Plugin\views\query\Sql $query
+   *   The query plugin object for the query.
+   * @param string $relationship
+   *   The name of the relationship.
+   *
+   * @return string
+   *   The alias of the relationship.
+   */
+  protected function ensureRevisionTable(EntityTypeInterface $entity_type, Sql $query, $relationship) {
+    // Get the alias for the 'content_workspace' table we chain off of in the
+    // COALESCE.
+    $content_workspace_table = $this->ensureContentWorkspaceTable($entity_type->id(), $query, $relationship);
+
+    // Get the name of the revision table and revision key.
+    $base_revision_table = $entity_type->isTranslatable() ? $entity_type->getRevisionDataTable() : $entity_type->getRevisionTable();
+    $revision_field = $entity_type->getKey('revision');
+
+    // If the table was already added and has a join against the same field on
+    // the revision table, reuse that rather than adding a new join.
+    if (isset($query->tables[$relationship][$base_revision_table])) {
+      $alias = $query->tables[$relationship][$base_revision_table]['alias'];
+      if (isset($query->tableQueue[$alias]['join']->field) && $query->tableQueue[$alias]['join']->field == $revision_field) {
+        // If this table previously existed, but was not added by us, we need
+        // to modify the join and make sure that 'content_workspace' comes first.
+        if (empty($query->tableQueue[$alias]['join']->workspace_adjusted)) {
+          $query->tableQueue[$alias]['join'] = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $content_workspace_table);
+          // We also have to ensure that our 'content_workspace' comes before
+          // this.
+          $this->moveEntityTable($query, $content_workspace_table, $alias);
+        }
+
+        return $alias;
+      }
+    }
+
+    // Construct a new join.
+    $join = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $content_workspace_table);
+    return $query->queueTable($base_revision_table, $relationship, $join);
+  }
+
+  /**
+   * Fetches a join for a revision table using the 'content_workspace' table.
+   *
+   * @param string $relationship
+   *   The relationship to use in the view.
+   * @param string $table
+   *   The table name.
+   * @param string $field
+   *   The field to join on.
+   * @param string $content_workspace_table
+   *   The alias of the 'content_workspace' table joined to the main entity table.
+   *
+   * @return \Drupal\views\Plugin\views\join\JoinPluginInterface
+   *   An adjusted views join object to add to the query.
+   */
+  protected function getRevisionTableJoin($relationship, $table, $field, $content_workspace_table) {
+    $definition = [
+      'table' => $table,
+      'field' => $field,
+      // Making this explicitly null allows the left table to be a formula.
+      'left_table' => NULL,
+      'left_field' => "COALESCE($content_workspace_table.content_entity_revision_id, $relationship.$field)",
+    ];
+
+    /** @var \Drupal\views\Plugin\views\join\JoinPluginInterface $join */
+    $join = $this->viewsJoinPluginManager->createInstance('standard', $definition);
+    $join->adjusted = TRUE;
+    $join->workspace_adjusted = TRUE;
+
+    return $join;
+  }
+
+  /**
+   * Moves a 'content_workspace' table to appear before the given alias.
+   *
+   * Because Workspace chains possibly pre-existing tables onto the
+   * 'content_workspace' table, we have to ensure that the 'content_workspace'
+   * table appears in the query before the alias it's chained on or the SQL is
+   * invalid. This uses array_slice() to reconstruct the table queue of the query.
+   *
+   * @param \Drupal\views\Plugin\views\query\Sql $query
+   *   The SQL query object.
+   * @param string $content_workspace_table
+   *   The alias of the 'content_workspace' table.
+   * @param string $alias
+   *   The alias of the table it needs to appear before.
+   */
+  protected function moveEntityTable(Sql $query, $content_workspace_table, $alias) {
+    $keys = array_keys($query->tableQueue);
+    $current_index = array_search($content_workspace_table, $keys);
+    $index = array_search($alias, $keys);
+
+    // If it's already before our table, we don't need to move it, as we could
+    // accidentally move it forward.
+    if ($current_index < $index) {
+      return;
+    }
+    $splice = [$content_workspace_table => $query->tableQueue[$content_workspace_table]];
+    unset($query->tableQueue[$content_workspace_table]);
+
+    // Now move the item to the proper location in the array. Don't use
+    // array_splice() because that breaks indices.
+    $query->tableQueue = array_slice($query->tableQueue, 0, $index, TRUE) +
+      $splice +
+      array_slice($query->tableQueue, $index, NULL, TRUE);
+  }
+
+}

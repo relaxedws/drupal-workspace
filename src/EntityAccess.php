@@ -12,6 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Service wrapper for hooks relating to entity access control.
+ *
+ * @internal
  */
 class EntityAccess implements ContainerInjectionInterface {
 

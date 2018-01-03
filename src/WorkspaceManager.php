@@ -3,13 +3,11 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\workspace\Entity\ContentWorkspace;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -191,44 +189,6 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     }
 
     return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function updateOrCreateFromEntity(EntityInterface $entity) {
-    // If the entity is not new, check if there's an existing ContentWorkspace
-    // entity for it.
-    if (!$entity->isNew()) {
-      $content_workspaces = $this->entityTypeManager
-        ->getStorage('content_workspace')
-        ->loadByProperties([
-          'content_entity_type_id' => $entity->getEntityTypeId(),
-          'content_entity_id' => $entity->id(),
-        ]);
-
-      /** @var \Drupal\Core\Entity\ContentEntityInterface $content_workspace */
-      $content_workspace = reset($content_workspaces);
-    }
-
-    // If there was a ContentWorkspace entry create a new revision, otherwise
-    // create a new entity with the type and ID.
-    if (!empty($content_workspace)) {
-      $content_workspace->setNewRevision(TRUE);
-    }
-    else {
-      $content_workspace = ContentWorkspace::create([
-        'content_entity_type_id' => $entity->getEntityTypeId(),
-        'content_entity_id' => $entity->id(),
-      ]);
-    }
-
-    // Add the revision ID and the workspace ID.
-    $content_workspace->set('content_entity_revision_id', $entity->getRevisionId());
-    $content_workspace->set('workspace', $this->getActiveWorkspace()->id());
-
-    // Save without updating the content entity.
-    $content_workspace->save();
   }
 
 }
