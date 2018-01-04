@@ -199,19 +199,7 @@ class UpdateForm extends ConfirmFormBase {
         }
       }
       else {
-        if (!empty($response->get('error')->value)) {
-          drupal_set_message($this->t(
-            'Error updating %workspace from %upstream: ' . $response->get('error')->value,
-            [
-              '%upstream' => $upstream->label(),
-              '%workspace' => $active->label()
-            ]
-          ),
-            'error');
-        }
-        else {
-          drupal_set_message($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]), 'error');
-        }
+        drupal_set_message($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]), 'error');
       }
     }
     catch (\Exception $e) {
