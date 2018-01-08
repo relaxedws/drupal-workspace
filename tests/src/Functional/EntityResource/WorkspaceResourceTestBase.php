@@ -37,7 +37,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $secondCreatedEntityId = 'running_on_faith_1';
+  protected static $secondCreatedEntityId = 'running_on_faith_2';
 
   /**
    * {@inheritdoc}
@@ -134,11 +134,11 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function getNormalizedPostEntity($which = NULL) {
+  protected function getNormalizedPostEntity() {
     return [
       'id' => [
         [
-          'value' => 'running_on_faith' . ($which === 1 ? '_1' : ''),
+          'value' => static::$firstCreatedEntityId,
         ],
       ],
       'label' => [
@@ -152,6 +152,16 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSecondNormalizedPostEntity() {
+    $normalized_post_entity = $this->getNormalizedPostEntity();
+    $normalized_post_entity['id'][0]['value'] = static::$secondCreatedEntityId;
+
+    return $normalized_post_entity;
   }
 
   /**
