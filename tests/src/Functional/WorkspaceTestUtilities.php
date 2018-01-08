@@ -47,19 +47,14 @@ trait WorkspaceTestUtilities {
    *   The label of the workspace to create.
    * @param string $id
    *   The ID of the workspace to create.
-   * @param string $upstream
-   *   The ID of the replication handler plugin of the workspace.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\workspace\WorkspaceInterface
    *   The workspace that was just created.
-   *
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
-  protected function createWorkspaceThroughUi($label, $id, $upstream = 'local_workspace:live') {
+  protected function createWorkspaceThroughUi($label, $id) {
     $this->drupalPostForm('/admin/config/workflow/workspace/add', [
       'id' => $id,
       'label' => $label,
-      'upstream[0][value]' => $upstream,
     ], 'Save');
 
     $this->getSession()->getPage()->hasContent("$label ($id)");

@@ -74,7 +74,6 @@ class WorkspaceTest extends BrowserTestBase {
     $this->drupalPostForm('/admin/config/workflow/workspace/add', [
       'id' => 'test_workspace',
       'label' => 'Test workspace',
-      'upstream[0][value]' => 'local_workspace:live',
     ], 'Save');
 
     $storage = \Drupal::entityTypeManager()->getStorage('workspace');

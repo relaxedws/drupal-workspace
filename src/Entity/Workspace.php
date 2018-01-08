@@ -111,11 +111,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDescription(new TranslatableMarkup('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'workspace_upstream',
-        'weight' => 4,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
+      ->setDefaultValue('local_workspace:live')
       ->addPropertyConstraints('value', [
         'Upstream' => [],
       ]);
