@@ -38,5 +38,9 @@ update any workspace from upstream:
   title: Update any workspace from upstream
   description: Update any workspace with the latest changes from its upstream workspace.
 
+access replication settings fields:
+  title: Set or update replication settings fields
+  description: Allow to set or modify the value for the replication settings fields for a workspace.
+
 permission_callbacks:
   - workspace.entity_access::workspacePermissions
