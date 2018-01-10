@@ -227,25 +227,10 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // the history.
     return $this->updateReplicationLog($replication_log, [
       'entity_write_failures' => 0,
-      'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
       'session_id' => $this->uuidService->generate(),
-      'start_last_sequence' => $this->getLastSequenceId($replication_log),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
+      'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
     ]);
-  }
-
-  /**
-   * Gets the last sequence ID from a replication log entity.
-   *
-   * @param \Drupal\workspace\ReplicationLogInterface $replication_log
-   *   The replication log entity to get the last sequence ID from.
-   *
-   * @return int
-   *   The last sequence ID for the replication log.
-   */
-  protected function getLastSequenceId(ReplicationLogInterface $replication_log) {
-    $history = $replication_log->getHistory();
-    return isset($history[0]['recorded_sequence']) ? $history[0]['recorded_sequence'] : 0;
   }
 
   /**

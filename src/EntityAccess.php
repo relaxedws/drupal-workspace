@@ -134,10 +134,6 @@ class EntityAccess implements ContainerInjectionInterface {
   /**
    * Returns an array of workspace-specific permissions.
    *
-   * Note: This approach assumes that a site will have only a small number of
-   * workspace entities, under a dozen. If there are many dozens of workspaces
-   * defined then this approach will have scaling issues.
-   *
    * @return array
    *   The workspace permissions.
    */

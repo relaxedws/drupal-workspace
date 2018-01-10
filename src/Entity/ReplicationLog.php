@@ -110,20 +110,20 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
 
     $fields['history'] = BaseFieldDefinition::create('replication_history')
       ->setLabel(new TranslatableMarkup('Replication log history'))
-      ->setDescription(new TranslatableMarkup('The version id of the test entity.'))
+      ->setDescription(new TranslatableMarkup('The replication history.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
     $fields['session_id'] = BaseFieldDefinition::create('uuid')
       ->setLabel(new TranslatableMarkup('Replication session ID'))
       ->setDescription(new TranslatableMarkup('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'));
 
-    $fields['source_last_sequence'] = BaseFieldDefinition::create('string')
+    $fields['source_last_sequence'] = BaseFieldDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Last processed checkpoint'))
-      ->setDescription(new TranslatableMarkup('The last processed checkpoint. Shortcut to the source_last_sequence in the last history item.'));
+      ->setDescription(new TranslatableMarkup('The last processed checkpoint, used in partial deployments to a remote target. Shortcut to the recorded_sequence in the last history item.'));
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(new TranslatableMarkup('Status'))
-      ->setDescription(new TranslatableMarkup('Replication status'))
+      ->setDescription(new TranslatableMarkup('The replication status.'))
       ->setDefaultValue(TRUE);
 
     return $fields;

@@ -50,20 +50,20 @@ class WorkspaceAssociation extends ContentEntityBase {
 
     $fields['content_entity_type_id'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Content entity type ID'))
-      ->setDescription(new TranslatableMarkup('The ID of the content entity type this workspace is for.'))
+      ->setDescription(new TranslatableMarkup('The ID of the content entity type associated with this workspace.'))
       ->setSetting('max_length', EntityTypeInterface::ID_MAX_LENGTH)
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
     $fields['content_entity_id'] = BaseFieldDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Content entity ID'))
-      ->setDescription(new TranslatableMarkup('The ID of the content entity this workspace is for.'))
+      ->setDescription(new TranslatableMarkup('The ID of the content entity associated with this workspace.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
     $fields['content_entity_revision_id'] = BaseFieldDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Content entity revision ID'))
-      ->setDescription(new TranslatableMarkup('The revision ID of the content entity this workspace is for.'))
+      ->setDescription(new TranslatableMarkup('The revision ID of the content entity associated with this workspace.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
