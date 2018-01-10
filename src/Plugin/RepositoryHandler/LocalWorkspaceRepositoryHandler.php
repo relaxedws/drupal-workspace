@@ -23,7 +23,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "local_workspace",
  *   label = @Translation("Local workspace"),
  *   description = @Translation("A workspace that is defined in the local Drupal installation."),
- *   remote = FALSE,
  *   deriver = "Drupal\workspace\Plugin\Deriver\LocalWorkspaceRepositoryHandlerDeriver",
  * )
  */

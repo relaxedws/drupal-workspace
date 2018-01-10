@@ -50,11 +50,4 @@ class RepositoryHandler extends Plugin {
    */
   public $category = '';
 
-  /**
-   * Whether the repository handles a remote destination or not.
-   *
-   * @var bool
-   */
-  public $remote;
-
 }

@@ -34,13 +34,6 @@ abstract class RepositoryHandlerBase extends PluginBase implements RepositoryHan
   /**
    * {@inheritdoc}
    */
-  public function isRemote() {
-    return $this->getPluginDefinition()['remote'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function calculateDependencies() {
     return [];
   }

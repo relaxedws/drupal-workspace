@@ -42,14 +42,6 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
   public function getDescription();
 
   /**
-   * Returns whether the repository handler is remote or not.
-   *
-   * @return bool
-   *   TRUE if the repository handler is remote, FALSE otherwise.
-   */
-  public function isRemote();
-
-  /**
    * Replicates content from a source repository to a target repository.
    *
    * @param \Drupal\workspace\RepositoryHandlerInterface $source
