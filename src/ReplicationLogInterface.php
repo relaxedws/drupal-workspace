@@ -35,22 +35,22 @@ interface ReplicationLogInterface extends ContentEntityInterface {
   public function appendHistory(array $history);
 
   /**
-   * Gets the session ID.
+   * Gets the session UUID.
    *
    * @return string
-   *   The session ID.
+   *   The session UUID.
    */
-  public function getSessionId();
+  public function getSessionUuid();
 
   /**
-   * Sets the session ID.
+   * Sets the session UUID.
    *
-   * @param string $session_id
-   *   The session ID to set.
+   * @param string $session_uuid
+   *   The session UUID to set.
    *
    * @return $this
    */
-  public function setSessionId($session_id);
+  public function setSessionUuid($session_uuid);
 
   /**
    * Gets the last processed checkpoint.

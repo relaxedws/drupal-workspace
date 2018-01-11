@@ -11,12 +11,13 @@ use Drupal\Core\TypedData\DataDefinition;
  * Defines the 'replication_history' entity field type.
  *
  * For each replication a history should be maintained. The only required field
- * is session_id which is a unique ID for the replication. The recorded_sequence
- * field is another important field, it stores the sequence ID of the last
- * entity replicated. It is where replication is started from next time, and
- * therefore defaults to 0, denoting to start from the first sequence ID. All
- * other fields are for informational purposes which can be used for user
- * messages, logs, or an audit trail.
+ * is session_uuid which is a unique ID for the replication. The
+ * recorded_sequence field is another important field for remote replication,
+ * it stores the sequence ID of the last entity replicated. It is where the
+ * remote replication is started from next time, and therefore defaults to 0,
+ * denoting to start from the first sequence ID. All other fields are for
+ * informational purposes which can be used for user messages, logs, or an audit
+ * trail.
  *
  * @FieldType(
  *   id = "replication_history",
@@ -31,7 +32,7 @@ class ReplicationHistoryItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'session_id';
+    return 'session_uuid';
   }
 
   /**
@@ -68,9 +69,9 @@ class ReplicationHistoryItem extends FieldItemBase {
       ->setDescription(new TranslatableMarkup('Recorded intermediate sequence.'))
       ->setRequired(FALSE);
 
-    $properties['session_id'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Session ID'))
-      ->setDescription(new TranslatableMarkup('Unique session ID for the replication.'))
+    $properties['session_uuid'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('Session UUID'))
+      ->setDescription(new TranslatableMarkup('Unique session UUID for the replication.'))
       ->setRequired(TRUE);
 
     $properties['start_last_sequence'] = DataDefinition::create('integer')
@@ -95,48 +96,39 @@ class ReplicationHistoryItem extends FieldItemBase {
         'entity_write_failures' => [
           'type' => 'int',
           'unsigned' => TRUE,
-          'not null' => FALSE,
         ],
         'entities_read' => [
           'type' => 'int',
           'unsigned' => TRUE,
-          'not null' => FALSE,
         ],
         'entities_written' => [
           'type' => 'int',
           'unsigned' => TRUE,
-          'not null' => FALSE,
         ],
         'end_last_sequence' => [
           'type' => 'int',
           'size' => 'big',
-          'not null' => FALSE,
         ],
         'end_time' => [
           'type' => 'varchar',
           'length' => 50,
-          'not null' => FALSE,
         ],
         'recorded_sequence' => [
           'type' => 'int',
           'size' => 'big',
-          'not null' => FALSE,
           'default' => 0,
         ],
-        'session_id' => [
-          'type' => 'varchar',
+        'session_uuid' => [
+          'type' => 'varchar_ascii',
           'length' => 128,
-          'not null' => TRUE,
         ],
         'start_last_sequence' => [
           'type' => 'int',
           'size' => 'big',
-          'not null' => FALSE,
         ],
         'start_time' => [
           'type' => 'varchar',
           'length' => 50,
-          'not null' => FALSE,
         ],
       ],
     ];

@@ -226,7 +226,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // the history.
     return $this->updateReplicationLog($replication_log, [
       'entity_write_failures' => 0,
-      'session_id' => $this->uuidService->generate(),
+      'session_uuid' => $this->uuidService->generate(),
       'start_time' => $start_time->format('D, d M Y H:i:s e'),
       'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
     ]);
@@ -245,7 +245,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    */
   protected function updateReplicationLog(ReplicationLogInterface $replication_log, array $history) {
     $replication_log->appendHistory($history);
-    $replication_log->setSessionId($history['session_id']);
+    $replication_log->setSessionUuid($history['session_uuid']);
     $replication_log->save();
     return $replication_log;
   }

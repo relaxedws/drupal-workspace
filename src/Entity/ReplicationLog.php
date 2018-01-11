@@ -55,15 +55,15 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
   /**
    * {@inheritdoc}
    */
-  public function getSessionId() {
-    return $this->get('session_id')->value;
+  public function getSessionUuid() {
+    return $this->get('session_uuid')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSessionId($session_id) {
-    $this->set('session_id', $session_id);
+  public function setSessionUuid($session_uuid) {
+    $this->set('session_uuid', $session_uuid);
     return $this;
   }
 
@@ -113,9 +113,9 @@ class ReplicationLog extends ContentEntityBase implements ReplicationLogInterfac
       ->setDescription(new TranslatableMarkup('The replication history.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
-    $fields['session_id'] = BaseFieldDefinition::create('uuid')
-      ->setLabel(new TranslatableMarkup('Replication session ID'))
-      ->setDescription(new TranslatableMarkup('The unique session ID of the last replication. Shortcut to the session_id in the last history item.'));
+    $fields['session_uuid'] = BaseFieldDefinition::create('uuid')
+      ->setLabel(new TranslatableMarkup('Replication session UUID'))
+      ->setDescription(new TranslatableMarkup('The unique session UUID of the last replication. Shortcut to the session_uuid in the last history item.'));
 
     $fields['source_last_sequence'] = BaseFieldDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Last processed checkpoint'))
