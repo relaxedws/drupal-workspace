@@ -5,15 +5,11 @@ namespace Drupal\workspace\Negotiator;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\workspace\WorkspaceInterface;
-use Drupal\user\PrivateTempStoreFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * Defines the session workspace negotiator.
- *
- * This implementation uses the private tempstore of a user to store the ID of
- * the active workspace in order to make it persistent between login/logout
- * actions.
  */
 class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
 
@@ -25,11 +21,11 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
   protected $currentUser;
 
   /**
-   * The tempstore factory.
+   * The session.
    *
-   * @var \Drupal\user\PrivateTempStore
+   * @var \Symfony\Component\HttpFoundation\Session\Session
    */
-  protected $tempstore;
+  protected $session;
 
   /**
    * The workspace storage handler.
@@ -43,14 +39,14 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\user\PrivateTempStoreFactory $tempstore_factory
-   *   The tempstore factory.
+   * @param \Symfony\Component\HttpFoundation\Session\Session $session
+   *   The session.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(AccountInterface $current_user, PrivateTempStoreFactory $tempstore_factory, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(AccountInterface $current_user, Session $session, EntityTypeManagerInterface $entity_type_manager) {
     $this->currentUser = $current_user;
-    $this->tempstore = $tempstore_factory->get('workspace.negotiator.session');
+    $this->session = $session;
     $this->workspaceStorage = $entity_type_manager->getStorage('workspace');
   }
 
@@ -66,7 +62,7 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
    * {@inheritdoc}
    */
   public function getActiveWorkspace(Request $request) {
-    $workspace_id = $this->tempstore->get('active_workspace_id');
+    $workspace_id = $this->session->get('active_workspace_id');
 
     if ($workspace_id && ($workspace = $this->workspaceStorage->load($workspace_id))) {
       return $workspace;
@@ -79,7 +75,7 @@ class SessionWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
    * {@inheritdoc}
    */
   public function setActiveWorkspace(WorkspaceInterface $workspace) {
-    $this->tempstore->set('active_workspace_id', $workspace->id());
+    $this->session->set('active_workspace_id', $workspace->id());
   }
 
 }

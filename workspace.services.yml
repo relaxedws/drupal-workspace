@@ -14,7 +14,7 @@ services:
       - { name: workspace_negotiator, priority: 0 }
   workspace.negotiator.session:
     class: Drupal\workspace\Negotiator\SessionWorkspaceNegotiator
-    arguments: ['@current_user', '@user.private_tempstore', '@entity_type.manager']
+    arguments: ['@current_user', '@session', '@entity_type.manager']
     tags:
       - { name: workspace_negotiator, priority: 100 }
   cache_context.workspace:

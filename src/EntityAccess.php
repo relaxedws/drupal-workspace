@@ -124,7 +124,7 @@ class EntityAccess implements ContainerInjectionInterface {
     // to ALL THE THINGS! That's why this is a dangerous permission.
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-    return AccessResult::allowedIfHasPermission($account, 'bypass entity access workspace ' . $active_workspace->id())
+    return AccessResult::allowedIfHasPermission($account, 'bypass entity access workspace ' . $active_workspace->id())->addCacheableDependency($active_workspace)
       ->orIf(
         AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($active_workspace)
           ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass entity access own workspace'))

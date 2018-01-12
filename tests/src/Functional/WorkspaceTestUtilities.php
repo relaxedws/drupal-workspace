@@ -92,23 +92,11 @@ trait WorkspaceTestUtilities {
    *   The workspace to set active.
    */
   protected function switchToWorkspace(WorkspaceInterface $workspace) {
-    /** @var \Drupal\workspace\WorkspaceManager $workspace_manager */
-    $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->getActiveWorkspace()->id() !== $workspace->id()) {
-      // Switch the system under test to the specified workspace.
-      /** @var \Drupal\Tests\WebAssert $session */
-      $session = $this->assertSession();
-      $session->buttonExists('Activate');
-      $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], t('Activate'));
-      $session->pageTextContains($workspace->label() . ' is now the active workspace.');
-
-      // Switch the test runner's context to the specified workspace.
-      \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);
-
-      // If we don't do both of those, test runner utility methods will not be
-      // run in the same workspace as the system under test, and you'll be left
-      // wondering why your test runner cannot find content you just created.
-    }
+    /** @var \Drupal\Tests\WebAssert $session */
+    $session = $this->assertSession();
+    $session->buttonExists('Activate');
+    $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], t('Activate'));
+    $session->pageTextContains($workspace->label() . ' is now the active workspace.');
   }
 
   /**
