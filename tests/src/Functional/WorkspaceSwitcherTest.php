@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\simpletest\BlockCreationTrait;
+use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -11,11 +11,13 @@ use Drupal\Tests\BrowserTestBase;
  * @group workspace
  */
 class WorkspaceSwitcherTest extends BrowserTestBase {
-  use WorkspaceTestUtilities;
-  use BlockCreationTrait {
-    placeBlock as drupalPlaceBlock;
-  }
 
+  use WorkspaceTestUtilities;
+  use BlockCreationTrait;
+
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['block', 'workspace'];
 
   /**

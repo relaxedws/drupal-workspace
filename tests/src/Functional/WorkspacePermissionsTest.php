@@ -11,19 +11,16 @@ use Drupal\workspace\Entity\Workspace;
  * @group workspace
  */
 class WorkspacePermissionsTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
 
   /**
-   * The modules to enable.
-   *
-   * @var array
+   * {@inheritdoc}
    */
   public static $modules = ['workspace'];
 
   /**
    * Verifies that a user can create but not edit a workspace.
-   *
-   * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   public function testCreateWorkspace() {
     $editor = $this->drupalCreateUser([

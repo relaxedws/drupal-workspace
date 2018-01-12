@@ -16,7 +16,6 @@ use Drupal\workspace\WorkspaceCacheContext;
 class WorkspaceCacheContextTest extends BrowserTestBase {
 
   use AssertPageCacheContextsAndTagsTrait;
-  use WorkspaceTestUtilities;
 
   /**
    * {@inheritdoc}
@@ -65,11 +64,11 @@ class WorkspaceCacheContextTest extends BrowserTestBase {
     $test_user = $this->drupalCreateUser(['view any workspace']);
     $this->drupalLogin($test_user);
 
-    $this->setupWorkspaceSwitcherBlock();
     $stage = Workspace::load('stage');
-    $this->switchToWorkspace($stage);
+    $workspace_manager = \Drupal::service('workspace.manager');
+    $workspace_manager->setActiveWorkspace($stage);
 
-    $cache_context = new WorkspaceCacheContext(\Drupal::service('workspace.manager'));
+    $cache_context = new WorkspaceCacheContext($workspace_manager);
     $this->assertSame('stage', $cache_context->getContext());
 
     $build = \Drupal::entityTypeManager()->getViewBuilder('node')->view($node, 'full');

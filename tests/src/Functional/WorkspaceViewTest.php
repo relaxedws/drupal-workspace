@@ -2,19 +2,21 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\simpletest\BrowserTestBase;
+use Drupal\Tests\BrowserTestBase;
 use Drupal\workspace\Entity\Workspace;
 
 /**
  * Tests permission controls on workspaces.
  *
  * @group workspace
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
  */
 class WorkspaceViewTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['workspace', 'workspace'];
 
   /**

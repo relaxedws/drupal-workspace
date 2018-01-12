@@ -2,21 +2,18 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\simpletest\BlockCreationTrait;
+use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests access bypass permission controls on workspaces.
  *
  * @group workspace
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
  */
 class WorkspaceBypassTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
-  use BlockCreationTrait {
-    placeBlock as drupalPlaceBlock;
-  }
+  use BlockCreationTrait;
 
   /**
    * {@inheritdoc}

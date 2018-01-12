@@ -10,8 +10,12 @@ use Drupal\Tests\BrowserTestBase;
  * @group workspace
  */
 class WorkspaceTest extends BrowserTestBase {
+
   use WorkspaceTestUtilities;
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = ['workspace'];
 
   /**
