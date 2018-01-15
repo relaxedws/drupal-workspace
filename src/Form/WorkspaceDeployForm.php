@@ -68,13 +68,13 @@ class WorkspaceDeployForm extends ContentEntityForm {
     /* @var \Drupal\workspace\WorkspaceInterface $workspace */
     $workspace = $this->entity;
 
-    // We can not deploy if we do not have an upstream workspace.
+    // We can not deploy if we do not have a valid target.
     if (!$workspace->getRepositoryHandlerPlugin()) {
       throw new HttpException(500, 'The specified repository handler plugin does not exist.');
     }
 
     $form['help'] = [
-      '#markup' => $this->t('Deploy all %source_upstream_label content to %target_upstream_label, or refresh %source_upstream_label with content from %target_upstream_label.', ['%source_upstream_label' => $workspace->getLocalRepositoryHandlerPlugin()->getLabel(), '%target_upstream_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
+      '#markup' => $this->t('Deploy all %source_label content to %target_label, or refresh %source_label with content from %target_label.', ['%source_label' => $workspace->label(), '%target_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
     ];
 
     return $form;
@@ -86,13 +86,13 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
 
-    $upstream_label = $this->entity->getRepositoryHandlerPlugin()->getLabel();
+    $target_label = $this->entity->getRepositoryHandlerPlugin()->getLabel();
 
-    $elements['submit']['#value'] = $this->t('Deploy to @upstream', ['@upstream' => $upstream_label]);
+    $elements['submit']['#value'] = $this->t('Deploy to @target', ['@target' => $target_label]);
     $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
     $elements['update'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Refresh from @upstream', ['@upstream' => $upstream_label]),
+      '#value' => $this->t('Refresh from @target', ['@target' => $target_label]),
       '#submit' => ['::submitForm', '::update'],
     ];
     $elements['cancel'] = [
@@ -106,7 +106,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   }
 
   /**
-   * Form submission handler; deploys the content to the upstream workspace.
+   * Form submission handler; deploys the content to the workspace's target.
    *
    * @param array $form
    *   An associative array containing the structure of the form.
@@ -128,7 +128,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   }
 
   /**
-   * Form submission handler; pulls the upstream content into a workspace.
+   * Form submission handler; pulls the target's content into a workspace.
    *
    * @param array $form
    *   An associative array containing the structure of the form.

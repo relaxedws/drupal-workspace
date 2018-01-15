@@ -34,14 +34,14 @@ function workspace_install() {
   Workspace::create([
     'id' => 'live',
     'label' => 'Live',
-    'upstream' => RepositoryHandlerInterface::EMPTY_VALUE,
+    'target' => RepositoryHandlerInterface::EMPTY_VALUE,
     'uid' => $owner_id,
   ])->save();
 
   Workspace::create([
     'id' => 'stage',
     'label' => 'Stage',
-    'upstream' => 'local_workspace:live',
+    'target' => 'local_workspace:live',
     'uid' => $owner_id,
   ])->save();
 }

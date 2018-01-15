@@ -29,11 +29,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements RepositoryHandlerInterface, ContainerFactoryPluginInterface {
 
   /**
-   * The local workspace entity for the upstream.
+   * The target workspace entity for the repository handler.
    *
    * @var \Drupal\workspace\WorkspaceInterface
    */
-  protected $upstreamWorkspace;
+  protected $targetWorkspace;
 
   /**
    * The entity type manager.
@@ -85,7 +85,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     $this->workspaceManager = $workspace_manager;
     $this->database = $database;
     $this->uuidService = $uuid_service;
-    $this->upstreamWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->getDerivativeId());
+    $this->targetWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->getDerivativeId());
   }
 
   /**
@@ -107,7 +107,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    * {@inheritdoc}
    */
   public function getLabel() {
-    return $this->upstreamWorkspace->label();
+    return $this->targetWorkspace->label();
   }
 
   /**
@@ -115,7 +115,7 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
    */
   public function calculateDependencies() {
     $this->dependencies = parent::calculateDependencies();
-    $this->addDependency($this->upstreamWorkspace->getConfigDependencyKey(), $this->upstreamWorkspace->getConfigDependencyName());
+    $this->addDependency($this->targetWorkspace->getConfigDependencyKey(), $this->targetWorkspace->getConfigDependencyName());
 
     return $this->dependencies;
   }

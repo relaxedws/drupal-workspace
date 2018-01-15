@@ -12,4 +12,3 @@ mode: deploy
 content: {  }
 hidden:
   uid: true
-  upstream: true

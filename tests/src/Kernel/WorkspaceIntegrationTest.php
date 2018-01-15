@@ -105,7 +105,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     // Create two workspaces by default, 'live' and 'stage'.
     $this->workspaces['live'] = Workspace::create(['id' => 'live']);
     $this->workspaces['live']->save();
-    $this->workspaces['stage'] = Workspace::create(['id' => 'stage', 'upstream' => 'local_workspace:live']);
+    $this->workspaces['stage'] = Workspace::create(['id' => 'stage', 'target' => 'local_workspace:live']);
     $this->workspaces['stage']->save();
 
     $permissions = [

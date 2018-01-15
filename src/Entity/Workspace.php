@@ -106,15 +106,12 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setLabel(new TranslatableMarkup('Created'))
       ->setDescription(new TranslatableMarkup('The UNIX timestamp of when the workspace has been created.'));
 
-    $fields['upstream'] = BaseFieldDefinition::create('string')
+    $fields['target'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Target workspace'))
       ->setDescription(new TranslatableMarkup('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setDefaultValue('local_workspace:live')
-      ->addPropertyConstraints('value', [
-        'Upstream' => [],
-      ]);
+      ->setDefaultValue('local_workspace:live');
 
     return $fields;
   }
@@ -123,8 +120,8 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public function getRepositoryHandlerPlugin() {
-    if (($upstream = $this->upstream->value) && $upstream !== RepositoryHandlerInterface::EMPTY_VALUE) {
-      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($upstream);
+    if (($target = $this->target->value) && $target !== RepositoryHandlerInterface::EMPTY_VALUE) {
+      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($target);
     }
   }
 
