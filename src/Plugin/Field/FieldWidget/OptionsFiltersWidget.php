@@ -26,6 +26,8 @@ class OptionsFiltersWidget extends OptionsSelectWidget {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $field_name = $items->getName();
     if (in_array($field_name, ['pull_replication_settings', 'push_replication_settings'])) {
+      $base_class = get_parent_class(get_parent_class($this));
+      $element = $base_class::formElement($items, $delta, $element, $form, $form_state);
       $current_user = \Drupal::currentUser();
       if ($current_user->hasPermission('access replication settings fields')) {
         return parent::formElement($items, $delta, $element, $form, $form_state);
@@ -48,10 +50,8 @@ class OptionsFiltersWidget extends OptionsSelectWidget {
         ];
       }
       else {
-        $element = [];
+        $element += [];
       }
-
-      return $element;
     }
 
     return parent::formElement($items, $delta, $element, $form, $form_state);
