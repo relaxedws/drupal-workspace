@@ -61,6 +61,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
       'administer content types',
       'administer nodes',
       'access content overview',
+      'access replication settings fields',
     ];
 
     $this->createNodeType('Test', 'test');
@@ -149,6 +150,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
       'administer content types',
       'administer nodes',
       'access content overview',
+      'access replication settings fields',
     ];
 
     $this->createNodeType('Test', 'test');

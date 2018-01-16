@@ -175,7 +175,7 @@ class EntityTypeInfo {
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'replication_settings')
       ->setDisplayOptions('form', [
-        'type' => 'options_select',
+        'type' => 'options_filters_select',
         'weight' => 6
       ]);
 
@@ -185,7 +185,7 @@ class EntityTypeInfo {
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'replication_settings')
       ->setDisplayOptions('form', [
-        'type' => 'options_select',
+        'type' => 'options_filters_select',
         'weight' => 7
       ]);
 
