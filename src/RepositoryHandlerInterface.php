@@ -48,9 +48,6 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
    *   The repository handler to replicate from.
    * @param \Drupal\workspace\RepositoryHandlerInterface $target
    *   The repository handler to replicate to.
-   *
-   * @return \Drupal\workspace\ReplicationLogInterface
-   *   The replication log for the replication.
    */
   public function replicate(RepositoryHandlerInterface $source, RepositoryHandlerInterface $target);
 

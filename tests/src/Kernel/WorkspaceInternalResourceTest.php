@@ -39,24 +39,4 @@ class WorkspaceInternalResourceTest extends KernelTestBase {
       ->save();
   }
 
-  /**
-   * Tests enabling replication logs for REST throws an exception.
-   *
-   * @see workspace_rest_resource_alter()
-   */
-  public function testCreateReplicationLogResource() {
-    $this->setExpectedException(PluginNotFoundException::class, 'The "entity:replication_log" plugin does not exist.');
-    RestResourceConfig::create([
-      'id' => 'entity.replication_log',
-      'granularity' => RestResourceConfigInterface::RESOURCE_GRANULARITY,
-      'configuration' => [
-        'methods' => ['GET'],
-        'formats' => ['json'],
-        'authentication' => ['cookie'],
-      ],
-    ])
-      ->enable()
-      ->save();
-  }
-
 }

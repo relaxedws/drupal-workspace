@@ -4,8 +4,6 @@ namespace Drupal\workspace\Plugin\RepositoryHandler;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Database\Connection;
-use Drupal\workspace\Entity\ReplicationLog;
-use Drupal\workspace\ReplicationLogInterface;
 use Drupal\workspace\RepositoryHandlerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -132,15 +130,6 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     /** @var \Drupal\workspace\WorkspaceInterface $target_workspace */
     $target_workspace = $this->entityTypeManager->getStorage('workspace')->load($target->getDerivativeId());
 
-    $start_time = new \DateTime();
-    // @todo Figure out if we want to include more information in the
-    // replication log ID.
-    // @see http://docs.couchdb.org/en/2.0.0/replication/protocol.html#generate-replication-id
-    $replication_id = hash('sha256', $source_workspace->id() . $target_workspace->id());
-
-    // Load or create the Replication Log entity based on the replication ID.
-    $replication_log = ReplicationLog::loadOrCreate($replication_id);
-
     // Get the current active workspace, so we can set it back as the active
     // after the replication has completed.
     $current_active = $this->workspaceManager->getActiveWorkspace();
@@ -221,33 +210,6 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // Switch back to the original active workspace, so that the user performing
     // the replication is back on the workspace they started on.
     $this->workspaceManager->setActiveWorkspace($current_active);
-
-    // Update the replication log entity by adding the completed replication to
-    // the history.
-    return $this->updateReplicationLog($replication_log, [
-      'entity_write_failures' => 0,
-      'session_uuid' => $this->uuidService->generate(),
-      'start_time' => $start_time->format('D, d M Y H:i:s e'),
-      'end_time' => (new \DateTime())->format('D, d M Y H:i:s e'),
-    ]);
-  }
-
-  /**
-   * Updates the replication log entity with the given history.
-   *
-   * @param \Drupal\workspace\ReplicationLogInterface $replication_log
-   *   The replication log entity to be updated.
-   * @param array $history
-   *   The new history items.
-   *
-   * @return \Drupal\workspace\ReplicationLogInterface
-   *   The updated replication log entity.
-   */
-  protected function updateReplicationLog(ReplicationLogInterface $replication_log, array $history) {
-    $replication_log->appendHistory($history);
-    $replication_log->setSessionUuid($history['session_uuid']);
-    $replication_log->save();
-    return $replication_log;
   }
 
 }

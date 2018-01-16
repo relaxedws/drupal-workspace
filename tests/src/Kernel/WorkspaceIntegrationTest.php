@@ -100,7 +100,6 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     $this->installEntitySchema('workspace');
     $this->installEntitySchema('workspace_association');
-    $this->installEntitySchema('replication_log');
 
     // Create two workspaces by default, 'live' and 'stage'.
     $this->workspaces['live'] = Workspace::create(['id' => 'live']);
