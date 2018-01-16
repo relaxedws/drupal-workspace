@@ -38,13 +38,13 @@ class OptionsFiltersWidget extends OptionsSelectWidget {
         $replication_settings = \Drupal::entityTypeManager()->getStorage($target_type)->load($replication_settings_id);
         $element += [
           '#type' => 'item',
-          '#markup' => '<div class="color-warning">' . $this->t('You are not allowed to modify this field. Current value: ') . '<strong>' . $replication_settings->label() . '</strong></div>',
+          '#markup' => '<div class="color-warning">' . $this->t('Note: you do not have permission to modify this. Current value: ') . '<strong>' . $replication_settings->label() . '</strong></div>',
         ];
       }
       elseif (empty($replication_settings_id)) {
         $element += [
           '#type' => 'item',
-          '#markup' => '<div class="color-warning">' . $this->t('You are not allowed to modify this field. Current value: ') . '<strong>' . $this->t('No any values set for this field') . '</strong></div>',
+          '#markup' => '<div class="color-warning">' . $this->t('Note: you do not have permission to modify this. Current value: ') . '<strong>' . $this->t('No any values set for this field') . '</strong></div>',
         ];
       }
       else {
