@@ -54,6 +54,15 @@ function workspace_workspace_insert(WorkspaceInterface $workspace) {
 }
 
 /**
+ * Implements hook_ENTITY_TYPE_update()
+ *
+ * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+ */
+function workspace_workspace_update(WorkspaceInterface $workspace) {
+  \Drupal::service('workspace.entity_operations')->workspaceUpdate($workspace);
+}
+
+/**
  * Implements hook_ENTITY_TYPE_delete()
  *
  * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace

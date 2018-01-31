@@ -16,6 +16,7 @@ use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\RevisionDiffFactoryInterface;
 use LogicException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ChangesListController extends ControllerBase {
 
@@ -104,10 +105,13 @@ class ChangesListController extends ControllerBase {
    */
   public function viewChanges($workspace) {
     $source_workspace = $this->workspaceManager->load($workspace);
+    if (!$source_workspace || !$source_workspace->isPublished()) {
+      throw new NotFoundHttpException();
+    }
     $source_workspace_pointer = $this->getPointerToWorkspace($source_workspace);
     $target_workspace_pointer = $source_workspace->get('upstream')->entity;
     if (!$target_workspace_pointer) {
-      return ['#content' => $this->t('The upstream is not set.')];
+      return ['#markup' => '<p>' . $this->t('The upstream is not set.') . '</p>'];
     }
     $target_workspace = $target_workspace_pointer->getWorkspace();
     $replicator_exists = class_exists('Relaxed\Replicator\Replicator');

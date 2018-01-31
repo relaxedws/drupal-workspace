@@ -54,13 +54,45 @@ class EntityOperations {
     // Create a new pointer to every Workspace that gets created.
     // This is mainly so that we can always backtrack from a Workspace to a
     // pointer to provide a consistent API to replicators.
-
-    /** @var WorkspacePointerInterface $pointer */
-    $pointer = $this->entityTypeManager->getStorage('workspace_pointer')->create();
-    $pointer->setWorkspace($workspace);
-    $pointer->save();
+    $this->loadOrCreateWorkspacePointer($workspace);
   }
 
+  /**
+   * Hook bridge for hook_workspace_update()
+   *
+   * @see hook_ENTITY_TYPE_update()
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace entity that is being updated.
+   */
+  public function workspaceUpdate(WorkspaceInterface $workspace) {
+    $workspace_pointer = $this->loadOrCreateWorkspacePointer($workspace);
+    if (!$workspace->isPublished()) {
+      $workspace_pointer->delete();
+    }
+  }
+
+  /**
+   * Load or create the workspace pointer for a workspace.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace entity.
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
+   *   The workspace pointer entity.
+   */
+  public function loadOrCreateWorkspacePointer(WorkspaceInterface $workspace) {
+    $storage = $this->entityTypeManager->getStorage('workspace_pointer');
+    $workspace_pointers = $storage->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    if (empty($workspace_pointers)) {
+      /** @var \Drupal\workspace\WorkspacePointerInterface $pointer */
+      $pointer = $storage->create();
+      $pointer->setWorkspace($workspace);
+      $pointer->save();
+      return $pointer;
+    }
+    return reset($workspace_pointers);
+  }
 
   /**
    * Hook bridge for hook_workspace_delete()

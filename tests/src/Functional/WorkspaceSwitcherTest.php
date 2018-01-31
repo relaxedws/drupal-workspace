@@ -47,7 +47,18 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
     $page = $session->getPage();
     $page->findButton(t('Activate'))->click();
 
-    $session->getPage()->findLink($gravity->label());
+    $this->drupalGet('<front>');
+    $assert_session = $this->assertSession();
+    $assert_session->buttonExists($vultures->label());
+    $assert_session->buttonExists($gravity->label());
+
+    $vultures->setUnpublished();
+    $vultures->save();
+
+    $this->drupalGet('<front>');
+    $assert_session = $this->assertSession();
+    $assert_session->buttonNotExists($vultures->label());
+    $assert_session->buttonExists($gravity->label());
   }
   
 }
