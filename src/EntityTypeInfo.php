@@ -165,7 +165,7 @@ class EntityTypeInfo {
       ->setSetting('target_type', 'workspace_pointer')
       ->setDefaultValueCallback('workspace_active_id')
       ->setDisplayOptions('form', [
-        'type' => 'options_upstream_buttons',
+        'type' => 'options_buttons',
         'weight' => 5
       ]);
 

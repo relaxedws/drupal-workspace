@@ -41,3 +41,20 @@ function workspace_update_8101() {
     }
   }
 }
+
+/**
+ * Make sure all workspaces have a pointer.
+ */
+function workspace_update_8102() {
+  $workspaces = \Drupal::entityTypeManager()->getStorage('workspace')->loadMultiple();
+  $storage = \Drupal::entityTypeManager()->getStorage('workspace_pointer');
+  foreach ($workspaces as $workspace) {
+    $workspace_pointers = $storage->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    if (empty($workspace_pointers)) {
+      /** @var \Drupal\workspace\WorkspacePointerInterface $pointer */
+      $pointer = $storage->create();
+      $pointer->setWorkspace($workspace);
+      $pointer->save();
+    }
+  }
+}
