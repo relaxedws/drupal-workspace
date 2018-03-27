@@ -144,6 +144,8 @@ class InternalReplicator implements ReplicatorInterface {
       }
     }
 
+    $inital_workspace = $this->workspaceManager->getActiveWorkspace();
+
     // Get revisions the target workspace is missing.
     $revs_diff = $this->revisionDiffFactory->get($target_workspace)->setRevisionIds($data)->getMissing();
     $entities = [];
@@ -155,7 +157,7 @@ class InternalReplicator implements ReplicatorInterface {
         $revision_id = $item['revision_id'];
 
         $storage = $this->entityTypeManager->getStorage($entity_type_id);
-        $entity = $storage->loadRevision($revision_id);
+        $entity = $storage->useWorkspace($source_workspace->id())->loadRevision($revision_id);
         if ($entity instanceof ContentEntityInterface) {
           $docs_read++;
           $entities[] = $this->serializer->normalize($entity, 'json', ['new_revision_id' => TRUE]);

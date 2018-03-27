@@ -15,11 +15,11 @@ projects:
     type: module
     download:
       type: git
-      branch: 8.x-1.x
+      branch: menu-links-fixes
       url: "https://github.com/dickolsson/drupal-multiversion.git"
   replication:
     type: module
     download:
       type: git
-      branch: 8.x-1.x
+      branch: menu-link-content-normalizer
       url: "https://github.com/relaxedws/drupal-replication.git"
