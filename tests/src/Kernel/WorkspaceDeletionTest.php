@@ -82,6 +82,14 @@ class WorkspaceDeletionTest extends KernelTestBase {
     ]);
     $node2->save();
 
+    $node3 = Node::create([
+      'type' => 'le_content_type',
+      'workspace' => $workspace->id(),
+      'title' => 'le content trois',
+    ]);
+    $node3->save();
+    $node3->delete();
+
     $workspace->delete();
     $this->cron->run();
 

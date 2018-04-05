@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\Database\Database;
+use Drupal\multiversion\Entity\Workspace;
 use Psr\Log\LogLevel;
 
 /**
@@ -84,6 +85,16 @@ function drush_workspace_uninstall() {
           ->fields($fields)
           ->execute();
       }
+
+      // Delete all workspaces excluding the default workspace, also delete all
+      // content from deleted workspaces.
+      $workspaces = Workspace::loadMultiple();
+      foreach ($workspaces as $workspace) {
+        if (!$workspace->isDefaultWorkspace()) {
+          $workspace->delete();
+        }
+      }
+      \Drupal::service('cron')->run();
 
       drush_module_uninstall([$extension]);
     }
