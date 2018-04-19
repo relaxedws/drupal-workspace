@@ -59,6 +59,17 @@ function drush_workspace_uninstall() {
     try {
       $entity_type_manager = \Drupal::entityTypeManager();
 
+      // Delete all workspaces excluding the default workspace, also delete all
+      // content from deleted workspaces.
+      $workspaces = Workspace::loadMultiple();
+      foreach ($workspaces as $workspace) {
+        if (!$workspace->isDefaultWorkspace()) {
+          $workspace->delete();
+        }
+      }
+      \Drupal::service('cron')->run();
+      \Drupal::service('multiversion.manager')->setActiveWorkspaceId(\Drupal::getContainer()->getParameter('workspace.default'));
+
       // Delete all workspace_pointer entities.
       $storage = \Drupal::entityTypeManager()->getStorage('workspace_pointer');
       $entities = $storage->loadMultiple();
@@ -85,16 +96,6 @@ function drush_workspace_uninstall() {
           ->fields($fields)
           ->execute();
       }
-
-      // Delete all workspaces excluding the default workspace, also delete all
-      // content from deleted workspaces.
-      $workspaces = Workspace::loadMultiple();
-      foreach ($workspaces as $workspace) {
-        if (!$workspace->isDefaultWorkspace()) {
-          $workspace->delete();
-        }
-      }
-      \Drupal::service('cron')->run();
 
       drush_module_uninstall([$extension]);
     }

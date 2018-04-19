@@ -5,6 +5,8 @@ namespace Drupal\workspace\Plugin\QueueWorker;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
+use Drupal\multiversion\Entity\Workspace;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,10 +48,28 @@ class DeletedWorkspaceQueue extends QueueWorkerBase implements ContainerFactoryP
 
   /**
    * @param mixed $data
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function processItem($data) {
-    $storage = $this->entityTypeManager->getStorage($data['entity_type_id'])->useWorkspace($data['workspace']);
+    /** @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager */
+    $workspace_manager = \Drupal::service('workspace.manager');
+    $storage = $this->entityTypeManager->getStorage($data['entity_type_id']);
+    $active_workspace_id = $workspace_manager->getActiveWorkspaceId();
+    if ($data['entity_type_id'] != 'workspace' && $data['workspace'] != $active_workspace_id) {
+      $workspace = Workspace::load($data['workspace']);
+      if ($workspace) {
+        $workspace_manager->setActiveWorkspace($workspace);
+        $storage->useWorkspace($data['workspace']);
+      }
+    }
     $entity = $storage->load($data['entity_id']);
-    $storage->purge([$entity]);
+    if ($entity && $storage instanceof ContentEntityStorageInterface) {
+      $storage->purge([$entity]);
+    }
+    elseif ($entity) {
+      $storage->delete([$entity]);
+    }
   }
 }
