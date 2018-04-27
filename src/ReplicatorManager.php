@@ -4,11 +4,13 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Queue\QueueFactory;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
+use Drupal\workspace\Entity\Replication;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -27,7 +29,7 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * The injected service to track conflicts during replication.
    *
-   * @var ConflictTrackerInterface
+   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
    */
   protected $conflictTracker;
 
@@ -39,16 +41,26 @@ class ReplicatorManager implements ReplicatorInterface {
   protected $eventDispatcher;
 
   /**
+   * The workspace replication queue.
+   *
+   * @var \Drupal\Core\Queue\QueueInterface
+   */
+  protected $queue;
+
+  /**
    * The injected service to track conflicts during replication.
    *
-   * @param ConflictTrackerInterface $conflict_tracker
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
    *   The confict tracking service.
-   * @param EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
+   * @param \Drupal\Core\Queue\QueueFactory $queue
+   *   The queue factory.
    */
-  public function __construct(ConflictTrackerInterface $conflict_tracker, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(ConflictTrackerInterface $conflict_tracker, EventDispatcherInterface $event_dispatcher, QueueFactory $queue) {
     $this->conflictTracker = $conflict_tracker;
     $this->eventDispatcher = $event_dispatcher;
+    $this->queue = $queue->get('workspace_replication');
   }
 
   /**
@@ -71,7 +83,17 @@ class ReplicatorManager implements ReplicatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
+  public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL, Replication $replication = NULL) {
+    if ($replication === NULL) {
+      // Create replication entity.
+      $replication = Replication::create([
+        'name' => t('Update from @source to @target', ['@source' => $source->label(), '@target' => $target->label()]),
+        'source' => $target,
+        'target' => $source,
+      ]);
+    }
+    $replication->setReplicationStatusQueued();
+    $replication->save();
     // It is assumed a caller of replicate will set this static variable to
     // FALSE if they wish to proceed with replicating content upstream even in
     // the presence of conflicts. If the caller wants to make sure no conflicts
@@ -85,7 +107,7 @@ class ReplicatorManager implements ReplicatorInterface {
     // Abort updating the Workspace if there are conflicts.
     $initial_conflicts = $this->conflictTracker->useWorkspace($source->getWorkspace())->getAll();
     if ($is_aborted_on_conflict && $initial_conflicts) {
-      return $this->failedReplicationLog($source, $target, $task);
+      return $this->replicationLog($source, $target, $task);
     }
 
     // Derive a pull replication task from the Workspace we are acting on.
@@ -93,12 +115,6 @@ class ReplicatorManager implements ReplicatorInterface {
 
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
-
-    // Abort replicating to target Workspace if there are conflicts.
-    $post_conflicts = $this->conflictTracker->useWorkspace($source->getWorkspace())->getAll();
-    if ($is_aborted_on_conflict && $post_conflicts) {
-      return $this->failedReplicationLog($source, $target, $task);
-    }
 
     // Automatically derive settings from the workspace if no task sent.
     // @todo Refactor to eliminate obscurity of having an optional parameter
@@ -109,13 +125,14 @@ class ReplicatorManager implements ReplicatorInterface {
     }
 
     // Push changes from $source to $target.
-    $push_log = $this->doReplication($source, $target, $task);
+    $this->queue->createItem([
+      'source' => $source,
+      'target' => $target,
+      'task' => $task,
+      'replication' => $replication,
+    ]);
 
-    if ($push_log instanceof ReplicationLogInterface && $push_log->get('ok')->value == TRUE && isset($push_log->workspace->target_id)) {
-      \Drupal::state()->set('last_sequence.workspace.' . $push_log->workspace->target_id, $push_log->source_last_seq->value);
-    };
-
-    return $push_log;
+    return $this->replicationLog($source, $target, $task, TRUE);
   }
 
   /**
@@ -167,9 +184,27 @@ class ReplicatorManager implements ReplicatorInterface {
    *
    * @return \Drupal\replication\Entity\ReplicationLogInterface
    *   The log entry for this replication.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, $task = NULL) {
-    return $this->doReplication($target, $source, $task);
+    // Create replication entity.
+    $replication = Replication::create([
+      'name' => t('Update from @source to @target', ['@source' => $target->label(), '@target' => $source->label()]),
+      'source' => $target,
+      'target' => $source,
+    ]);
+    $replication->setReplicationStatusQueued();
+    $replication->save();
+
+    // For an update (pull) the source and target are reversed.
+    $this->queue->createItem([
+      'source' => $target,
+      'target' => $source,
+      'task' => $task,
+      'replication' => $replication,
+    ]);
+    return $this->replicationLog($target, $source, $task, TRUE);
   }
 
   /**
@@ -184,8 +219,10 @@ class ReplicatorManager implements ReplicatorInterface {
    *
    * @return \Drupal\replication\Entity\ReplicationLogInterface
    *   The log entry for this replication.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
+  public function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
         // @TODO: Get rid of this meta-programming once #2814055 lands in
@@ -211,11 +248,15 @@ class ReplicatorManager implements ReplicatorInterface {
           $this->eventDispatcher->dispatch($events_class::POST_REPLICATION, $event);
         }
 
+        if ($log instanceof ReplicationLogInterface && $log->get('ok')->value == TRUE && isset($log->workspace->target_id)) {
+          \Drupal::state()->set('last_sequence.workspace.' . $log->workspace->target_id, $log->source_last_seq->value);
+        };
+
         return $log;
       }
     }
 
-    return $this->failedReplicationLog($source, $target, $task);
+    return $this->replicationLog($source, $target, $task);
   }
 
   /**
@@ -226,11 +267,16 @@ class ReplicatorManager implements ReplicatorInterface {
    * @param \Drupal\workspace\WorkspacePointerInterface $target
    *   The workspace to replicate to.
    * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface|null $task
+   *   The replication task.
+   * @param bool $ok
+   *   True if the replication was started successfully, false otherwise.
    *
    * @return \Drupal\replication\Entity\ReplicationLogInterface The log entry for this replication.
-   * The log entry for this replication.
+   *   The log entry for this replication.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function failedReplicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+  protected function replicationLog(WorkspacePointerInterface $source, WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL, $ok = FALSE) {
     $time = new \DateTime();
     $history = [
       'start_time' => $time->format('D, d M Y H:i:s e'),
@@ -240,7 +286,7 @@ class ReplicatorManager implements ReplicatorInterface {
     $replication_log_id = $source->generateReplicationId($target, $task);
     /** @var \Drupal\replication\Entity\ReplicationLogInterface $replication_log */
     $replication_log = ReplicationLog::loadOrCreate($replication_log_id);
-    $replication_log->set('ok', FALSE);
+    $replication_log->set('ok', $ok);
     $replication_log->setSessionId($history['session_id']);
     $replication_log->setHistory($history);
     $replication_log->save();

@@ -4,7 +4,7 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\workspace\ReplicatorManager;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Tests access bypass permission controls on workspaces.
@@ -12,10 +12,10 @@ use Drupal\workspace\ReplicatorManager;
  * @group workspace
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
- *
  */
 class WorkspaceBypassTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
+  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -46,9 +46,11 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Replicate all content from the default workspace to Bears.
     $live = $this->getOneEntityByLabel('workspace', 'Live');
-    /** @var ReplicatorManager $rm */
+    /** @var \Drupal\workspace\ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
+    $this->cronRun();
+    $this->cronRun();
 
     $this->switchToWorkspace($bears);
 
@@ -63,7 +65,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Because Lombardi has the bypass permission, he should be able to
     // create and edit any node.
-
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
@@ -122,9 +123,11 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Replicate all content from the default workspace to Bears.
     $live = $this->getOneEntityByLabel('workspace', 'Live');
-    /** @var ReplicatorManager $rm */
+    /** @var \Drupal\workspace\ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
+    $this->cronRun();
+    $this->cronRun();
 
     $this->switchToWorkspace($bears);
 
@@ -133,7 +136,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
     $ditka_bears_node_id = $ditka_bears_node->id();
 
     // Editing both nodes should be possible.
-
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
@@ -150,7 +152,6 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
     // Because editor 2 has the bypass permission, he should be able to
     // create and edit any node.
-
     $this->drupalGet('/node/' . $ditka_bears_node_id . '/edit');
     $session = $this->getSession();
     $this->assertEquals(403, $session->getStatusCode());

@@ -33,6 +33,11 @@ use Drupal\workspace\WorkspacePointerInterface;
 class Replication extends ContentEntityBase implements ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
   use EntityChangedTrait;
 
+  const FAILED = -1;
+  const QUEUED = 0;
+  const REPLICATING = 1;
+  const REPLICATED = 2;
+
   /**
    * {@inheritdoc}
    */
@@ -172,7 +177,41 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the entity was last edited.'));
 
+    $fields['replication_status'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Replication status'))
+      ->setDescription(t('The status of the replication.'))
+      ->setRequired(TRUE)
+      ->setDefaultValue(static::FAILED);
+
     return $fields;
+  }
+
+  /**
+   * Sets the replication status to failed.
+   */
+  public function setReplicationStatusFailed() {
+    $this->set('replication_status', static::FAILED);
+  }
+
+  /**
+   * Sets the replication status to queued.
+   */
+  public function setReplicationStatusQueued() {
+    $this->set('replication_status', static::QUEUED);
+  }
+
+  /**
+   * Sets the replication status to replicating.
+   */
+  public function setReplicationStatusReplicating() {
+    $this->set('replication_status', static::REPLICATING);
+  }
+
+  /**
+   * Sets the replication status to replicated.
+   */
+  public function setReplicationStatusReplicated() {
+    $this->set('replication_status', static::REPLICATED);
   }
 
   /**
@@ -187,10 +226,22 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
     return [\Drupal::currentUser()->id()];
   }
 
+  /**
+   * Generates a replication ID.
+   *
+   * @param \Drupal\workspace\WorkspacePointerInterface $source
+   *   The source workspace pointer.
+   * @param \Drupal\workspace\WorkspacePointerInterface $target
+   *   The target workspace pointer.
+   *
+   * @return string
+   *   The replication ID.
+   */
   public static function generateReplicationId(WorkspacePointerInterface $source, WorkspacePointerInterface $target) {
     return \md5(
       $source->getWorkspace()->getMachineName() .
       $target->getWorkspace()->getMachineName()
     );
   }
+
 }

@@ -36,9 +36,9 @@ class EntityAccess {
   /**
    * Constructs a new EntityAccess.
    *
-   * @param EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The workspace manager service.
    * @param int $default_workspace
    *   The ID of the default workspace.
@@ -50,15 +50,15 @@ class EntityAccess {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
    *
    * @see hook_entity_access()
    *
-   * @param EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    * @param string $operation
-   * @param AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *
-   * @return AccessResult
+   * @return \Drupal\Core\Access\AccessResult
    */
   public function entityAccess(EntityInterface $entity, $operation, AccountInterface $account) {
 
@@ -71,11 +71,11 @@ class EntityAccess {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
    *
    * @see hook_entity_create_access()
    *
-   * @param AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    * @param array $context
    * @param $entity_bundle
    *
@@ -92,8 +92,8 @@ class EntityAccess {
   }
 
   /**
-   * @param AccountInterface $account
-   * @return AccessResult
+   * @param \Drupal\Core\Session\AccountInterface $account
+   * @return \Drupal\Core\Access\AccessResult
    */
   protected function bypassAccessResult(AccountInterface $account) {
     // This approach assumes that the current "global" active workspace is
@@ -109,25 +109,23 @@ class EntityAccess {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
    *
    * @see hook_entity_access()
    * @see hook_ENTITY_TYPE_access()
    *
-   * @param WorkspaceInterface $workspace
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    * @param string $operation
-   * @param AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *
-   * @return AccessResult
+   * @return \Drupal\Core\Access\AccessResult
    */
   public function workspaceAccess(WorkspaceInterface $workspace, $operation, AccountInterface $account) {
-
     $operations = [
       'view' => ['any' => 'view_any_workspace', 'own' => 'view_own_workspace'],
       'update' => ['any' => 'edit_any_workspace', 'own' => 'edit_own_workspace'],
       'delete' => ['any' => 'delete_any_workspace', 'own' => 'delete_own_workspace'],
     ];
-
     // The default workspace is always viewable, no matter what.
     $result = AccessResult::allowedIf($operation == 'view' && $workspace->id() == $this->defaultWorkspaceId)
       // Or if the user has permission to access any workspace at all.
@@ -144,16 +142,16 @@ class EntityAccess {
   }
 
   /**
-   * Hook bridge;
+   * Hook bridge.
    *
-   * @see hook_create_access();
-   * @see hook_ENTITY_TYPE_create_access().
+   * @see hook_create_access()
+   * @see hook_ENTITY_TYPE_create_access()
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    * @param array $context
    * @param $entity_bundle
    *
-   * @return AccessResult
+   * @return \Drupal\Core\Access\AccessResult
    */
   public function workspaceCreateAccess(AccountInterface $account, array $context, $entity_bundle) {
     return AccessResult::allowedIfHasPermission($account, 'create_workspace');
@@ -168,6 +166,8 @@ class EntityAccess {
    *
    * @return array
    *   The workspace permissions.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function workspacePermissions() {
     $perms = [];
@@ -185,7 +185,9 @@ class EntityAccess {
   /**
    * Returns a list of all workspace entities in the system.
    *
-   * @return WorkspaceInterface[]
+   * @return \Drupal\multiversion\Entity\WorkspaceInterface[]
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getAllWorkspaces() {
     return $this->entityTypeManager->getStorage('workspace')->loadMultiple();
@@ -196,6 +198,7 @@ class EntityAccess {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -213,6 +216,7 @@ class EntityAccess {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -230,6 +234,7 @@ class EntityAccess {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */
@@ -247,6 +252,7 @@ class EntityAccess {
    *
    * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.
+   *
    * @return array
    *   A single-item array with the permission to define.
    */

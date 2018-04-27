@@ -4,6 +4,7 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Test replication settings on replicate.
@@ -13,7 +14,7 @@ use Drupal\Tests\BrowserTestBase;
 class ReplicationSettingsTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-
+  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -73,13 +74,13 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Create a published node.
     $this->drupalGet('/node/add/test');
-    // For Drupal 8.4.x
+    // For Drupal 8.4.x.
     if ($this->xpath('//input[@id="edit-status-value"]')) {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Published node',
       ], t('Save'));
     }
-    // For Drupal 8.3.x
+    // For Drupal 8.3.x.
     else {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Published node',
@@ -91,14 +92,14 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Create an unpublished node.
     $this->drupalGet('/node/add/test');
-    // For Drupal 8.4.x
+    // For Drupal 8.4.x.
     if ($this->xpath('//input[@id="edit-status-value"]')) {
       $this->drupalPostForm(NULL, [
         'status[value]' => FALSE,
         'title[0][value]' => 'Unpublished node',
       ], t('Save'));
     }
-    // For Drupal 8.3.x
+    // For Drupal 8.3.x.
     else {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Unpublished node',
@@ -130,6 +131,8 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Replicate from Live to Target.
     $this->replicatorManager->replicate($source_pointer, $target_pointer, $task);
+    $this->cronRun();
+    $this->cronRun();
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($target);
@@ -182,13 +185,13 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Create a published node.
     $this->drupalGet('/node/add/test');
-    // For Drupal 8.4.x
+    // For Drupal 8.4.x.
     if ($this->xpath('//input[@id="edit-status-value"]')) {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Published node',
       ], t('Save'));
     }
-    // For Drupal 8.3.x
+    // For Drupal 8.3.x.
     else {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Published node',
@@ -200,14 +203,14 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Create an unpublished node.
     $this->drupalGet('/node/add/test');
-    // For Drupal 8.4.x
+    // For Drupal 8.4.x.
     if ($this->xpath('//input[@id="edit-status-value"]')) {
       $this->drupalPostForm(NULL, [
         'status[value]' => FALSE,
         'title[0][value]' => 'Unpublished node',
       ], t('Save'));
     }
-    // For Drupal 8.3.x
+    // For Drupal 8.3.x.
     else {
       $this->drupalPostForm(NULL, [
         'title[0][value]' => 'Unpublished node',
@@ -222,6 +225,8 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Replicate from Target to Live.
     $this->replicatorManager->replicate($target_pointer, $source_pointer, $task);
+    $this->cronRun();
+    $this->cronRun();
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($live);

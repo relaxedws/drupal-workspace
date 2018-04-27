@@ -8,7 +8,6 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
-use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\workspace\WorkspacePointerInterface;
 
@@ -33,6 +32,7 @@ use Drupal\workspace\WorkspacePointerInterface;
  */
 class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInterface {
   use EntityChangedTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -192,6 +192,20 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
       ->setRevisionable(TRUE);
 
     return $fields;
+  }
+
+  /**
+   * Load a workspace pointer for the given workspace.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace entity to get the workspace pointer for.
+   *
+   * @return \Drupal\workspace\WorkspacePointerInterface
+   *   The workspace pointer for the given workspace.
+   */
+  public static function loadFromWorkspace(WorkspaceInterface $workspace) {
+    $pointers = \Drupal::service('entity_type.manager')->getStorage('workspace_pointer')->loadByProperties(['workspace_pointer' => $workspace->id()]);
+    return reset($pointers);
   }
 
 }

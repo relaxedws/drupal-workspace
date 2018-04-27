@@ -52,7 +52,7 @@ class UpdateForm extends ConfirmFormBase {
   /**
    * The injected service to track conflicts during replication.
    *
-   * @var ConflictTrackerInterface
+   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
    */
   protected $conflictTracker;
 
@@ -67,7 +67,7 @@ class UpdateForm extends ConfirmFormBase {
    *   The replicator manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param ConflictTrackerInterface $conflict_tracker
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
    *   The conflict tracking service.
    */
   public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ReplicatorInterface $replicator_manager, RendererInterface $renderer, ConflictTrackerInterface $conflict_tracker) {
@@ -96,6 +96,8 @@ class UpdateForm extends ConfirmFormBase {
    *
    * @return \Drupal\workspace\WorkspacePointerInterface
    *   The active workspace.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getActive() {
     /** @var \Drupal\multiversion\Entity\WorkspaceInterface $workspace */
@@ -146,7 +148,7 @@ class UpdateForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Update @workspace', ['@workspace' => $this->getActive()->label()]);
+    return $this->t('Queue an update of @workspace', ['@workspace' => $this->getActive()->label()]);
   }
 
   /**
@@ -176,7 +178,6 @@ class UpdateForm extends ConfirmFormBase {
       $response = $this->replicatorManager->update($upstream, $active, $task);
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-
         // Notify the user if there are now conflicts.
         $conflicts = $this->conflictTracker
           ->useWorkspace($active->getWorkspace())
@@ -195,7 +196,7 @@ class UpdateForm extends ConfirmFormBase {
           ), 'error');
         }
         else {
-          drupal_set_message($this->t('%workspace has been updated with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
+          drupal_set_message($this->t('An update of %workspace has been queued with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
         }
       }
       else {
@@ -234,7 +235,7 @@ class UpdateForm extends ConfirmFormBase {
     if (!$this->getUpstream()) {
       return $this->t('%workspace has no upstream set.', ['%workspace' => $this->getActive()->label()]);
     }
-    return $this->t('Do you want to pull changes from %upstream to %workspace?', ['%upstream' => $this->getUpstream()->label(), '%workspace' => $this->getActive()->label()]);
+    return $this->t('Do you want to queue %workspace to be updated with changes from %upstream?', ['%upstream' => $this->getUpstream()->label(), '%workspace' => $this->getActive()->label()]);
   }
 
 }

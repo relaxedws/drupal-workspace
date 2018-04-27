@@ -3,9 +3,10 @@
 namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Tests\block\Traits\BlockCreationTrait;
+use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\workspace\ReplicatorManager;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Test the workspace entity.
@@ -15,7 +16,7 @@ use Drupal\workspace\ReplicatorManager;
 class ReplicatorTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-
+  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -35,9 +36,19 @@ class ReplicatorTest extends BrowserTestBase {
     'field',
     'field_ui',
     'menu_link_content',
-    'menu_ui'
+    'menu_ui',
   ];
 
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   *
+   */
   public function setUp() {
     parent::setUp();
     $permissions = [
@@ -62,6 +73,8 @@ class ReplicatorTest extends BrowserTestBase {
     $test_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($test_user);
     $this->setupWorkspaceSwitcherBlock();
+
+    $this->entityTypeManager = \Drupal::entityTypeManager();
   }
 
   /**
@@ -97,9 +110,31 @@ class ReplicatorTest extends BrowserTestBase {
     $page->hasContent('Test node link');
 
     $target = $this->createWorkspaceThroughUI('Target', 'target');
-    /** @var ReplicatorManager $rm */
+    /** @var \Drupal\workspace\ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
-    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($target));
+    $task = new ReplicationTask();
+    $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($target), $task);
+    $this->cronRun();
+    $this->cronRun();
+
+    $replication_log_id = $this->getPointerToWorkspace($live)->generateReplicationId($this->getPointerToWorkspace($target), $task);
+    $replication_logs = $this->entityTypeManager->getStorage('replication_log')->getQuery()->allRevisions()->condition('uuid', $replication_log_id)->execute();
+    $this->assertEquals(2, count($replication_logs));
+    $i = 1;
+    foreach ($replication_logs as $revision_id => $id) {
+      $this->assertEquals(2, $id);
+      $this->assertEquals($i * 2, $revision_id);
+      /** @var \Drupal\replication\Entity\ReplicationLogInterface $revision */
+      $revision = $this->entityTypeManager->getStorage('replication_log')->loadRevision($revision_id);
+      $this->assertTrue($revision->ok->value);
+      if ($i == 1) {
+        $this->assertNull($revision->getHistory()[0]['docs_written']);
+      }
+      else {
+        $this->assertEquals(2, $revision->getHistory()[0]['docs_written']);
+      }
+      $i++;
+    }
 
     $this->switchToWorkspace($target);
 

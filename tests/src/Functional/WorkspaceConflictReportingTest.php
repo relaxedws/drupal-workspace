@@ -8,7 +8,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\workspace\ReplicatorManager;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Tests conflicts reporting.
@@ -19,6 +19,7 @@ use Drupal\workspace\ReplicatorManager;
  */
 class WorkspaceConflictReportingTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
+  use CronRunTrait;
 
   public static $modules = [
     'node',
@@ -27,7 +28,7 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     'menu_link_content',
     'taxonomy',
     'workspace',
-    'multiversion'
+    'multiversion',
   ];
 
   /**
@@ -82,9 +83,11 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     ]);
     $menu_link_content->save();
 
-    /** @var ReplicatorManager $replication_manager */
+    /** @var \Drupal\workspace\ReplicatorManager $replication_manager */
     $replication_manager = \Drupal::service('workspace.replicator_manager');
     $replication_manager->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($stage));
+    $this->cronRun();
+    $this->cronRun();
 
     $node->body->value = $this->randomString(100);
     $node->save();
@@ -107,6 +110,8 @@ class WorkspaceConflictReportingTest extends BrowserTestBase {
     $menu_link_content1->save();
 
     $replication_manager->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($stage));
+    $this->cronRun();
+    $this->cronRun();
     $this->drupalGet("/admin/structure/workspace/{$stage->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('There are no conflicts.');

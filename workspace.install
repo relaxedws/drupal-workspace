@@ -1,6 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Install, update and uninstall functions for the workspace module.
+ */
+
 use Drupal\multiversion\Entity\Workspace;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\workspace\Entity\Replication;
 
 /**
  * Implementation of hook_install().
@@ -20,7 +28,7 @@ function workspace_install() {
   $stage->set('upstream', $default_workspace_id);
   $stage->save();
 
-  // allow workspace entity route alterations
+  // Allow workspace entity route alterations.
   \Drupal::service('entity_type.manager')->clearCachedDefinitions();
   \Drupal::service('router.builder')->rebuild();
 }
@@ -57,4 +65,26 @@ function workspace_update_8102() {
       $pointer->save();
     }
   }
+}
+
+/**
+ * Add the replication_status.
+ */
+function workspace_update_8103() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  // Add the replication status field to the replication entity type.
+  $replication_status = BaseFieldDefinition::create('boolean')
+    ->setLabel(new TranslatableMarkup('Replication status'))
+    ->setDescription(new TranslatableMarkup('The status of the replication.'))
+    ->setRequired(TRUE)
+    ->setDefaultValue(Replication::FAILED)
+    ->setInitialValue(Replication::FAILED);
+  $definition_update_manager->installFieldStorageDefinition('replication_status', 'replication', 'workspace', $replication_status);
+
+  // Set the replication_status.
+  $entity_type = $definition_update_manager->getEntityType('replication');
+  \Drupal::database()->update($entity_type->getBaseTable())
+    ->fields(['replication_status' => Replication::REPLICATED])
+    ->isNotNull('replicated')
+    ->execute();
 }
