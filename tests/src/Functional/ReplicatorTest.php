@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
+use Drupal\Component\Utility\Crypt;
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
@@ -153,6 +154,33 @@ class ReplicatorTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
     $page->hasContent('Test node link');
+  }
+
+  function testReplicationBlocker() {
+    $test_user = $this->drupalCreateUser(['administer site configuration']);
+    $this->drupalLogin($test_user);
+    $state = \Drupal::state();
+    $state->set('workspace.last_replication_failed', TRUE);
+    $key = $state->get('workspace.replication_blocker_key');
+    if(!$key) {
+      $this->drupalGet('/admin/reports/status/reset-replication-blocker');
+      $session = $this->getSession();
+      $this->assertEquals(403, $session->getStatusCode());
+      $key = Crypt::randomBytesBase64(55);
+      $state->set('workspace.replication_blocker_key', $key);
+    }
+    // Request blocker reset with the wrong key.
+    $this->drupalGet('/admin/reports/status/reset-replication-blocker/' . $key . 'foo');
+    $session = $this->getSession();
+    $this->assertEquals(403, $session->getStatusCode());
+
+    $this->assertTrue($state->get('workspace.last_replication_failed'));
+
+    // Request blocker reset with the correct key.
+    $this->drupalGet('/admin/reports/status/reset-replication-blocker/' . $key);
+    $session = $this->getSession();
+    $this->assertEquals(200, $session->getStatusCode());
+    $this->assertFalse($state->get('workspace.last_replication_failed'));
   }
 
 }

@@ -87,3 +87,13 @@ workspace.update.form:
     _permission: 'update any workspace from upstream'
   options:
     _admin_route: TRUE
+
+workspace.reset_replication_blocker:
+  path: '/admin/reports/status/reset-replication-blocker/{key}'
+  defaults:
+    _controller: '\Drupal\workspace\Controller\ReplicationBlockerController::resetBlocker'
+  options:
+    no_cache: TRUE
+    _admin_route: TRUE
+  requirements:
+    _access_replication_blocker: 'TRUE'

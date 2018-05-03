@@ -45,3 +45,7 @@ services:
     class: Drupal\workspace\Access\WorkspaceViewCheck
     tags:
       - { name: access_check, applies_to: _workspace_view }
+  access_check.cron:
+    class: Drupal\workspace\Access\ReplicationBlockerAccessCheck
+    tags:
+      - { name: access_check, applies_to: _access_replication_blocker }

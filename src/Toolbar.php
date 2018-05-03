@@ -140,9 +140,10 @@ class Toolbar {
       ],
     ];
 
+    $last_replication_failed = \Drupal::state()->get('workspace.last_replication_failed', FALSE);
     $update_access = $user->hasPermission('update any workspace from upstream');
     $has_upstream = isset($active->upstream) && !$active->upstream->isEmpty();
-    if ($update_access && $has_upstream) {
+    if ($update_access && $has_upstream && !$last_replication_failed) {
       $items['workspace_update'] = [
         '#type' => 'toolbar_item',
         '#weight' => 124,

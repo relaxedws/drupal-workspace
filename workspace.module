@@ -11,6 +11,34 @@ use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
+ * Implements hook_requirements().
+ */
+function workspace_requirements($phase) {
+  if ($phase === 'runtime') {
+    $state = \Drupal::state();
+    $replication_blocker_key = $state->get('workspace.replication_blocker_key') ?: '';
+    $replication_blocker_url = '/admin/reports/status/reset-replication-blocker/' . $replication_blocker_key;
+    $last_replication_failed = $state->get('workspace.last_replication_failed', FALSE);
+    if ($last_replication_failed) {
+      $requirements['last_replication_status'] = [
+        'title' => t('Last replication status'),
+        'value' => t('Failed'),
+        'description' => t('Last replication failed, creating and running deployments is not allowed now. After you fix the problem that caused the last replication fail, click <strong><a href=":url">this</a></strong> link to reset the replication blocker.', [':url' => $replication_blocker_url]),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+    else {
+      $requirements['last_replication_status'] = [
+        'title' => t('Last replication status'),
+        'value' => t('Successful'),
+        'severity' => REQUIREMENT_OK,
+      ];
+    }
+    return $requirements;
+  }
+}
+
+/**
  * Implements hook_entity_type_alter().
  */
 function workspace_entity_type_alter(array &$entity_types) {
@@ -171,5 +199,30 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The <a href="@link">Workspace module</a> Provides the ability to have multiple workspaces on a single site to facilitate things like full-site preview and content staging.', ['@link' => 'https://www.drupal.org/project/workspace']) . '</p>';
       return $output;
+  }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function workspace_menu_local_tasks_alter(&$data, $route_name) {
+  if ($route_name == 'entity.replication.collection') {
+    foreach ($data['tabs'][0] as $href => $tab_data) {
+      if (strpos($href, 'field_ui.fields:') === 0) {
+        unset($data['tabs'][0][$href]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_queue_info_alter().
+ */
+function workspace_queue_info_alter(&$queues) {
+  $replication_blocked = \Drupal::state()->get('workspace.last_replication_failed', FALSE);
+  if (isset($queues['workspace_replication']) && $replication_blocked) {
+    // Let's spend 60 seconds instead of 600 seconds when the replication is
+    // blocked.
+    $queues['workspace_replication']['cron']['time'] = 60;
   }
 }

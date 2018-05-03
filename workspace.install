@@ -5,6 +5,7 @@
  * Install, update and uninstall functions for the workspace module.
  */
 
+use Drupal\Component\Utility\Crypt;
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -16,6 +17,10 @@ use Drupal\workspace\Entity\Replication;
 function workspace_install() {
   // Set workspace earlier to alter entities before anyone else does.
   module_set_weight('workspace', 10);
+
+  // Populate the replication blocker key state variable.
+  $replication_blocker_key = Crypt::randomBytesBase64(55);
+  \Drupal::state()->set('workspace.replication_blocker_key', $replication_blocker_key);
 
   // Add pointers for all existing workspaces.
   foreach (Workspace::loadMultiple() as $workspace) {
@@ -87,4 +92,16 @@ function workspace_update_8103() {
     ->fields(['replication_status' => Replication::REPLICATED])
     ->isNotNull('replicated')
     ->execute();
+}
+
+/**
+ * Populate the replication blocker key state variable.
+ */
+function workspace_update_8104() {
+  $state = \Drupal::state();
+  $replication_blocker_key = $state->get('workspace.replication_blocker_key');
+  if (!$replication_blocker_key) {
+    $replication_blocker_key = Crypt::randomBytesBase64(55);
+    $state->set('workspace.replication_blocker_key', $replication_blocker_key);
+  }
 }
