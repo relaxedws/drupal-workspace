@@ -15,6 +15,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 function workspace_requirements($phase) {
   if ($phase === 'runtime') {
+    $requirements = [];
     $state = \Drupal::state();
     $replication_blocker_key = $state->get('workspace.replication_blocker_key') ?: '';
     $replication_blocker_url = '/admin/reports/status/reset-replication-blocker/' . $replication_blocker_key;
