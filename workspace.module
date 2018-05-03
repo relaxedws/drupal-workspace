@@ -18,8 +18,8 @@ function workspace_requirements($phase) {
     $state = \Drupal::state();
     $replication_blocker_key = $state->get('workspace.replication_blocker_key') ?: '';
     $replication_blocker_url = '/admin/reports/status/reset-replication-blocker/' . $replication_blocker_key;
-    $last_replication_failed = $state->get('workspace.last_replication_failed', FALSE);
-    if ($last_replication_failed) {
+    $last_replication_failed = $state->get('workspace.last_replication_failed', NULL);
+    if ($last_replication_failed === TRUE) {
       $requirements['last_replication_status'] = [
         'title' => t('Last replication status'),
         'value' => t('Failed'),
@@ -27,7 +27,7 @@ function workspace_requirements($phase) {
         'severity' => REQUIREMENT_ERROR,
       ];
     }
-    else {
+    elseif ($last_replication_failed === FALSE) {
       $requirements['last_replication_status'] = [
         'title' => t('Last replication status'),
         'value' => t('Successful'),
