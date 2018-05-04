@@ -4,6 +4,8 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
@@ -56,20 +58,27 @@ class InternalReplicator implements ReplicatorInterface {
   protected $serializer;
 
   /**
+   * @var \Drupal\Core\Logger\LoggerChannelInterface;
+   */
+  protected $logger;
+
+  /**
    * @param WorkspaceManagerInterface $workspace_manager
    * @param EntityTypeManagerInterface $entity_type_manager
    * @param ChangesFactoryInterface $changes_factory
    * @param RevisionDiffFactoryInterface $revisiondiff_factory
    * @param RevisionIndexInterface $rev_index
    * @param SerializerInterface $serializer
+   * @param LoggerChannelFactoryInterface $logger;
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, SerializerInterface $serializer) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, SerializerInterface $serializer, LoggerChannelFactoryInterface $logger) {
     $this->workspaceManager = $workspace_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
     $this->revIndex = $rev_index;
     $this->serializer = $serializer;
+    $this->logger = $logger->get('workspace');
   }
 
   /**
@@ -103,8 +112,8 @@ class InternalReplicator implements ReplicatorInterface {
     try {
       $this->workspaceManager->setActiveWorkspace($source_workspace);
     }
-    catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
+    catch (\Throwable $e) {
+      $this->logger->error('%type: @message in %function (line %line of %file).', Error::decodeException($e));
       drupal_set_message($e->getMessage(), 'error');
     }
     // Fetch the site time.
