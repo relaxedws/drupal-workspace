@@ -4,7 +4,6 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Tests access bypass permission controls on workspaces.
@@ -15,7 +14,6 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
  */
 class WorkspaceBypassTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
-  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -49,8 +47,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     /** @var \Drupal\workspace\ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
-    $this->cronRun();
-    $this->cronRun();
+    \Drupal::service('cron')->run();
 
     $this->switchToWorkspace($bears);
 
@@ -126,8 +123,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
     /** @var \Drupal\workspace\ReplicatorManager $rm */
     $rm = \Drupal::service('workspace.replicator_manager');
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($bears));
-    $this->cronRun();
-    $this->cronRun();
+    \Drupal::service('cron')->run();
 
     $this->switchToWorkspace($bears);
 

@@ -4,7 +4,6 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\simpletest\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Test replication settings on replicate.
@@ -14,7 +13,6 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
 class ReplicationSettingsTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -131,8 +129,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Replicate from Live to Target.
     $this->replicatorManager->replicate($source_pointer, $target_pointer, $task);
-    $this->cronRun();
-    $this->cronRun();
+    \Drupal::service('cron')->run();
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($target);
@@ -225,8 +222,7 @@ class ReplicationSettingsTest extends BrowserTestBase {
 
     // Replicate from Target to Live.
     $this->replicatorManager->replicate($target_pointer, $source_pointer, $task);
-    $this->cronRun();
-    $this->cronRun();
+    \Drupal::service('cron')->run();
 
     // Verify the correct nodes were replicated.
     $this->switchToWorkspace($live);

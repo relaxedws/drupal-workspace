@@ -7,7 +7,6 @@ use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Test the workspace entity.
@@ -17,7 +16,6 @@ use Drupal\Tests\Traits\Core\CronRunTrait;
 class ReplicatorTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-  use CronRunTrait;
   use BlockCreationTrait {
     placeBlock as drupalPlaceBlock;
   }
@@ -115,8 +113,7 @@ class ReplicatorTest extends BrowserTestBase {
     $rm = \Drupal::service('workspace.replicator_manager');
     $task = new ReplicationTask();
     $rm->replicate($this->getPointerToWorkspace($live), $this->getPointerToWorkspace($target), $task);
-    $this->cronRun();
-    $this->cronRun();
+    \Drupal::service('cron')->run();
 
     $replication_log_id = $this->getPointerToWorkspace($live)->generateReplicationId($this->getPointerToWorkspace($target), $task);
     $replication_logs = $this->entityTypeManager->getStorage('replication_log')->getQuery()->allRevisions()->condition('uuid', $replication_log_id)->execute();
