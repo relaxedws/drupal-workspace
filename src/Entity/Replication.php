@@ -177,7 +177,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the entity was last edited.'));
 
-    $fields['replication_status'] = BaseFieldDefinition::create('integer')
+    $fields['replication_status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Replication status'))
       ->setDescription(t('The status of the replication.'))
       ->setRequired(TRUE)
