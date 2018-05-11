@@ -3,9 +3,7 @@
 namespace Drupal\workspace\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\workspace\Entity\Replication;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -52,7 +50,7 @@ class ReplicationInProgress implements EventSubscriberInterface {
       $active_workspace_id = $this->workspaceManager->getActiveWorkspaceId();
       $replicating = $this->entityTypeManager->getStorage('replication')->getQuery()->condition('target', $active_workspace_id)->condition('replication_status', Replication::REPLICATING)->execute();
       if (!empty($replicating)) {
-        drupal_set_message(t('There is a deployment to the active workspace in progress. You may not see all changes yet. Check the @deployments_page for the status.', ['@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')->toString()]), 'warning');
+        drupal_set_message(t('There is a deployment to the active workspace in progress. You may not see all changes yet.'), 'warning');
       }
     }
   }
