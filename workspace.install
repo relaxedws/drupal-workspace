@@ -105,3 +105,12 @@ function workspace_update_8104() {
     $state->set('workspace.replication_blocker_key', $replication_blocker_key);
   }
 }
+
+/**
+ * Update workspace pointer name field.
+ */
+function workspace_update_8105() {
+  $database = \Drupal::database();
+  $database->query('ALTER TABLE workspace_pointer MODIFY name varchar(255);')->execute();
+  $database->query('ALTER TABLE workspace_pointer_revision MODIFY name varchar(255);')->execute();
+}
