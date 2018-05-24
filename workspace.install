@@ -110,7 +110,72 @@ function workspace_update_8104() {
  * Update workspace pointer name field.
  */
 function workspace_update_8105() {
+  // This update hook wasn't working, so it's been removed in favour of 8106.
+}
+
+/**
+ * Updates definitions of entity's type columns.
+ *
+ * @param string $entity_type_id
+ *   The type of entity.
+ * @param string[] $columns
+ *   The list of column names.
+ * @param string[] $tables
+ *   The list of tables to update the columns in.
+ *
+ * @throws \Exception
+ */
+function workspace_update_field_storage_definitions($entity_type_id, array $columns, array $tables) {
   $database = \Drupal::database();
-  $database->query('ALTER TABLE workspace_pointer MODIFY name varchar(255);')->execute();
-  $database->query('ALTER TABLE workspace_pointer_revision MODIFY name varchar(255);')->execute();
+  /* @var \Drupal\Core\Field\BaseFieldDefinition[] $base_field_definitions */
+  $base_field_definitions = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type_id);
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $existing_data = [];
+
+  foreach ($tables as $table) {
+    // Store existing data in memory.
+    $data = $database
+      ->select($table)
+      ->fields($table)
+      ->execute()
+      ->fetchAll(\PDO::FETCH_ASSOC);
+
+    // Truncate the table to unfreeze modification of its schema only in
+    // case it's not empty.
+    if (!empty($data)) {
+      $database
+        ->truncate($table)
+        ->execute();
+
+      $existing_data[$table] = $data;
+    }
+  }
+
+  foreach ($columns as $column) {
+    $definition_update_manager->updateFieldStorageDefinition($base_field_definitions[$column]);
+  }
+
+  // Put the data back into the table.
+  foreach ($existing_data as $table => $entries) {
+    foreach ($entries as $entry) {
+      $database
+        ->insert($table)
+        ->fields($entry)
+        ->execute();
+    }
+  }
+}
+
+/**
+ * Update workspace pointer name field again.
+ */
+function workspace_update_8106() {
+  workspace_update_field_storage_definitions('workspace_pointer', ['name'], ['workspace_pointer', 'workspace_pointer_revision']);
+}
+
+/**
+ * Make sure replication_status is a integer field type.
+ */
+function workspace_update_8107() {
+  workspace_update_field_storage_definitions('replication', ['replication_status', 'name'], ['replication']);
 }

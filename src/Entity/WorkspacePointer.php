@@ -167,6 +167,7 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
       ->setLabel(t('Name'))
       ->setDescription(t('The name of the Workspace pointer entity.'))
       ->setSettings([
+        'max_length' => 512,
         'text_processing' => 0,
       ])
       ->setRevisionable(TRUE)

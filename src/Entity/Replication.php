@@ -100,7 +100,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setLabel(t('Title'))
       ->setRequired(TRUE)
       ->setSettings([
-        'max_length' => 50,
+        'max_length' => 512,
         'text_processing' => 0,
       ])
       ->setDefaultValue('')
@@ -177,11 +177,12 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the entity was last edited.'));
 
-    $fields['replication_status'] = BaseFieldDefinition::create('boolean')
+    $fields['replication_status'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Replication status'))
       ->setDescription(t('The status of the replication.'))
       ->setRequired(TRUE)
-      ->setDefaultValue(static::FAILED);
+      ->setDefaultValue(static::FAILED)
+      ->setInitialValue(static::FAILED);
 
     return $fields;
   }

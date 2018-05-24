@@ -99,7 +99,7 @@ class WorkspaceForm extends ContentEntityForm {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
-      '#maxlength' => 255,
+      '#maxlength' => 128,
       '#default_value' => $workspace->label(),
       '#description' => $this->t("Label for the Workspace."),
       '#required' => TRUE,
@@ -109,7 +109,7 @@ class WorkspaceForm extends ContentEntityForm {
     $form['machine_name'] = [
       '#type' => 'machine_name',
       '#title' => $this->t('Workspace ID'),
-      '#maxlength' => 255,
+      '#maxlength' => 128,
       '#default_value' => $workspace->get('machine_name')->value,
       '#machine_name' => [
         'exists' => '\Drupal\multiversion\Entity\Workspace::load',
