@@ -118,6 +118,8 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
    * {@inheritdoc}
    */
   public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
+    $request = \Drupal::request();
+    $uuid = MD5($request->getHost() . $request->getPort());
     $source_name = $this->label();
     if ($this->getWorkspace() instanceof WorkspaceInterface) {
       $source_name = $this->getWorkspace()->getMachineName();
@@ -128,6 +130,7 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
     }
     if ($task) {
       return \md5(
+        $uuid .
         $source_name .
         $target_name .
         var_export($task->getDocIds(), TRUE) .
@@ -140,6 +143,7 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
       );
     }
     return \md5(
+      $uuid .
       $source_name .
       $target_name
     );
