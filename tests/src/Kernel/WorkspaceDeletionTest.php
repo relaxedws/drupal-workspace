@@ -71,20 +71,26 @@ class WorkspaceDeletionTest extends KernelTestBase {
     $node_type->save();
     $node = Node::create([
       'type' => 'le_content_type',
-      'workspace' => $workspace->id(),
+      'workspace' => [
+        'target_id' => $workspace->id(),
+      ],
       'title' => 'le content',
     ]);
     $node->save();
     $node2 = Node::create([
       'type' => 'le_content_type',
-      'workspace' => $workspace->id(),
+      'workspace' => [
+        'target_id' => $workspace->id(),
+      ],
       'title' => 'le content deux',
     ]);
     $node2->save();
 
     $node3 = Node::create([
       'type' => 'le_content_type',
-      'workspace' => $workspace->id(),
+      'workspace' => [
+        'target_id' => $workspace->id(),
+      ],
       'title' => 'le content trois',
     ]);
     $node3->save();
@@ -94,7 +100,7 @@ class WorkspaceDeletionTest extends KernelTestBase {
     $this->cron->run();
 
     $workspaces = $this->entityTypeManager->getStorage('workspace')->getQuery()->execute();
-    $nodes = $this->entityTypeManager->getStorage('node')->getQuery()->execute();
+    $nodes = $this->entityTypeManager->getStorage('node')->getOriginalStorage()->getQuery()->execute();
     $this->assertEmpty($workspaces, 'No workspaces');
     $this->assertEmpty($nodes, 'No nodes');
   }
