@@ -58,6 +58,14 @@ function drush_workspace_uninstall() {
 
     try {
       $entity_type_manager = \Drupal::entityTypeManager();
+      $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+      $default_workspace = Workspace::load($default_workspace_id);
+      \Drupal::service('workspace.manager')->setActiveWorkspace($default_workspace);
+      $database = \Drupal::database();
+      $database
+        ->delete('key_value_expire')
+        ->condition('collection', 'user.private_tempstore.workspace.negotiator.session')
+        ->execute();
 
       // Delete all workspaces excluding the default workspace, also delete all
       // content from deleted workspaces.
@@ -68,8 +76,6 @@ function drush_workspace_uninstall() {
         }
       }
       \Drupal::service('cron')->run();
-      $default_workspace = Workspace::load(\Drupal::getContainer()->getParameter('workspace.default'));
-      \Drupal::service('workspace.manager')->setActiveWorkspace($default_workspace);
 
       // Delete all workspace_pointer entities.
       $storage = \Drupal::entityTypeManager()->getStorage('workspace_pointer');
