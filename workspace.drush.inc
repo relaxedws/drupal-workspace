@@ -68,7 +68,8 @@ function drush_workspace_uninstall() {
         }
       }
       \Drupal::service('cron')->run();
-      \Drupal::service('multiversion.manager')->setActiveWorkspaceId(\Drupal::getContainer()->getParameter('workspace.default'));
+      $default_workspace = Workspace::load(\Drupal::getContainer()->getParameter('workspace.default'));
+      \Drupal::service('workspace.manager')->setActiveWorkspace($default_workspace);
 
       // Delete all workspace_pointer entities.
       $storage = \Drupal::entityTypeManager()->getStorage('workspace_pointer');

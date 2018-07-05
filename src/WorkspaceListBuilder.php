@@ -65,7 +65,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
     /** @var \Drupal\multiversion\Entity\WorkspaceTypeInterface $type */
     $type = $entity->get('type')->first()->entity;
     $row['type'] = $type ? $type->label() : '';
-    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    $active_workspace = $this->workspaceManager->getActiveWorkspaceId();
     $row['status'] = $active_workspace == $entity->id() ? 'Active' : 'Inactive';
     return $row + parent::buildRow($entity);
   }
@@ -80,7 +80,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
       $operations['edit']['query']['destination'] = $entity->toUrl('collection')->toString();
     }
 
-    $active_workspace = $this->workspaceManager->getActiveWorkspace()->id();
+    $active_workspace = $this->workspaceManager->getActiveWorkspaceId();
     if ($entity->id() != $active_workspace) {
       $operations['activate'] = [
         'title' => $this->t('Set Active'),
