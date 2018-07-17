@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\Database\Database;
+use Drupal\multiversion\Entity\Workspace;
 use Psr\Log\LogLevel;
 
 /**
@@ -57,6 +58,28 @@ function drush_workspace_uninstall() {
 
     try {
       $entity_type_manager = \Drupal::entityTypeManager();
+      $default_workspace_id = \Drupal::getContainer()->getParameter('workspace.default');
+      $default_workspace = Workspace::load($default_workspace_id);
+      \Drupal::service('workspace.manager')->setActiveWorkspace($default_workspace);
+      $database = \Drupal::database();
+      $database
+        ->delete('key_value_expire')
+        ->condition('collection', 'user.private_tempstore.workspace.negotiator.session')
+        ->execute();
+
+      // Delete the 'workspace_replication' queue before deleting non-default
+      // workspaces.
+      \Drupal::queue('workspace_replication')->deleteQueue();
+
+      // Delete all workspaces excluding the default workspace, also delete all
+      // content from deleted workspaces.
+      $workspaces = Workspace::loadMultiple();
+      foreach ($workspaces as $workspace) {
+        if (!$workspace->isDefaultWorkspace()) {
+          $workspace->delete();
+        }
+      }
+      \Drupal::service('cron')->run();
 
       // Delete all workspace_pointer entities.
       $storage = \Drupal::entityTypeManager()->getStorage('workspace_pointer');

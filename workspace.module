@@ -82,15 +82,6 @@ function workspace_workspace_insert(WorkspaceInterface $workspace) {
   \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
 }
 
-/**
- * Implements hook_ENTITY_TYPE_delete()
- *
- * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
- */
-function workspace_workspace_delete(WorkspaceInterface $workspace) {
-  \Drupal::service('workspace.entity_operations')->workspaceDelete($workspace);
-}
-
 function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
   return \Drupal\workspace\Entity\Replication::getPointerAllowedValues($definition, $entity, $cacheable);
 }

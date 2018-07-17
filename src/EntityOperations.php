@@ -25,11 +25,6 @@ class EntityOperations {
   protected $entityTypeManager;
 
   /**
-   * @var \Drupal\Core\Queue\QueueFactory
-   */
-  protected $state;
-
-  /**
    * Constructs a new Toolbar.
    *
    * @param \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager
@@ -57,43 +52,6 @@ class EntityOperations {
     $pointer = $this->entityTypeManager->getStorage('workspace_pointer')->create();
     $pointer->setWorkspace($workspace);
     $pointer->save();
-  }
-
-  /**
-   * Hook bridge for hook_workspace_delete()
-   *
-   * @see hook_ENTITY_TYPE_delete()
-   *
-   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
-   */
-  public function workspaceDelete(WorkspaceInterface $workspace) {
-    // Delete related workspace pointer entities.
-    /** @var \Drupal\workspace\WorkspacePointerInterface[] $workspace_pointers */
-    $workspace_pointers = $this->entityTypeManager->getStorage('workspace_pointer')->loadByProperties(['workspace_pointer' => $workspace->id()]);
-    if (!empty($workspace_pointers)) {
-      $workspace_pointer = reset($workspace_pointers);
-      $workspace_pointer->delete();
-    }
-
-    /** @var \Drupal\Core\Queue\QueueInterface $queue */
-    $queue = $this->queue->get('deleted_workspace_queue');
-    $queue->createQueue();
-    /** @var ContentEntityTypeInterface $entity_type */
-    foreach ($this->multiversionManager->getEnabledEntityTypes() as $entity_type) {
-      $entity_ids = $this->entityTypeManager
-        ->getStorage($entity_type->id())
-        ->getQuery()
-        ->condition('workspace', $workspace->id())
-        ->execute();
-      foreach ($entity_ids as $entity_id) {
-        $data = [
-          'workspace' => $workspace->id(),
-          'entity_type_id' => $entity_type->id(),
-          'entity_id' => $entity_id,
-        ];
-        $queue->createItem($data);
-      }
-    }
   }
 
 }

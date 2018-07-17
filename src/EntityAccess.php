@@ -126,8 +126,13 @@ class EntityAccess {
       'update' => ['any' => 'edit_any_workspace', 'own' => 'edit_own_workspace'],
       'delete' => ['any' => 'delete_any_workspace', 'own' => 'delete_own_workspace'],
     ];
+    $route = \Drupal::request()->attributes->get('_route');
     // The default workspace is always viewable, no matter what.
     $result = AccessResult::allowedIf($operation == 'view' && $workspace->id() == $this->defaultWorkspaceId)
+      // Or if cron wants to switch workspace.
+      ->orIf(AccessResult::allowedIf($route == 'system.cron'))
+      ->orIf(AccessResult::allowedIf($route == 'system.run_cron'))
+      ->orIf(AccessResult::allowedIf($route == '<none>'))
       // Or if the user has permission to access any workspace at all.
       ->orIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['any']))
       // Or if it's their own workspace, and they have permission to access their own workspace.
@@ -136,7 +141,7 @@ class EntityAccess {
           ->andIf(AccessResult::allowedIfHasPermission($account, $operations[$operation]['own']))
       )
       ->orIf(AccessResult::allowedIfHasPermission($account, $operation . '_workspace_' . $workspace->id()))
-      ->orIf(AccessResult::forbiddenIf($operation == 'delete' && (in_array($workspace->id(), [$this->workspaceManager->getActiveWorkspace()->id(), $this->defaultWorkspaceId]))));
+      ->orIf(AccessResult::forbiddenIf($operation == 'delete' && (in_array($workspace->id(), [$this->workspaceManager->getActiveWorkspaceId(), $this->defaultWorkspaceId]))));
 
     return $result;
   }
