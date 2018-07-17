@@ -67,6 +67,10 @@ function drush_workspace_uninstall() {
         ->condition('collection', 'user.private_tempstore.workspace.negotiator.session')
         ->execute();
 
+      // Delete the 'workspace_replication' queue before deleting non-default
+      // workspaces.
+      \Drupal::queue('workspace_replication')->deleteQueue();
+
       // Delete all workspaces excluding the default workspace, also delete all
       // content from deleted workspaces.
       $workspaces = Workspace::loadMultiple();
