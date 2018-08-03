@@ -136,7 +136,7 @@ class EntityTypeInfo {
       }
 
       if (!$entity_type->hasLinkTemplate('revision')) {
-        $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{entity_revision}/view');
+        $entity_type->setLinkTemplate('revision', $entity_type->getLinkTemplate('canonical') . '/revisions/{' . $entity_type->id() . '_revision}/view');
       }
     }
 

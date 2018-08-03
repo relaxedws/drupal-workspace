@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
+use Drupal\block_content\Entity\BlockContent;
+use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Tests\BrowserTestBase;
@@ -14,7 +16,14 @@ use Drupal\Tests\BrowserTestBase;
 class EntityTypeAlterTest extends BrowserTestBase {
   use WorkspaceTestUtilities;
 
-  public static $modules = ['node', 'user', 'workspace', 'multiversion'];
+  public static $modules = [
+    'node',
+    'user',
+    'block',
+    'block_content',
+    'workspace',
+    'multiversion',
+  ];
 
   public function testEntityTypeAlter() {
     $entity_types = \Drupal::service('entity_type.manager')->getDefinitions();
@@ -71,6 +80,44 @@ class EntityTypeAlterTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
     $page->findLink($this->truncateRev($layla_node->_rev->value));
+  }
+
+  /**
+   * Tests revision tree of block content.
+   */
+  public function testBlockTree() {
+    $permissions = [
+      'administer blocks',
+      'view_revision_trees'
+    ];
+    $user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($user);
+
+    // Create new block type.
+    $block_type = BlockContentType::create([
+      'id' => 'basic',
+      'label' => 'basic',
+    ]);
+    $block_type->save();
+
+    // Create new block.
+    $block_content = BlockContent::create([
+      'info' => $this->randomString(),
+      'type' => 'basic',
+      'langcode' => 'en'
+    ]);
+   $block_content->save();
+
+    // Check for tree elements.
+    $this->drupalGet('/block/' . $block_content->id() . '/tree');
+    $this->assertSession()->pageTextContains('Status: available');
+
+    // Update block.
+    $edit['info[0][value]'] = $this->randomMachineName(16);
+    $this->drupalPostForm('block/' . $block_content->id(), $edit, t('Save'));
+
+    $this->drupalGet('/block/' . $block_content->id() . '/tree');
+    $this->assertSession()->pageTextContains('Status: available');
   }
 
   protected function truncateRev($rev) {
