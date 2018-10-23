@@ -5,8 +5,13 @@ entity.workspace.collection:
 
 entity.workspace.changes:
   title: 'Changes on the current workspace'
-  route_name: entity.workspace_type.changes
-  base_route: entity.workspace_type.changes
+  route_name: entity.workspace.changes
+  base_route: entity.workspace.changes
+
+entity.workspace.archived:
+  title: 'Archived Workspaces'
+  route_name: entity.workspace.archived
+  base_route: entity.workspace.collection
 
 entity.workspace_type.collection:
   title: 'Types'

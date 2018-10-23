@@ -78,6 +78,16 @@ entity.workspace.changes:
   requirements:
     _permission: 'view_any_workspace'
 
+entity.workspace.archived:
+  path: '/admin/structure/workspace/archived'
+  defaults:
+    _title: 'Archived Workspaces'
+    _controller: '\Drupal\workspace\Controller\ArchivedWorkspacesListController::viewArchivedWorkspaces'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'view_any_workspace'
+
 # Update form
 workspace.update.form:
   path: '/admin/structure/deployment/update'
