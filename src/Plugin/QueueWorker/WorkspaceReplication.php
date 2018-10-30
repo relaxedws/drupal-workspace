@@ -11,7 +11,6 @@ use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Error;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\user\Entity\User;
