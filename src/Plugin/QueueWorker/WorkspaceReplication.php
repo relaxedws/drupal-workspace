@@ -10,6 +10,7 @@ use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Utility\Error;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\user\Entity\User;
@@ -27,6 +28,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The replicator manager.
@@ -126,6 +129,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication->save();
       $this->logger->info('Replication "@replication" has started.', ['@replication' => $replication->label()]);
 
+      $response = FALSE;
       try {
         $response = $this->replicatorManager->doReplication($data['source'], $data['target'], $data['task']);
       }
@@ -133,7 +137,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         // When exception is thrown during replication process we want
         // replication to be marked as failed and removed from queue.
         $this->logger->error('%type: @message in %function (line %line of %file).', $variables = Error::decodeException($e));
-        $response = FALSE;
+        $replication->set('fail_info', $e->getMessage());
+        $replication->save();
       }
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
@@ -143,7 +148,11 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         $this->logger->info('Replication "@replication" has finished successfully.', ['@replication' => $replication->label()]);
       }
       else {
+        if (($response instanceof ReplicationLogInterface) && !empty($response->history->fail_info)) {
+          $replication->set('fail_info', $response->history->fail_info);
+        }
         $replication->setReplicationStatusFailed();
+        $replication->set('replicated', $this->time->getRequestTime());
         $replication->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);
