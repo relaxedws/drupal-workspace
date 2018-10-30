@@ -183,7 +183,7 @@ function workspace_update_8107() {
 /**
  * Add the fail_info field.
  */
-function replication_update_8108() {
+function workspace_update_8108() {
   $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
   // Add the replication status field to the replication entity type.
   $replication_fail_info = BaseFieldDefinition::create('string_long')
