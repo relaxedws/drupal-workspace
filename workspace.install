@@ -179,3 +179,18 @@ function workspace_update_8106() {
 function workspace_update_8107() {
   workspace_update_field_storage_definitions('replication', ['replication_status', 'name'], ['replication']);
 }
+
+/**
+ * Add the fail_info field.
+ */
+function replication_update_8108() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  // Add the replication status field to the replication entity type.
+  $replication_fail_info = BaseFieldDefinition::create('string_long')
+    ->setLabel(t('Replication fail info'))
+    ->setDescription(t('When a replication fails, it contains the info about the cause of the fail.'))
+    ->setRequired(FALSE)
+    ->setDefaultValue('')
+    ->setInitialValue('');
+  $definition_update_manager->installFieldStorageDefinition('fail_info', 'replication', 'workspace', $replication_fail_info);
+}

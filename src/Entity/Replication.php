@@ -184,6 +184,13 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDefaultValue(static::FAILED)
       ->setInitialValue(static::FAILED);
 
+    $fields['fail_info'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Replication fail info'))
+      ->setDescription(t('When a replication fails, it contains the info about the cause of the fail.'))
+      ->setRequired(FALSE)
+      ->setDefaultValue('')
+      ->setInitialValue('');
+
     return $fields;
   }
 
@@ -213,6 +220,13 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function setReplicationStatusReplicated() {
     $this->set('replication_status', static::REPLICATED);
+  }
+
+  /**
+   * Sets the replication status to failed.
+   */
+  public function getReplicationFailInfo() {
+    return $this->get('fail_info')->value;
   }
 
   /**
