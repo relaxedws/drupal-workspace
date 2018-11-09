@@ -5,6 +5,7 @@ namespace Drupal\workspace\Form;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\PrependCommand;
+use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -197,6 +198,12 @@ class UpdateForm extends ConfirmFormBase {
         }
         else {
           drupal_set_message($this->t('An update of %workspace has been queued with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
+          if (\Drupal::moduleHandler()->moduleExists('deploy')) {
+            $input = $form_state->getUserInput();
+            if (!isset($input['_drupal_ajax'])) {
+              $form_state->setRedirect('entity.replication.collection');
+            }
+          }
         }
       }
       else {
@@ -223,8 +230,13 @@ class UpdateForm extends ConfirmFormBase {
   public function update(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $response->addCommand(new CloseModalDialogCommand());
-    $status_messages = ['#type' => 'status_messages'];
-    $response->addCommand(new PrependCommand('.region-highlighted', $this->renderer->renderRoot($status_messages)));
+    if (\Drupal::moduleHandler()->moduleExists('deploy')) {
+      $response->addCommand(new RedirectCommand(Url::fromRoute('entity.replication.collection')->setAbsolute()->toString()));
+    }
+    else {
+      $status_messages = ['#type' => 'status_messages'];
+      $response->addCommand(new PrependCommand('.region-highlighted', $this->renderer->renderRoot($status_messages));
+    }
     return $response;
   }
 
