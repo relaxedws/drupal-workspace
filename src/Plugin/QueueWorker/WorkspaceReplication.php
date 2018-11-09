@@ -153,6 +153,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         // replication to be marked as failed and removed from queue.
         $this->logger->error('%type: @message in %function (line %line of %file).', $variables = Error::decodeException($e));
         $replication->set('fail_info', $e->getMessage());
+        $replication->setArchiveSource(FALSE);
         $replication->save();
       }
 
@@ -189,6 +190,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         }
         $replication->setReplicationStatusFailed();
         $replication->set('replicated', $this->time->getRequestTime());
+        $replication->setArchiveSource(FALSE);
         $replication->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);

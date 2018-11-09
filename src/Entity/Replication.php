@@ -242,9 +242,13 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
 
   /**
    * Sets the archive source flag.
+   *
+   * @param bool $archive
+   *
+   * @return \Drupal\workspace\Entity\Replication
    */
-  public function setArchiveSource() {
-    $this->set('archive_source', TRUE);
+  public function setArchiveSource($archive = TRUE) {
+    $this->set('archive_source', $archive);
     return $this;
   }
 
