@@ -235,7 +235,7 @@ class UpdateForm extends ConfirmFormBase {
     }
     else {
       $status_messages = ['#type' => 'status_messages'];
-      $response->addCommand(new PrependCommand('.region-highlighted', $this->renderer->renderRoot($status_messages));
+      $response->addCommand(new PrependCommand('.region-highlighted', $this->renderer->renderRoot($status_messages)));
     }
     return $response;
   }
