@@ -12,6 +12,8 @@ use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Utility\Error;
+use Drupal\multiversion\Entity\Workspace;
+use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
@@ -74,6 +76,16 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
   protected $entityTypeManager;
 
   /**
+   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
+   */
+  protected $workspaceManager;
+
+  /**
+   * @var string
+   */
+  protected $workspaceDefault;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
@@ -86,14 +98,16 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $container->get('account_switcher'),
       $container->get('state'),
       $container->get('logger.factory'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('workspace.manager'),
+      $container->getParameter('workspace.default')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $workspace_default) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->replicatorManager = $replicator_manager;
     $this->time = $time;
@@ -101,6 +115,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
     $this->state = $state;
     $this->logger = $logger->get('workspace');
     $this->entityTypeManager = $entity_type_manager;
+    $this->workspaceManager = $workspace_manager;
+    $this->workspaceDefault = $workspace_default;
   }
 
   /**
@@ -125,8 +141,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $account = User::load(1);
       $this->accountSwitcher->switchTo($account);
 
-      $replication->setReplicationStatusReplicating();
-      $replication->save();
+      $replication->setReplicationStatusReplicating()->save();
       $this->logger->info('Replication "@replication" has started.', ['@replication' => $replication->label()]);
 
       $response = FALSE;
@@ -142,6 +157,27 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
+        $default_workspace = Workspace::load($this->workspaceDefault);
+        if ($replication->getArchiveSource() && !empty($replication->get('source')->entity->getWorkspace())) {
+          $source_workspace = $replication->get('source')->entity->getWorkspace();
+          $source_workspace->setUnpublished()->save();
+          if ($source_workspace->id() != $this->workspaceDefault) {
+            $this->workspaceManager->setActiveWorkspace($default_workspace);
+            drupal_set_message($this->t('Workspace %workspace has been archived and workspace %default has been set as active.',
+              [
+                '%workspace' => $replication->get('source')->entity->label(),
+                '%default' => $default_workspace->label(),
+              ]
+            ));
+          }
+          else {
+            drupal_set_message($this->t('Workspace %workspace has been archived.',
+              [
+                '%workspace' => $replication->get('source')->entity->label(),
+              ]
+            ));
+          }
+        }
         $replication->setReplicationStatusReplicated();
         $replication->set('replicated', $this->time->getRequestTime());
         $replication->save();

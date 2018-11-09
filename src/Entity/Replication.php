@@ -191,6 +191,13 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDefaultValue('')
       ->setInitialValue('');
 
+    $fields['archive_source'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Archive source workspace flag'))
+      ->setDescription(t('The flag that marks if the source workspace should be archived if replication ends with success.'))
+      ->setRequired(FALSE)
+      ->setDefaultValue(FALSE)
+      ->setInitialValue(FALSE);
+
     return $fields;
   }
 
@@ -199,6 +206,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function setReplicationStatusFailed() {
     $this->set('replication_status', static::FAILED);
+    return $this;
   }
 
   /**
@@ -206,6 +214,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function setReplicationStatusQueued() {
     $this->set('replication_status', static::QUEUED);
+    return $this;
   }
 
   /**
@@ -213,6 +222,7 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function setReplicationStatusReplicating() {
     $this->set('replication_status', static::REPLICATING);
+    return $this;
   }
 
   /**
@@ -220,13 +230,29 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function setReplicationStatusReplicated() {
     $this->set('replication_status', static::REPLICATED);
+    return $this;
   }
 
   /**
-   * Sets the replication status to failed.
+   * Gets the fail info value.
    */
   public function getReplicationFailInfo() {
     return $this->get('fail_info')->value;
+  }
+
+  /**
+   * Sets the archive source flag.
+   */
+  public function setArchiveSource() {
+    $this->set('archive_source', TRUE);
+    return $this;
+  }
+
+  /**
+   * Gets the archive source flag.
+   */
+  public function getArchiveSource() {
+    return $this->get('archive_source')->value;
   }
 
   /**
