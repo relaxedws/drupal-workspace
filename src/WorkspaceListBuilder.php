@@ -114,7 +114,8 @@ class WorkspaceListBuilder extends EntityListBuilder {
     $query = $this->getStorage()
       ->getQuery()
       ->sort($this->entityType->getKey('id'))
-      ->condition('published', TRUE);
+      ->condition('published', TRUE)
+      ->condition('queued_for_delete', FALSE);
 
     // Only add the pager if a limit is specified.
     if ($this->limit) {

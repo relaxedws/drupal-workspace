@@ -105,7 +105,7 @@ class ChangesListController extends ControllerBase {
    */
   public function viewChanges($workspace) {
     $source_workspace = $this->workspaceManager->load($workspace);
-    if (!$source_workspace || !$source_workspace->isPublished()) {
+    if (!$source_workspace || !$source_workspace->isPublished() || $source_workspace->getQueuedForDelete()) {
       throw new NotFoundHttpException();
     }
     $source_workspace_pointer = $this->getPointerToWorkspace($source_workspace);

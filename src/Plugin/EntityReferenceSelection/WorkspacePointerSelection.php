@@ -53,8 +53,11 @@ class WorkspacePointerSelection extends DefaultSelection {
     $options = [];
     $entities = $this->entityManager->getStorage($target_type)->loadMultiple($result);
     foreach ($entities as $entity_id => $entity) {
-      if ($entity->getWorkspace() && !$entity->getWorkspace()->isPublished()) {
-        continue;
+      /** @var WorkspaceInterface $workspace */
+      if ($workspace = $entity->getWorkspace()) {
+        if (!$workspace->isPublished() || $workspace->getQueuedForDelete()) {
+          continue;
+        }
       }
       $bundle = $entity->bundle();
       $options[$bundle][$entity_id] = Html::escape($this->entityManager->getTranslationFromContext($entity)->label());

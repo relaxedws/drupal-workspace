@@ -204,7 +204,7 @@ class Toolbar {
    */
   protected function allWorkspaces() {
     return array_filter($this->entityTypeManager->getStorage('workspace')->loadMultiple(), function(WorkspaceInterface $workspace) {
-      return $workspace->isPublished() && $workspace->access('view', $this->currentUser);
+      return $workspace->isPublished() && !$workspace->getQueuedForDelete() && $workspace->access('view', $this->currentUser);
     });
   }
 }
