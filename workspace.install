@@ -201,7 +201,7 @@ function workspace_update_8108() {
 function workspace_update_8109() {
   $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
   // Add the replication status field to the replication entity type.
-  $archive_source = $fields['archive_source'] = BaseFieldDefinition::create('boolean')
+  $archive_source = BaseFieldDefinition::create('boolean')
     ->setLabel(t('Archive source workspace flag'))
     ->setDescription(t('The flag that marks if the source workspace should be archived if replication ends with success.'))
     ->setRequired(FALSE)
