@@ -85,11 +85,11 @@ class ReplicatorManager implements ReplicatorInterface {
    */
   public function replicate(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL, Replication $replication = NULL) {
     if ($replication === NULL) {
-      // Create replication entity.
+      // Create replication entity to Deploy changes from $source to $target.
       $replication = Replication::create([
-        'name' => t('Update from @source to @target', ['@source' => $source->label(), '@target' => $target->label()]),
-        'source' => $target,
-        'target' => $source,
+        'name' => t('Deploy from @source to @target', ['@source' => $source->label(), '@target' => $target->label()]),
+        'source' => $source,
+        'target' => $target,
       ]);
     }
     $replication->setReplicationStatusQueued();
