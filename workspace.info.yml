@@ -6,3 +6,6 @@ dependencies:
   - drupal:options
   - drupal:datetime
   - replication:replication
+
+test_dependencies:
+  - pathauto:pathauto
