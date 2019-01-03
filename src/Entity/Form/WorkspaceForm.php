@@ -108,13 +108,13 @@ class WorkspaceForm extends ContentEntityForm {
 
     $form['machine_name'] = [
       '#type' => 'machine_name',
-      '#title' => $this->t('Workspace ID'),
+      '#required' => TRUE,
+      '#title' => $this->t('Workspace Machine Name'),
       '#maxlength' => 128,
       '#default_value' => $workspace->get('machine_name')->value,
       '#machine_name' => [
-        'exists' => '\Drupal\multiversion\Entity\Workspace::load',
+        'exists' => [$this, 'exists'],
       ],
-      '#element_validate' => [],
     ];
 
     return parent::form($form, $form_state, $workspace);
@@ -252,6 +252,24 @@ class WorkspaceForm extends ContentEntityForm {
         $type => [Markup::create($message)],
       ],
     ];
+  }
+
+  /**
+   * Determines if a workspace with the specified machine name already exists.
+   *
+   * @param string $machine_name
+   *
+   * @return bool
+   *   TRUE if the machine_name exists, FALSE otherwise.
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function exists($machine_name) {
+    return (bool) $this->entityTypeManager
+      ->getStorage('workspace')
+      ->getQuery()
+      ->condition('machine_name', $machine_name)
+      ->execute();
   }
 
 }
