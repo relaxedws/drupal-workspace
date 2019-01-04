@@ -11,6 +11,8 @@ use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Event\ReplicationEvent;
+use Drupal\workspace\Event\ReplicationEvents;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -92,8 +94,7 @@ class ReplicatorManager implements ReplicatorInterface {
         'target' => $target,
       ]);
     }
-    $replication->setReplicationStatusQueued();
-    $replication->save();
+
     // It is assumed a caller of replicate will set this static variable to
     // FALSE if they wish to proceed with replicating content upstream even in
     // the presence of conflicts. If the caller wants to make sure no conflicts
@@ -125,12 +126,7 @@ class ReplicatorManager implements ReplicatorInterface {
     }
 
     // Push changes from $source to $target.
-    $this->queue->createItem([
-      'source' => $source,
-      'target' => $target,
-      'task' => $task,
-      'replication' => $replication,
-    ]);
+    $this->queueReplication($replication, $task);
 
     return $this->replicationLog($source, $target, $task, TRUE);
   }
@@ -189,31 +185,23 @@ class ReplicatorManager implements ReplicatorInterface {
    */
   public function update(WorkspacePointerInterface $target, WorkspacePointerInterface $source, $task = NULL) {
     // Create replication entity.
+    // For an update (pull) the source and target are reversed.
     $replication = Replication::create([
       'name' => t('Update from @source to @target', ['@source' => $target->label(), '@target' => $source->label()]),
       'source' => $target,
       'target' => $source,
     ]);
-    $replication->setReplicationStatusQueued();
-    $replication->save();
 
-    // For an update (pull) the source and target are reversed.
-    $this->queue->createItem([
-      'source' => $target,
-      'target' => $source,
-      'task' => $task,
-      'replication' => $replication,
-    ]);
+    $this->queueReplication($replication, $task);
+
     return $this->replicationLog($target, $source, $task, TRUE);
   }
 
   /**
    * Internal method to contain replication logic.
    *
-   * @param \Drupal\workspace\WorkspacePointerInterface $source
-   *   The workspace to replicate from.
-   * @param \Drupal\workspace\WorkspacePointerInterface $target
-   *   The workspace to replicate to.
+   * @param \Drupal\workspace\Entity\Replication $replication
+   *   The replication.
    * @param mixed $task
    *   Optional information that defines the replication task to perform.
    *
@@ -222,31 +210,13 @@ class ReplicatorManager implements ReplicatorInterface {
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function doReplication(WorkspacePointerInterface $source, WorkspacePointerInterface $target, $task = NULL) {
+  public function doReplication(Replication $replication, $task = NULL) {
+    $source = $replication->get('source')->entity;
+    $target = $replication->get('target')->entity;
     foreach ($this->replicators as $replicator) {
       if ($replicator->applies($source, $target)) {
-        // @TODO: Get rid of this meta-programming once #2814055 lands in
-        // Replication.
-        $events_class = '\Drupal\replication\Event\ReplicationEvents';
-        $event_class = '\Drupal\replication\Event\ReplicationEvent';
-
-        if (class_exists($events_class) && class_exists($event_class)) {
-          $event = new $event_class($source->getWorkspace(), $target->getWorkspace());
-        }
-
-        // Dispatch the pre-replication event, if the event object exists.
-        if (isset($event)) {
-          $this->eventDispatcher->dispatch($events_class::PRE_REPLICATION, $event);
-        }
-
         // Do the mysterious dance of replication...
         $log = $replicator->replicate($source, $target, $task);
-
-        // ...and dispatch the post-replication event, if the event object
-        // exists.
-        if (isset($event)) {
-          $this->eventDispatcher->dispatch($events_class::POST_REPLICATION, $event);
-        }
 
         if ($log instanceof ReplicationLogInterface && $log->get('ok')->value == TRUE && isset($log->workspace->target_id)) {
           \Drupal::state()->set('last_sequence.workspace.' . $log->workspace->target_id, $log->source_last_seq->value);
@@ -271,7 +241,7 @@ class ReplicatorManager implements ReplicatorInterface {
    * @param bool $ok
    *   True if the replication was started successfully, false otherwise.
    *
-   * @return \Drupal\replication\Entity\ReplicationLogInterface The log entry for this replication.
+   * @return \Drupal\replication\Entity\ReplicationLogInterface
    *   The log entry for this replication.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
@@ -291,6 +261,28 @@ class ReplicatorManager implements ReplicatorInterface {
     $replication_log->setHistory($history);
     $replication_log->save();
     return $replication_log;
+  }
+
+  /**
+   * Queue a new replication.
+   *
+   * @param \Drupal\workspace\Entity\Replication $replication
+   *   The replication.
+   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface $task
+   *   The replication task.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected  function queueReplication(Replication $replication, ReplicationTaskInterface $task) {
+    $replication->setReplicationStatusQueued();
+    $replication->save();
+
+    $this->queue->createItem([
+      'task' => $task,
+      'replication' => $replication,
+    ]);
+
+    $this->eventDispatcher->dispatch(ReplicationEvents::QUEUED_REPLICATION, new ReplicationEvent($replication));
   }
 
 }

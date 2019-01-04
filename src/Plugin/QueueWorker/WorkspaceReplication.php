@@ -17,8 +17,11 @@ use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\user\Entity\User;
 use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Event\ReplicationEvent;
+use Drupal\workspace\Event\ReplicationEvents;
 use Drupal\workspace\ReplicatorManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class WorkspaceReplication.
@@ -86,6 +89,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
   protected $workspaceDefault;
 
   /**
+   * The event dispatcher service.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
@@ -100,14 +110,15 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $container->get('logger.factory'),
       $container->get('entity_type.manager'),
       $container->get('workspace.manager'),
-      $container->getParameter('workspace.default')
+      $container->getParameter('workspace.default'),
+      $container->get('event_dispatcher')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $workspace_default) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $workspace_default, EventDispatcherInterface $event_dispatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->replicatorManager = $replicator_manager;
     $this->time = $time;
@@ -117,6 +128,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
     $this->entityTypeManager = $entity_type_manager;
     $this->workspaceManager = $workspace_manager;
     $this->workspaceDefault = $workspace_default;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -144,9 +156,11 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication->setReplicationStatusReplicating()->save();
       $this->logger->info('Replication "@replication" has started.', ['@replication' => $replication->label()]);
 
+      $this->eventDispatcher->dispatch(ReplicationEvents::PRE_REPLICATION, new ReplicationEvent($replication));
+
       $response = FALSE;
       try {
-        $response = $this->replicatorManager->doReplication($data['source'], $data['target'], $data['task']);
+        $response = $this->replicatorManager->doReplication($replication, $data['task']);
       }
       catch (\Exception $e) {
         // When exception is thrown during replication process we want
@@ -195,6 +209,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);
       }
+
+      $this->eventDispatcher->dispatch(ReplicationEvents::POST_REPLICATION, new ReplicationEvent($replication));
 
       $this->accountSwitcher->switchBack();
     }

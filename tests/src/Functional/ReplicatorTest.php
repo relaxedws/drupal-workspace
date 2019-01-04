@@ -7,6 +7,10 @@ use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\workspace\Event\ReplicationEvent;
+use Drupal\workspace\Event\ReplicationEvents;
+use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Test the workspace entity.
@@ -107,6 +111,23 @@ class ReplicatorTest extends BrowserTestBase {
     $this->assertEquals(200, $session->getStatusCode());
     $page = $session->getPage();
     $page->hasContent('Test node link');
+
+    // Imitate an event subscriber to check that events are dispatched.
+    // As we are triggering "Deploy" action it will automatically
+    // create "Update" replication so events should be dispatched twice.
+    $event_dispatcher = $this->prophesize(EventDispatcherInterface::class);
+    $event_dispatcher
+      ->dispatch(ReplicationEvents::QUEUED_REPLICATION, Argument::type(ReplicationEvent::class))
+      ->shouldBeCalledTimes(2);
+    $event_dispatcher
+      ->dispatch(ReplicationEvents::PRE_REPLICATION, Argument::type(ReplicationEvent::class))
+      ->shouldBeCalledTimes(2);
+    $event_dispatcher
+      ->dispatch(ReplicationEvents::POST_REPLICATION, Argument::type(ReplicationEvent::class))
+      ->shouldBeCalledTimes(2);
+    $container = \Drupal::getContainer();
+    $container->set('event_dispatcher', $event_dispatcher->reveal());
+    \Drupal::setContainer($container);
 
     $target = $this->createWorkspaceThroughUI('Target', 'target');
     /** @var \Drupal\workspace\ReplicatorManager $rm */
