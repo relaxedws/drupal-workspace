@@ -38,6 +38,11 @@ services:
     arguments: ['@entity_type.manager', '@workspace.manager', '@current_user']
     tags:
       - { name: event_subscriber }
+  workspace.replication_finished:
+    class: Drupal\workspace\EventSubscriber\ReplicationFinished
+    arguments: ['@entity_type.manager', '@workspace.manager', '@?plugin.manager.alias_type', '@?pathauto.generator']
+    tags:
+      - { name: event_subscriber }
   workspace.entity_access:
     class: Drupal\workspace\EntityAccess
     arguments: ['@entity_type.manager', '@workspace.manager', '%workspace.default%']
