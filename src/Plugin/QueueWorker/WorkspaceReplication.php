@@ -5,6 +5,7 @@ namespace Drupal\workspace\Plugin\QueueWorker;
 use Drupal\Component\Datetime\Time;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Queue\SuspendQueueException;
@@ -35,6 +36,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   use StringTranslationTrait;
+  use MessengerTrait;
 
   /**
    * The replicator manager.
@@ -178,7 +180,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
           $source_workspace->setUnpublished()->save();
           if ($source_workspace->id() != $this->workspaceDefault) {
             $this->workspaceManager->setActiveWorkspace($default_workspace);
-            drupal_set_message($this->t('Workspace %workspace has been archived and workspace %default has been set as active.',
+            $this->messenger()->addMessage($this->t('Workspace %workspace has been archived and workspace %default has been set as active.',
               [
                 '%workspace' => $replication->get('source')->entity->label(),
                 '%default' => $default_workspace->label(),
@@ -186,7 +188,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
             ));
           }
           else {
-            drupal_set_message($this->t('Workspace %workspace has been archived.',
+            $this->messenger()->addMessage($this->t('Workspace %workspace has been archived.',
               [
                 '%workspace' => $replication->get('source')->entity->label(),
               ]
@@ -222,7 +224,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       // we suppose the replication is failed.
       // @TODO Add the ability to customize this period
       $limit = 24;
-      if (REQUEST_TIME - $replication->getChangedTime() > 60 * 60 * $limit) {
+      $request_time = $this->time->getRequestTime();
+      if ($request_time - $replication->getChangedTime() > 60 * 60 * $limit) {
         $replication->set('fail_info', $this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]));
         $replication->setReplicationStatusFailed();
         $replication->set('replicated', $this->time->getRequestTime());
