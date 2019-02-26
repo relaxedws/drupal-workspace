@@ -36,8 +36,8 @@ class OptionsFiltersWidget extends OptionsSelectWidget {
       $definition = $items->getEntity()->get($field_name);
       $replication_settings_id = $definition->target_id;
       $settings = $definition->getSettings();
-      if ($replication_settings_id && $target_type = $settings['target_type']) {
-        $replication_settings = \Drupal::entityTypeManager()->getStorage($target_type)->load($replication_settings_id);
+      $target_type = $settings['target_type'];
+      if ($replication_settings_id && $target_type && $replication_settings = \Drupal::entityTypeManager()->getStorage($target_type)->load($replication_settings_id)) {
         $element += [
           '#type' => 'item',
           '#markup' => '<div class="color-warning">' . $this->t('Note: you do not have permission to modify this. Current value: ') . '<strong>' . $replication_settings->label() . '</strong></div>',

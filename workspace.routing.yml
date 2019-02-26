@@ -107,3 +107,13 @@ workspace.reset_replication_blocker:
     _admin_route: TRUE
   requirements:
     _access_replication_blocker: 'TRUE'
+
+workspace.config.form:
+  path: 'admin/structure/workspace/settings'
+  defaults:
+    _form: '\Drupal\workspace\Form\WorkspaceConfigForm'
+    _title: 'Workspace settings'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE

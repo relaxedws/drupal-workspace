@@ -30,3 +30,9 @@ entity.workspace_type.edit_form:
 
 workspace.revisions:
   deriver: '\Drupal\workspace\Plugin\Derivative\RevisionsLocalTask'
+
+entity.workspace.config_form:
+  title: 'Settings'
+  route_name: workspace.config.form
+  base_route: entity.workspace.collection
+  weight: 99

@@ -8,9 +8,30 @@ use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceType;
 use Drupal\multiversion\Entity\WorkspaceTypeInterface;
 use Drupal\workspace\Controller\Component\ConflictListBuilder;
+use Drupal\workspace\Entity\WorkspacePointer;
 
+/**
+ * WorkspaceController class.
+ */
 class WorkspaceController extends ControllerBase {
 
+  /**
+   * Property definition.
+   *
+   * @var \Drupal\Core\Config\Config|\Drupal\Core\Config\ImmutableConfig
+   */
+  protected $workspaceSettings;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    $this->workspaceSettings = \Drupal::configFactory()->getEditable('workspace.settings');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function add() {
     $types = WorkspaceType::loadMultiple();
     if ($types && count($types) == 1) {
@@ -29,13 +50,26 @@ class WorkspaceController extends ControllerBase {
 
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function addForm(WorkspaceTypeInterface $workspace_type) {
+    $upstream_id = $this->workspaceSettings->get('upstream');
+    if (!$upstream_id) {
+      $upstream_id = $this->getDefaultWorkspacePointer()->id();
+    }
     $workspace = Workspace::create([
-      'type' => $workspace_type->id()
+      'type' => $workspace_type->id(),
+      'upstream' => $upstream_id,
+      'pull_replication_settings' => $this->workspaceSettings->get('pull_replication_settings', ''),
+      'push_replication_settings' => $this->workspaceSettings->get('push_replication_settings', ''),
     ]);
     return $this->entityFormBuilder()->getForm($workspace);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getAddFormTitle(WorkspaceTypeInterface $workspace_type) {
     return $this->t('Add %type workspace', ['%type' => $workspace_type->label()]);
   }
@@ -63,6 +97,22 @@ class WorkspaceController extends ControllerBase {
    */
   public function getViewConflictsTitle() {
     return 'Workspace Conflicts';
+  }
+
+  /**
+   * Returns the upstream for the given workspace.
+   */
+  protected function getDefaultWorkspacePointer() {
+    $workspace_id = $this->getDefaultWorkspaceId();
+    $workspace = Workspace::load($workspace_id);
+    return WorkspacePointer::loadFromWorkspace($workspace);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getDefaultWorkspaceId() {
+    return \Drupal::getContainer()->getParameter('workspace.default');
   }
 
 }
