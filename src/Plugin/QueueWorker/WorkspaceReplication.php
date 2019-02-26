@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
-use Drupal\Core\Queue\RequeueException;
+use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -138,8 +138,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
    */
   public function processItem($data) {
     if ($this->state->get('workspace.last_replication_failed', FALSE)) {
-      // Requeue if replication blocked.
-      throw new RequeueException('Replication is blocked!');
+      throw new SuspendQueueException('Replication is blocked!');
     }
 
     /** @var \Drupal\workspace\Entity\Replication $replication */
@@ -149,7 +148,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication = $replication_new;
     }
 
-    if ($replication->get('replication_status')->value == Replication::QUEUED) {
+    $replication_status = $replication->get('replication_status')->value;
+    if ($replication_status == Replication::QUEUED) {
       $account = User::load(1);
       $this->accountSwitcher->switchTo($account);
 
@@ -214,10 +214,27 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
 
       $this->accountSwitcher->switchBack();
     }
-    else {
-      // Requeue if replication is in progress.
-      $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
-      throw new RequeueException('Replication is already in progress!');
+    elseif ($replication_status == Replication::FAILED) {
+      $this->state->set('workspace.last_replication_failed', TRUE);
+    }
+    elseif ($replication_status == Replication::REPLICATING) {
+      // In case replication takes more than twenty-four hours,
+      // we suppose the replication is failed.
+      // @TODO Add the ability to customize this period
+      $limit = 24;
+      if (REQUEST_TIME - $replication->getChangedTime() > 60 * 60 * $limit) {
+        $replication->set('fail_info', $this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]));
+        $replication->setReplicationStatusFailed();
+        $replication->set('replicated', $this->time->getRequestTime());
+        $replication->setArchiveSource(FALSE);
+        $replication->save();
+        $this->state->set('workspace.last_replication_failed', TRUE);
+        $this->logger->info('Replication "@replication" exceeded the running time of @limit hours, because of that it is considered as FAILED.', ['@replication' => $replication->label(), '@limit' => $limit]);
+      }
+      else {
+        $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
+        throw new SuspendQueueException('Replication is already in progress!');
+      }
     }
   }
 
