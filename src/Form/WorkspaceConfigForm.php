@@ -73,7 +73,10 @@ class WorkspaceConfigForm extends ConfigFormBase {
     $form['default'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Default settings'),
-      '#description' => $this->t('Settings that will be used as default when creating new workspaces.'),
+    ];
+    $form['default']['description'] = [
+      '#type' => 'markup',
+      '#markup' => $this->t('Settings that will be used as default when creating new workspaces.'),
     ];
 
     $this->addDefaultTargetWorkspaceSettingField($form, $config_settings);
