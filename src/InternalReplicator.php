@@ -140,9 +140,13 @@ class InternalReplicator implements ReplicatorInterface {
     }
 
     // Get changes on the source workspace.
+    $parameters = $task->getParameters();
+    if (!isset($parameters['doc_ids']) && $doc_ids = $task->getDocIds()) {
+      $parameters['doc_ids'] = $doc_ids;
+    }
     $source_changes = $this->changesFactory->get($source_workspace)
         ->filter($task->getFilter())
-        ->parameters($task->getParameters())
+        ->parameters($parameters)
         ->setSince($since)
         ->getNormal();
     $data = [];
