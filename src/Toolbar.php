@@ -5,11 +5,14 @@ namespace Drupal\workspace;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Form\WorkspaceSwitcherForm;
 
 /**
@@ -17,6 +20,7 @@ use Drupal\workspace\Form\WorkspaceSwitcherForm;
  */
 class Toolbar {
   use StringTranslationTrait;
+  use MessengerTrait;
 
   /**
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -143,7 +147,25 @@ class Toolbar {
     $last_replication_failed = \Drupal::state()->get('workspace.last_replication_failed', FALSE);
     $update_access = $user->hasPermission('update any workspace from upstream');
     $has_upstream = isset($active->upstream) && !$active->upstream->isEmpty();
-    if ($update_access && $has_upstream && !$last_replication_failed) {
+
+    if ($has_upstream) {
+      $update_in_queue = $this->entityTypeManager
+        ->getStorage('replication')
+        ->getQuery()
+        ->condition('source', $active->upstream->target_id)
+        ->condition('target', $active->id())
+        ->condition('replication_status', [Replication::QUEUED, Replication::REPLICATING], 'IN')
+        ->execute();
+      if (!empty($update_in_queue)) {
+        $this->messenger()
+          ->addWarning(t('A deployment between the active workspace and target workspace is currently queued or in progress. Creating a new deployment is not allowed until the current one ends. Check @deployments_page for the status.', [
+            '@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')
+              ->toString()
+          ]));
+      }
+    }
+
+    if ($update_access && $has_upstream && !$last_replication_failed && empty($update_in_queue)) {
       $items['workspace_update'] = [
         '#type' => 'toolbar_item',
         '#weight' => 124,
