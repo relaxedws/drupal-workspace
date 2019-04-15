@@ -218,3 +218,14 @@ function workspace_queue_info_alter(&$queues) {
     $queues['workspace_replication']['cron']['time'] = 60;
   }
 }
+
+/**
+ * Implements hook_page_attachments().
+ */
+function workspace_page_attachments(array &$page) {
+  if (!\Drupal::currentUser()->hasPermission('administer workspaces')) {
+    return;
+  }
+
+  $page['#attached']['library'][] = 'workspace/drupal.workspace.changes';
+}

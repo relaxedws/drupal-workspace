@@ -2,11 +2,11 @@
 
 namespace Drupal\workspace\Controller;
 
-use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
@@ -60,6 +60,13 @@ class ChangesListController extends ControllerBase {
   protected $state;
 
   /**
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
    * ChangesListController constructor.
    *
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
@@ -69,13 +76,14 @@ class ChangesListController extends ControllerBase {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\State\StateInterface $state
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
+  public function __construct(WorkspaceManagerInterface $workspace_manager, ChangesFactoryInterface $changes_factory, RevisionDiffFactoryInterface $revisiondiff_factory, RevisionIndexInterface $rev_index, EntityTypeManagerInterface $entity_type_manager, StateInterface $state, FormBuilderInterface $form_builder) {
     $this->workspaceManager = $workspace_manager;
     $this->changesFactory = $changes_factory;
     $this->revisionDiffFactory = $revisiondiff_factory;
     $this->revIndex = $rev_index;
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
+    $this->formBuilder = $form_builder;
   }
 
   /**
@@ -88,7 +96,8 @@ class ChangesListController extends ControllerBase {
       $container->get('replication.revisiondiff_factory'),
       $container->get('multiversion.entity_index.rev'),
       $container->get('entity_type.manager'),
-      $container->get('state')
+      $container->get('state'),
+      $container->get('form_builder')
     );
   }
 
@@ -239,9 +248,8 @@ class ChangesListController extends ControllerBase {
    *
    * @param array $entities
    *
-   * @return array A render array representing the administrative page content.
+   * @return array A render array representing the administrative page content  .
    *   A render array representing the administrative page content.
-   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   protected function adminOverview(array $entities = []) {
     $total = count($entities);
@@ -249,79 +257,9 @@ class ChangesListController extends ControllerBase {
     $page = pager_default_initialize($total, $this->changesPerPage);
     // Split the items up into chunks:
     $chunks = array_chunk($entities, $this->changesPerPage);
-    // Get changes for the current page:
+    // Get changes for the current page.
     $current_page_changes = isset($chunks[$page]) ? $chunks[$page] : [];
-    $headers = [
-      $this->t('Entities'),
-      $this->t('Entity type'),
-      $this->t('Status'),
-      $this->t('Author'),
-      $this->t('Changed time'),
-      $this->t('Operations')
-    ];
-    $rows = [];
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $current_page_changes */
-    foreach ($current_page_changes as $entity) {
-      $row = [
-        $entity->label() ?: '* ' . $this->t('No label') . ' *',
-        $entity->getEntityTypeId(),
-      ];
-      //Set status.
-      if ($entity->_deleted->value) {
-        $row[] = $this->t('Deleted');
-      }
-      elseif (!empty($entity->_rev->value) && $entity->_rev->value[0] == 1) {
-        $row[] = $this->t('Added');
-      }
-      else {
-        $row[] = $this->t('Changed');
-      }
-      // Set the author.
-      if (method_exists($entity, 'getOwner')) {
-        $row[] = ($name = $entity->getOwner()->get('name')->value) ? $name : '* ' . $this->t('No author') . ' *';
-      }
-      else {
-        $row[] = '* ' . $this->t('No author') . ' *';
-      }
-      // Set changed value.
-      if (method_exists($entity, 'getChangedTime') && $changed = $entity->getChangedTime()) {
-        $row[] = DateTimePlus::createFromTimestamp($changed)->format('m/d/Y | H:i:s | e');
-      }
-      else {
-        $row[] = '* ' . $this->t('No changed time') . ' *';
-      }
-      // Set operations.
-      $links = [];
-      if ($entity->hasLinkTemplate('canonical') && !$entity->_deleted->value) {
-        $links['view'] = [
-          'title' => t('View'),
-          'url' => $entity->toUrl('canonical', ['absolute' => TRUE]),
-        ];
-      }
-      else {
-        $links['view'] = [
-          'title' => '* ' . $this->t('No view link') . ' *',
-        ];
-      }
-      $row[] = [
-        'data' => [
-          '#type' => 'operations',
-          '#links' => $links,
-        ],
-      ];
-      $rows[] = $row;
-    }
-
-    $build['prefix']['#markup'] = '<p>' . $this->t('The array is sorted by last change first.') . '</p>';
-    $build['changes-list'] = [
-      '#type' => 'table',
-      '#header' => $headers,
-      '#rows' => $rows,
-      '#empty' => t('There are no changes.'),
-    ];
-    $build['pager'] = [
-      '#type' => 'pager',
-    ];
+    $build = $this->formBuilder->getForm('\Drupal\workspace\Form\ChangesListForm', $current_page_changes);
 
     return $build;
   }
