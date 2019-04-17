@@ -139,7 +139,7 @@ class ChangesListTableselect extends Tableselect {
       // checkboxes/radios in the first table column.
       if ($element['#js_select']) {
         // Add a "Select all" checkbox.
-        $element['#attached']['library'][] = 'core/drupal.tableselect';
+//        $element['#attached']['library'][] = 'core/drupal.tableselect';
         array_unshift($header, ['class' => ['select-all']]);
       }
       else {

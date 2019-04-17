@@ -29,6 +29,9 @@ class ChangesListForm extends FormBase {
     ];
     $options = [];
     $default = [];
+    $uuids = [];
+    /** @var \Drupal\multiversion\EntityReferencesManagerInterface $references_manager */
+    $references_manager = \Drupal::service('multiversion.entity_references.manager');
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $current_page_changes */
     foreach ($current_page_changes as $entity) {
       $row = [
@@ -98,6 +101,7 @@ class ChangesListForm extends FormBase {
           ],
         ];
       }
+      $uuids[$uuid] = $references_manager->getReferencedEntitiesUuids($entity);
     }
 
     $form['prefix']['#markup'] = '<p>' . $this->t('The array is sorted by last change first.') . '</p>';
@@ -113,6 +117,8 @@ class ChangesListForm extends FormBase {
       '#type' => 'pager',
     ];
 
+    $form['#attached']['drupalSettings']['uuids'] = $uuids;
+
     return $form;
   }
 
@@ -124,22 +130,27 @@ class ChangesListForm extends FormBase {
   }
 
   protected function buildReferencesMarkup($entity) {
+    // @todo Inject the service.
     /** @var \Drupal\multiversion\EntityReferencesManagerInterface $references_manager */
     $references_manager = \Drupal::service('multiversion.entity_references.manager');
     $referenced_entities = $references_manager->getMultiversionableReferencedEntities($entity);
     if (empty($referenced_entities)) {
       return FALSE;
     }
-    $markup = '';
+    $markup = '<p class="referenced-entities">Referenced entities:</p>';
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity_type = NULL;
-    $markup .= '<ul>';
-    foreach ($referenced_entities as $entity) {
-      if ($entity_type != $entity->getEntityTypeId()){
-        $markup .= '<p><strong>' . $entity->getEntityType()->getLabel() . ':</strong></p>';
-        $entity_type = $entity->getEntityTypeId();
+    foreach ($referenced_entities as $referenced_entity) {
+      $entity_type_id = $referenced_entity->getEntityTypeId();
+      if ($entity_type != $entity_type_id) {
+        if ($entity_type !== NULL) {
+          $markup .= '</ul>';
+        }
+        $markup .= '<p class="referenced-entity-type">' . $referenced_entity->getEntityType()->getLabel() . ':</p>';
+        $markup .= '<ul>';
+        $entity_type = $entity_type_id;
       }
-      $markup .= '<li>' . $entity->label() . '</li>';
+      $markup .= '<li id="' . $referenced_entity->uuid() . '-reference">' . $referenced_entity->label() . '</li>';
     }
     $markup .= '</ul>';
     return $markup;
