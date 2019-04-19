@@ -95,6 +95,9 @@ class ReplicatorManager implements ReplicatorInterface {
       ]);
     }
 
+    // @todo Use here $replication->setDocIds() to set selected UUIDs when we'll
+    // have implemented the way users can select changes for next deployment.
+
     // It is assumed a caller of replicate will set this static variable to
     // FALSE if they wish to proceed with replicating content upstream even in
     // the presence of conflicts. If the caller wants to make sure no conflicts
@@ -114,6 +117,13 @@ class ReplicatorManager implements ReplicatorInterface {
     // Derive a pull replication task from the Workspace we are acting on.
     $pull_task = $this->getTask($source->getWorkspace(), 'pull_replication_settings');
 
+    // Set selected for deployment UUIDs.
+    $doc_ids = $replication->getDocIds();
+    if (is_array($doc_ids) && !empty($doc_ids)) {
+      $pull_task->setFilter('_doc_ids');
+      $pull_task->setDocIds($doc_ids);
+    }
+
     // Pull in changes from $target to $source to ensure a merge will complete.
     $this->update($target, $source, $pull_task);
 
@@ -123,6 +133,12 @@ class ReplicatorManager implements ReplicatorInterface {
     if ($task === NULL) {
       // Derive a push replication task from the Workspace we are acting on.
       $task = $this->getTask($source->getWorkspace(), 'push_replication_settings');
+    }
+
+    // Set selected for deployment UUIDs.
+    if (is_array($doc_ids) && !empty($doc_ids)) {
+      $task->setFilter('_doc_ids');
+      $task->setDocIds($doc_ids);
     }
 
     // Push changes from $source to $target.
@@ -192,6 +208,10 @@ class ReplicatorManager implements ReplicatorInterface {
       'target' => $source,
     ]);
 
+    if ($task && is_array($task->getDocIds())) {
+      $replication->setDocIds($task->getDocIds());
+    }
+
     $this->queueReplication($replication, $task);
 
     return $this->replicationLog($target, $source, $task, TRUE);
@@ -218,7 +238,18 @@ class ReplicatorManager implements ReplicatorInterface {
         // Do the mysterious dance of replication...
         $log = $replicator->replicate($source, $target, $task);
 
-        if ($log instanceof ReplicationLogInterface && $log->get('ok')->value == TRUE && isset($log->workspace->target_id)) {
+        $doc_ids_exist = FALSE;
+        // If there are doc IDs specified in the task, we don't set a new
+        // "last_sequence.workspace.WORKSPACE_ID" state. That because we'll need
+        // to get changes from the previous value of that state when replicating
+        // selective content.
+        if (!empty($task) && !empty($task->getDocIds())) {
+          $doc_ids_exist = TRUE;
+        }
+        if ($log instanceof ReplicationLogInterface
+          && $log->get('ok')->value == TRUE
+          && isset($log->workspace->target_id)
+          && !$doc_ids_exist) {
           \Drupal::state()->set('last_sequence.workspace.' . $log->workspace->target_id, $log->source_last_seq->value);
         };
 

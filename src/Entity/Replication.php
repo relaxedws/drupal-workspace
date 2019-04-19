@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace\Entity;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -198,6 +199,14 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
       ->setDefaultValue(FALSE)
       ->setInitialValue(FALSE);
 
+    $fields['doc_ids'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Selected entity UUIDs for deployment'))
+      ->setDescription(t('This filed contains the list of UUIDs for changed entities selected for this replication.'))
+      ->setRequired(FALSE)
+      ->setDefaultValue('')
+      ->setInitialValue('')
+      ->setSetting('case_sensitive', TRUE);
+
     return $fields;
   }
 
@@ -257,6 +266,29 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
    */
   public function getArchiveSource() {
     return $this->get('archive_source')->value;
+  }
+
+  /**
+   * Sets the entity UUIDs selected for this replication.
+   *
+   * @param array $doc_ids
+   *
+   * @return \Drupal\workspace\Entity\Replication
+   */
+  public function setDocIds($doc_ids = []) {
+    $serialized = Json::encode($doc_ids);
+    $this->set('doc_ids', $serialized);
+    return $this;
+  }
+
+  /**
+   * Gets the list of UUIDs or empty string.
+   *
+   * @return array
+   *   An array of UUIDs.
+   */
+  public function getDocIds() {
+    return Json::decode($this->get('doc_ids')->value);
   }
 
   /**

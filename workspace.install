@@ -209,3 +209,19 @@ function workspace_update_8109() {
     ->setInitialValue(FALSE);
   $definition_update_manager->installFieldStorageDefinition('archive_source', 'replication', 'workspace', $archive_source);
 }
+
+/**
+ * Add the doc_ids field.
+ */
+function workspace_update_8110() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  // Add the replication status field to the replication entity type.
+  $field = BaseFieldDefinition::create('string_long')
+    ->setLabel(t('Selected entity UUIDs for deployment'))
+    ->setDescription(t('If this field contains at leas one entity UUID, then it will deploy only changes for that entity.'))
+    ->setRequired(FALSE)
+    ->setDefaultValue('')
+    ->setInitialValue('')
+    ->setSetting('case_sensitive', TRUE);
+  $definition_update_manager->installFieldStorageDefinition('doc_ids', 'replication', 'workspace', $field);
+}
