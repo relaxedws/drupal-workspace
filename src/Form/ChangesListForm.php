@@ -85,13 +85,14 @@ class ChangesListForm extends FormBase {
       $row['#attributes'] = ['id' => $uuid];
       $default[$uuid] = $uuid;
       $options[$entity->uuid()] = $row;
-      if ($markup = $this->buildReferencesMarkup($entity)) {
+      $markup = $this->buildReferencesMarkup($entity);
+//      if ($markup = $this->buildReferencesMarkup($entity)) {
         $id = $uuid . '-references';
         $options[$id] = [
           'data' => [
             '#markup' => $markup,
         ],
-          'colspan' => 7,
+          'colspan' => 6,
           'class' => [
             'references-row',
           ],
@@ -100,7 +101,7 @@ class ChangesListForm extends FormBase {
 //            'style' => 'display:none',
           ],
         ];
-      }
+//      }
       $uuids[$uuid] = $references_manager->getReferencedEntitiesUuids($entity);
     }
 
@@ -117,7 +118,7 @@ class ChangesListForm extends FormBase {
       '#type' => 'pager',
     ];
 
-    $form['#attached']['drupalSettings']['uuids'] = $uuids;
+    $form['#attached']['drupalSettings']['uuids_references'] = $uuids;
 
     return $form;
   }

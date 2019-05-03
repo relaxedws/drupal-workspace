@@ -25,7 +25,7 @@ class ChangesListController extends ControllerBase {
    *
    * @var int
    */
-  protected $changesPerPage = 50;
+  protected $changesPerPage = 500;
 
   /**
    * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface

@@ -2,6 +2,16 @@
 
   'use strict';
 
+  Drupal.behaviors.setDocIds = {
+    attach: function attach(context, settings) {
+      var uuids_references = drupalSettings.uuids_references;
+      var uuids = $.map(uuids_references, function(value, key) {
+        return key;
+      });
+      $('#field-doc-ids').val(uuids);
+    }
+  };
+
   Drupal.behaviors.changesListTableSelect = {
     attach: function attach(context, settings) {
       $(context).find('th.select-all').closest('table').once('table-select').each(Drupal.changesListTableSelect);
@@ -13,7 +23,7 @@
       return;
     }
 
-    var $uuids = drupalSettings.uuids;
+    var uuids_references = drupalSettings.uuids_references;
     var table = $('#edit-changes-list');
     var checkboxes = void 0;
     var lastChecked = void 0;
@@ -43,6 +53,15 @@
 
           if (stateChanged) {
             $checkbox.prop('checked', event.target.checked).trigger('change');
+
+            var checkbox_value = $checkbox[0].value;
+            if (uuids_references[checkbox_value] && uuids_references[checkbox_value].length !== 0) {
+              var references = uuids_references[checkbox_value];
+              for (var i = 0; i < references.length; i++) {
+                var uuid = references[i];
+                $('#' + uuid).toggleClass('selected', event.target.checked).find('input[type="checkbox"]').prop('disabled', event.target.checked);
+              }
+            }
           }
 
           $checkbox.closest('tr').toggleClass('selected', this.checked);
@@ -56,12 +75,12 @@
       var $row = $(this).closest('tr');
       $row.toggleClass('selected', this.checked);
 
-      if ($uuids[$row[0].id] !== 0) {
-        var $references = $uuids[$row[0].id];
-        for (var i = 0; i < $references.length; i++) {
-          var $uuid = $references[i];
-          $('#' + $uuid).toggleClass('selected', e.target.checked);
-          $('#' + $uuid).find('input[type="checkbox"]').prop('checked', e.target.checked);
+      $('#' + $row[0].id + '-references').toggleClass('selected', e.target.checked);
+      if (uuids_references[$row[0].id] && uuids_references[$row[0].id].length !== 0) {
+        var references = uuids_references[$row[0].id];
+        for (var i = 0; i < references.length; i++) {
+          var uuid = references[i];
+          $('#' + uuid).toggleClass('selected', e.target.checked).find('input[type="checkbox"]').prop('checked', e.target.checked).prop('disabled', e.target.checked);
         }
       }
 

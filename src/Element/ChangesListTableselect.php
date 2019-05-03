@@ -102,7 +102,7 @@ class ChangesListTableselect extends Tableselect {
         if (strpos($key, '-references') === FALSE) {
           $form_data = [
             'data' => \Drupal::service('renderer')->render($element[$key]),
-//            'rowspan' => 2,
+            'rowspan' => 2,
           ];
           $row['data'][] = $form_data;
         }
