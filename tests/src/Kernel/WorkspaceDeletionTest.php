@@ -21,7 +21,17 @@ class WorkspaceDeletionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['datetime', 'node', 'workspace', 'replication', 'multiversion', 'key_value', 'serialization', 'user', 'system'];
+  public static $modules = [
+    'datetime',
+    'node',
+    'workspace',
+    'replication',
+    'multiversion',
+    'key_value',
+    'serialization',
+    'user',
+    'system'
+  ];
 
   /**
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -41,10 +51,12 @@ class WorkspaceDeletionTest extends KernelTestBase {
     $this->installSchema('node', 'node_access');
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
-    $this->installSchema('key_value', 'key_value_sorted');
-    $this->installConfig('multiversion');
     $this->installEntitySchema('workspace');
     $this->installEntitySchema('workspace_pointer');
+    $this->installEntitySchema('replication_log');
+    $this->installSchema('key_value', 'key_value_sorted');
+    $this->installSchema('system', ['key_value_expire', 'sequences']);
+    $this->installConfig('multiversion');
     $this->entityTypeManager = \Drupal::entityTypeManager();
     $this->cron = \Drupal::service('cron');
     \Drupal::service('multiversion.manager')->enableEntityTypes();
@@ -100,7 +112,7 @@ class WorkspaceDeletionTest extends KernelTestBase {
     $this->cron->run();
 
     $workspaces = $this->entityTypeManager->getStorage('workspace')->getQuery()->execute();
-    $nodes = $this->entityTypeManager->getStorage('node')->getOriginalStorage()->getQuery()->execute();
+    $nodes = \Drupal::entityTypeManager()->getStorage('node')->getOriginalStorage()->getQuery()->execute();
     $this->assertEmpty($workspaces, 'No workspaces');
     $this->assertEmpty($nodes, 'No nodes');
   }
