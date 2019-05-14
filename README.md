@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/timmillwood/drupal-workspace.svg?branch=8.x-1.x)](https://travis-ci.org/timmillwood/drupal-workspace) [![Code Climate](https://codeclimate.com/github/timmillwood/drupal-workspace/badges/gpa.svg)](https://codeclimate.com/github/timmillwood/drupal-workspace)
+[![Build Status](https://travis-ci.org/timmillwood/drupal-workspace.svg?branch=8.x-1.x)](https://travis-ci.org/timmillwood/drupal-workspace)
 
 
 
