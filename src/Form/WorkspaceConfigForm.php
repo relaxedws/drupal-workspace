@@ -143,6 +143,9 @@ class WorkspaceConfigForm extends ConfigFormBase {
     $options = [];
     $workspace_pointers = WorkspacePointer::loadMultiple();
     foreach ($workspace_pointers as $workspace_pointer) {
+      if ($workspace_pointer->getWorkspaceAvailable() === FALSE) {
+        continue;
+      }
       $options[$workspace_pointer->id()] = $workspace_pointer->label();
     }
 

@@ -8,6 +8,7 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\State\StateInterface;
@@ -21,6 +22,7 @@ use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Event\ReplicationEvent;
 use Drupal\workspace\Event\ReplicationEvents;
 use Drupal\workspace\ReplicatorManager;
+use Relaxed\Replicator\Exception\PeerNotReachableException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -164,6 +166,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       try {
         $response = $this->replicatorManager->doReplication($replication, $data['task']);
       }
+      catch (PeerNotReachableException $e) {
+        $this->logger->error('The deployment could not start. Reason: ' . $e->getMessage());
+        $replication->set('fail_info', $e->getMessage());
+        $replication->setReplicationStatusQueued();
+        $replication->save();
+        throw new SuspendQueueException('Peer not reachable. Reason: ' . $e->getMessage());
+      }
       catch (\Exception $e) {
         // When exception is thrown during replication process we want
         // replication to be marked as failed and removed from queue.
@@ -236,7 +245,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       else {
         $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
-        throw new SuspendQueueException('Replication is already in progress!');
+//        throw new SuspendQueueException('Replication is already in progress!');
       }
     }
   }
