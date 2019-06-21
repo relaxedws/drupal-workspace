@@ -245,7 +245,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       else {
         $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
-//        throw new SuspendQueueException('Replication is already in progress!');
+        throw new SuspendQueueException('Replication is already in progress!');
       }
     }
   }
