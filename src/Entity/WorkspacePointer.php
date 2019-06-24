@@ -7,6 +7,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\workspace\WorkspacePointerInterface;
@@ -117,6 +118,21 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
   /**
    * {@inheritdoc}
    */
+  public function setWorkspaceAvailable($available = TRUE) {
+    $this->set('workspace_available', $available);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getWorkspaceAvailable() {
+    return (bool) $this->get('workspace_available')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL) {
     $request = \Drupal::request();
     $uuid = MD5($request->getHost() . $request->getPort());
@@ -194,6 +210,20 @@ class WorkspacePointer extends ContentEntityBase implements WorkspacePointerInte
       ->setDescription(t('A reference to the workspace'))
       ->setSetting('target_type', 'workspace')
       ->setRevisionable(TRUE);
+
+    // This field will keep the information about the availability of the
+    // remote workspace, which is checked on every cron run. This value is not
+    // used when doing the replication, because during replication the
+    // availability of the remote workspaces is checked with HTTP requests.
+    // This value is used to restrict the user to select from UI a remote
+    // workspace as target when it is not available.
+    $fields['workspace_available'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Workspace available'))
+      ->setDescription(t('Keeps the availability of the referenced ' .
+        'workspace, this flag might not be accurate, the availability should ' .
+        'be checked regularly (it is checked on cron run).'))
+      ->setRevisionable(TRUE)
+      ->setDefaultValue(TRUE);
 
     return $fields;
   }

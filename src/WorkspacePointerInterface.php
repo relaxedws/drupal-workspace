@@ -101,4 +101,20 @@ interface WorkspacePointerInterface extends ContentEntityInterface, EntityChange
    */
   public function generateReplicationId(WorkspacePointerInterface $target, ReplicationTaskInterface $task = NULL);
 
+  /**
+   * Sets the availability of the workspace.
+   *
+   * @param bool $available
+   *
+   * @return $this
+   */
+  public function setWorkspaceAvailable($available = TRUE);
+
+  /**
+   * Returns the availability of the workspace.
+   *
+   * @return bool
+   */
+  public function getWorkspaceAvailable();
+
 }

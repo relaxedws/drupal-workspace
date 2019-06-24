@@ -225,3 +225,25 @@ function workspace_update_8110() {
     ->setSetting('case_sensitive', TRUE);
   $definition_update_manager->installFieldStorageDefinition('doc_ids', 'replication', 'workspace', $field);
 }
+
+/**
+ * Add the workspace_available field.
+ */
+function workspace_update_8111() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  // Add the workspace_available field to the workspace_pointer entity type.
+  $field = BaseFieldDefinition::create('boolean')
+    ->setLabel(new TranslatableMarkup('Workspace available'))
+    ->setDescription(t('Keeps the availability of the referenced ' .
+      'workspace, this flag might not be accurate, the availability should ' .
+      'be checked regularly.'))
+    ->setRevisionable(TRUE)
+    ->setDefaultValue(TRUE);
+  $definition_update_manager->installFieldStorageDefinition('workspace_available', 'workspace_pointer', 'workspace', $field);
+  // Set all workspaces as available.
+  /** @var \Drupal\workspace\WorkspacePointerInterface[] $pointers */
+  $pointers = \Drupal::entityTypeManager()->getStorage('workspace_pointer')->loadMultiple();
+  foreach ($pointers as $pointer) {
+    $pointer->setWorkspaceAvailable()->save();
+  }
+}

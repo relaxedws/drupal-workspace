@@ -5,6 +5,7 @@ namespace Drupal\workspace;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Url;
 use Drupal\multiversion\MultiversionManagerInterface;
 use Drupal\workspace\Entity\Form\WorkspaceForm;
 use Drupal\workspace\Entity\Form\WorkspaceDeleteForm;
@@ -165,7 +166,7 @@ class EntityTypeInfo {
       ->setSetting('target_type', 'workspace_pointer')
       ->setDefaultValueCallback('workspace_active_id')
       ->setDisplayOptions('form', [
-        'type' => 'options_buttons',
+        'type' => 'options_target_workspace_select',
         'weight' => 5
       ]);
 

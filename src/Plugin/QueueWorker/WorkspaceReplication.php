@@ -21,6 +21,7 @@ use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Event\ReplicationEvent;
 use Drupal\workspace\Event\ReplicationEvents;
 use Drupal\workspace\ReplicatorManager;
+use Relaxed\Replicator\Exception\PeerNotReachableException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -163,6 +164,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $response = FALSE;
       try {
         $response = $this->replicatorManager->doReplication($replication, $data['task']);
+      }
+      catch (PeerNotReachableException $e) {
+        $this->logger->error('The deployment could not start. Reason: ' . $e->getMessage());
+        $replication->set('fail_info', $e->getMessage());
+        $replication->setReplicationStatusQueued();
+        $replication->save();
+        throw new SuspendQueueException('Peer not reachable. Reason: ' . $e->getMessage());
       }
       catch (\Exception $e) {
         // When exception is thrown during replication process we want
