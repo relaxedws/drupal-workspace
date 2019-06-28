@@ -146,6 +146,11 @@ class WorkspaceConfigForm extends ConfigFormBase {
       if ($workspace_pointer->getWorkspaceAvailable() === FALSE) {
         continue;
       }
+      /** @var \Drupal\multiversion\Entity\WorkspaceInterface $workspace */
+      $workspace = $workspace_pointer->getWorkspace();
+      if ($workspace && !$workspace->isPublished()) {
+        continue;
+      }
       $options[$workspace_pointer->id()] = $workspace_pointer->label();
     }
 
