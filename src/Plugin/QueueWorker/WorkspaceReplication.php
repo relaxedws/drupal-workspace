@@ -3,6 +3,7 @@
 namespace Drupal\workspace\Plugin\QueueWorker;
 
 use Drupal\Component\Datetime\Time;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerTrait;
@@ -99,6 +100,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
   protected $eventDispatcher;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
@@ -114,14 +122,29 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $container->get('entity_type.manager'),
       $container->get('workspace.manager'),
       $container->getParameter('workspace.default'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('config.factory')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $workspace_default, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ReplicatorManager $replicator_manager,
+    Time $time,
+    AccountSwitcherInterface $account_switcher,
+    StateInterface $state,
+    LoggerChannelFactoryInterface $logger,
+    EntityTypeManagerInterface $entity_type_manager,
+    WorkspaceManagerInterface $workspace_manager,
+    $workspace_default,
+    EventDispatcherInterface $event_dispatcher,
+    ConfigFactoryInterface $config_factory
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->replicatorManager = $replicator_manager;
     $this->time = $time;
@@ -132,6 +155,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
     $this->workspaceManager = $workspace_manager;
     $this->workspaceDefault = $workspace_default;
     $this->eventDispatcher = $event_dispatcher;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -151,7 +175,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication = $replication_new;
     }
 
-    $replication_status = $replication->get('replication_status')->value;
+    $replication_status = $replication->getReplicationStatus();
     if ($replication_status == Replication::QUEUED) {
       $account = User::load(1);
       $this->accountSwitcher->switchTo($account);
@@ -228,10 +252,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $this->state->set('workspace.last_replication_failed', TRUE);
     }
     elseif ($replication_status == Replication::REPLICATING) {
-      // In case replication takes more than twenty-four hours,
-      // we suppose the replication is failed.
-      // @TODO Add the ability to customize this period
-      $limit = 24;
+      $limit = $this->configFactory->get('replication.settings')->get('replication_execution_limit');
+      $limit = $limit ?: 1;
       $request_time = $this->time->getRequestTime();
       if ($request_time - $replication->getChangedTime() > 60 * 60 * $limit) {
         $replication->set('fail_info', $this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]));

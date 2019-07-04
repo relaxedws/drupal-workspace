@@ -250,6 +250,13 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
   }
 
   /**
+   * Gets the replication status value.
+   */
+  public function getReplicationStatus() {
+    return $this->get('replication_status')->value;
+  }
+
+  /**
    * Sets the archive source flag.
    *
    * @param bool $archive

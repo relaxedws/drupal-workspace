@@ -18,10 +18,6 @@ function workspace_install() {
   // Set workspace earlier to alter entities before anyone else does.
   module_set_weight('workspace', 10);
 
-  // Populate the replication blocker key state variable.
-  $replication_blocker_key = Crypt::randomBytesBase64(55);
-  \Drupal::state()->set('workspace.replication_blocker_key', $replication_blocker_key);
-
   // Add pointers for all existing workspaces.
   foreach (Workspace::loadMultiple() as $workspace) {
     \Drupal::service('workspace.entity_operations')->workspaceInsert($workspace);
@@ -246,4 +242,12 @@ function workspace_update_8111() {
   foreach ($pointers as $pointer) {
     $pointer->setWorkspaceAvailable()->save();
   }
+}
+
+/**
+ * Delete the replication blocker key state variable.
+ */
+function workspace_update_8112() {
+  $state = \Drupal::state();
+  $state->delete('workspace.replication_blocker_key');
 }
