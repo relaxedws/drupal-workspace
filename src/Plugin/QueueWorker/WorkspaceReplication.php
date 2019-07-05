@@ -191,18 +191,20 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       catch (PeerNotReachableException $e) {
         $this->logger->error('The deployment could not start. Reason: ' . $e->getMessage());
-        $replication->set('fail_info', $e->getMessage());
-        $replication->setReplicationStatusQueued();
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($e->getMessage())
+          ->setReplicationStatusQueued()
+          ->save();
         throw new SuspendQueueException('Peer not reachable. Reason: ' . $e->getMessage());
       }
       catch (\Exception $e) {
         // When exception is thrown during replication process we want
         // replication to be marked as failed and removed from queue.
         $this->logger->error('%type: @message in %function (line %line of %file).', $variables = Error::decodeException($e));
-        $replication->set('fail_info', $e->getMessage());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($e->getMessage())
+          ->setArchiveSource(FALSE)
+          ->save();
       }
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
@@ -234,12 +236,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       else {
         if (($response instanceof ReplicationLogInterface) && !empty($response->history->fail_info)) {
-          $replication->set('fail_info', $response->history->fail_info);
+          $replication->setReplicationFailInfo($response->history->fail_info);
         }
-        $replication->setReplicationStatusFailed();
-        $replication->set('replicated', $this->time->getRequestTime());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationStatusFailed()
+          ->set('replicated', $this->time->getRequestTime())
+          ->setArchiveSource(FALSE)
+          ->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);
       }
@@ -257,11 +260,12 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $limit = $limit ?: 1;
       $request_time = $this->time->getRequestTime();
       if ($request_time - $replication->getChangedTime() > 60 * 60 * $limit) {
-        $replication->set('fail_info', $this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]));
-        $replication->setReplicationStatusFailed();
-        $replication->set('replicated', $this->time->getRequestTime());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]))
+          ->setReplicationStatusFailed()
+          ->set('replicated', $this->time->getRequestTime())
+          ->setArchiveSource(FALSE)
+          ->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" exceeded the running time of @limit hours, because of that it is considered as FAILED.', ['@replication' => $replication->label(), '@limit' => $limit]);
       }
