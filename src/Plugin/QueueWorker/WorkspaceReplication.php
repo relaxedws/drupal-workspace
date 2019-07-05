@@ -249,7 +249,8 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $this->accountSwitcher->switchBack();
     }
     elseif ($replication_status == Replication::FAILED) {
-      $this->state->set('workspace.last_replication_failed', TRUE);
+      // If the replication has been marked as failed before it started to be
+      // processed, do nothing, the item will just be removed from the queue.
     }
     elseif ($replication_status == Replication::REPLICATING) {
       $limit = $this->configFactory->get('replication.settings')->get('replication_execution_limit');

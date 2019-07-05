@@ -243,6 +243,18 @@ class Replication extends ContentEntityBase implements ContentEntityInterface, E
   }
 
   /**
+   * Sets the fail info value.
+   *
+   * @param string $message
+   *
+   * @return \Drupal\workspace\Entity\Replication
+   */
+  public function setReplicationFailInfo($message) {
+    $this->set('fail_info', $message);
+    return $this;
+  }
+
+  /**
    * Gets the fail info value.
    */
   public function getReplicationFailInfo() {
