@@ -33,11 +33,6 @@ services:
     arguments: ['@entity_type.manager', '@workspace.replicator_manager']
     tags:
       - { name: event_subscriber }
-  workspace.replication_in_progress:
-    class: Drupal\workspace\EventSubscriber\ReplicationInProgress
-    arguments: ['@entity_type.manager', '@workspace.manager', '@current_user']
-    tags:
-      - { name: event_subscriber }
   workspace.replication_finished:
     class: Drupal\workspace\EventSubscriber\ReplicationFinished
     arguments: ['@entity_type.manager', '@workspace.manager', '@?plugin.manager.alias_type', '@?pathauto.generator']
