@@ -151,7 +151,7 @@ class ReplicationSettingsPageTest extends BrowserTestBase {
     $colonize_mars_task = new ReplicationTask();
     $big_falcon->replicate(WorkspacePointer::loadFromWorkspace($earth), WorkspacePointer::loadFromWorkspace($mars), $colonize_mars_task);
 
-    // Now in the replication queue we should have two replication, one pull
+    // Now in the replication queue we should have two replications, one pull
     // replication from Mars to Earth and one push from Earth to Mars.
     $missions = $this->entityTypeManager
       ->getStorage('replication')
@@ -199,7 +199,7 @@ class ReplicationSettingsPageTest extends BrowserTestBase {
     $entities = $this->entityTypeManager
       ->getStorage('node')
       ->loadMultiple();
-    // Nothing on Mars, not this time, maybe more success next time.
+    // Nothing on Mars, not this time, maybe next time.
     $this->assertEmpty($entities);
   }
 
