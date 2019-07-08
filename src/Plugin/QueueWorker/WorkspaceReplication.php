@@ -268,7 +268,15 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         $this->logger->info('Replication "@replication" exceeded the running time of @limit hours, because of that it is considered as FAILED.', ['@replication' => $replication->label(), '@limit' => $limit]);
       }
       else {
-        $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
+        // Log this only when the verbose logging is enabled because in some
+        // rare cases a replication can fail in a way when we can't handle to
+        // set the correct failed status, but it will stay in the queue as in
+        // progress until it exceeds the replication_execution_limit limit.
+        // This will avoid spamming watchdog with lots of replication in
+        // progress messages when they are not wanted.
+        if ($this->replicationConfig->get('verbose_logging')) {
+          $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
+        }
         throw new SuspendQueueException('Replication is already in progress!');
       }
     }
