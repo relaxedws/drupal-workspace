@@ -70,62 +70,62 @@ class ReplicationSettingsPageTest extends BrowserTestBase {
    */
   public function testReplicationConfigurationForms() {
     $this->drupalLogin($this->user);
-//    $this->drupalGet('admin/config/replication/settings');
-//    $this->assertText("Unblock replication (when it's blocked)");
-//    // Ensure Unblock replication button for
-//    // Drupal\workspace\Form\UnblockReplicationForm is again.
-//    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
-//    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
-//    $this->assertText('Clear replication queue');
-//    $this->assertText('Replication settings');
-//    $this->assertText('Replication configuration');
-//    $this->assertFieldByName('mapping_type', 'uid_1');
-//    $this->assertFieldByName('uid', '');
-//    $this->assertFieldByName('changes_limit', 100);
-//    $this->assertFieldByName('bulk_docs_limit', 100);
-//    $this->assertFieldByName('replication_execution_limit', 1);
-//    $this->assertFieldByName('verbose_logging', FALSE);
-//
-//    // Edit config and save.
-//    $edit = [
-//      'mapping_type' => 'uid',
-//      'uid' => $this->user->id(),
-//      'changes_limit' => 200,
-//      'bulk_docs_limit' => 200,
-//      'replication_execution_limit' => 4,
-//      'verbose_logging' => TRUE,
-//    ];
-//    $this->drupalPostForm(NULL, $edit, 'Save configuration');
-//    // Check field values after form save.
-//    $this->assertText('The configuration options have been saved.');
-//    $this->assertText('Replication settings');
-//    $this->assertText('Replication configuration');
-//    $this->assertFieldByName('mapping_type', 'uid');
-//    $this->assertFieldByName('uid', $this->user->id());
-//    $this->assertFieldByName('changes_limit', 200);
-//    $this->assertFieldByName('bulk_docs_limit', 200);
-//    $this->assertFieldByName('replication_execution_limit', 4);
-//    $this->assertFieldByName('verbose_logging', TRUE);
-//
-//    \Drupal::state()->set('workspace.last_replication_failed', TRUE);
-//    $this->drupalGet('admin/config/replication/settings');
-//    // Unblock replication button should be enabled now.
-//    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
-//    $this->assertTrue(count($submit_is_disabled) === 0, 'The Unblock replication button is disabled.');
-//    //Test unblocking.
-//    $this->drupalPostForm(NULL, [], 'Unblock replication');
-//    $this->assertText('Replication blocker has been reset you can now create and run deployments.');
-//    // Unblock replication button should be disabled.
-//    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
-//    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
-//
-//    // Test Clear queue button.
-//    $this->drupalPostForm(NULL, [], 'Clear queue');
-//    $this->assertText('Are you sure you want to clear the replication queue?');
-//    $this->assertText('This will mark as failed all the queued deployment (if there are any) and remove them from the replication queue. This action cannot be undone.');
-//    $this->drupalPostForm(NULL, [], 'Clear queue');
-//    $this->assertText('There were not any queued deployments in the replication queue.');
-//    $this->assertText("Unblock replication (when it's blocked)");
+    $this->drupalGet('admin/config/replication/settings');
+    $this->assertText("Unblock replication (when it's blocked)");
+    // Ensure Unblock replication button for
+    // Drupal\workspace\Form\UnblockReplicationForm is again.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
+    $this->assertText('Clear replication queue');
+    $this->assertText('Replication settings');
+    $this->assertText('Replication configuration');
+    $this->assertFieldByName('mapping_type', 'uid_1');
+    $this->assertFieldByName('uid', '');
+    $this->assertFieldByName('changes_limit', 100);
+    $this->assertFieldByName('bulk_docs_limit', 100);
+    $this->assertFieldByName('replication_execution_limit', 1);
+    $this->assertFieldByName('verbose_logging', FALSE);
+
+    // Edit config and save.
+    $edit = [
+      'mapping_type' => 'uid',
+      'uid' => $this->user->id(),
+      'changes_limit' => 200,
+      'bulk_docs_limit' => 200,
+      'replication_execution_limit' => 4,
+      'verbose_logging' => TRUE,
+    ];
+    $this->drupalPostForm(NULL, $edit, 'Save configuration');
+    // Check field values after form save.
+    $this->assertText('The configuration options have been saved.');
+    $this->assertText('Replication settings');
+    $this->assertText('Replication configuration');
+    $this->assertFieldByName('mapping_type', 'uid');
+    $this->assertFieldByName('uid', $this->user->id());
+    $this->assertFieldByName('changes_limit', 200);
+    $this->assertFieldByName('bulk_docs_limit', 200);
+    $this->assertFieldByName('replication_execution_limit', 4);
+    $this->assertFieldByName('verbose_logging', TRUE);
+
+    \Drupal::state()->set('workspace.last_replication_failed', TRUE);
+    $this->drupalGet('admin/config/replication/settings');
+    // Unblock replication button should be enabled now.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 0, 'The Unblock replication button is disabled.');
+    //Test unblocking.
+    $this->drupalPostForm(NULL, [], 'Unblock replication');
+    $this->assertText('Replication blocker has been reset you can now create and run deployments.');
+    // Unblock replication button should be disabled.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
+
+    // Test Clear queue button.
+    $this->drupalPostForm(NULL, [], 'Clear queue');
+    $this->assertText('Are you sure you want to clear the replication queue?');
+    $this->assertText('This will mark as failed all the queued deployment (if there are any) and remove them from the replication queue. This action cannot be undone.');
+    $this->drupalPostForm(NULL, [], 'Clear queue');
+    $this->assertText('There were not any queued deployments in the replication queue.');
+    $this->assertText("Unblock replication (when it's blocked)");
 
     // Test clearing the queue when there are queued replications.
     $earth = Workspace::create(['label' => 'Earth', 'machine_name' => 'earth', 'type' => 'basic']);
