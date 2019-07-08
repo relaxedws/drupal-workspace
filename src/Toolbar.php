@@ -13,6 +13,7 @@ use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 use Drupal\workspace\Form\WorkspaceSwitcherForm;
 
 /**
@@ -153,16 +154,17 @@ class Toolbar {
         ->getStorage('replication')
         ->getQuery()
         ->condition('source', $active->upstream->target_id)
-        ->condition('target', $active->id())
+        ->condition('target', WorkspacePointer::loadFromWorkspace($active)->id())
         ->condition('replication_status', [Replication::QUEUED, Replication::REPLICATING], 'IN')
         ->execute();
       if (!empty($update_in_queue)) {
         $this->messenger()
           ->addWarning(t('Users are allowed to create only one push ' .
-            'and one pull (update) deployment. New deployments are allowed ' .
-            'only after the current queued deployments end (after cron run). ' .
-            'Check @deployments_page for the status.', [
-            '@deployments_page' => Link::createFromRoute('Deployments page', 'entity.replication.collection')
+            'and one pull (update) deployment between the same source and ' .
+            'target workspaces. New deployments are allowed only after the ' .
+            'current queued deployments end (after cron run). ' .
+            'Check @deployments_page page for the status.', [
+            '@deployments_page' => Link::createFromRoute('Deployments', 'entity.replication.collection')
               ->toString()
           ]));
       }
