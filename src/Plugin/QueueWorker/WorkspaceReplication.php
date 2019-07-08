@@ -100,11 +100,9 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
   protected $eventDispatcher;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
-  protected $configFactory;
+  protected $replicationConfig;
 
   /**
    * {@inheritdoc}
@@ -155,7 +153,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
     $this->workspaceManager = $workspace_manager;
     $this->workspaceDefault = $workspace_default;
     $this->eventDispatcher = $event_dispatcher;
-    $this->configFactory = $config_factory;
+    $this->replicationConfig = $config_factory->get('replication.settings');
   }
 
   /**
@@ -256,7 +254,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       // processed, do nothing, the item will just be removed from the queue.
     }
     elseif ($replication_status == Replication::REPLICATING) {
-      $limit = $this->configFactory->get('replication.settings')->get('replication_execution_limit');
+      $limit = $this->replicationConfig->get('replication_execution_limit');
       $limit = $limit ?: 1;
       $request_time = $this->time->getRequestTime();
       if ($request_time - $replication->getChangedTime() > 60 * 60 * $limit) {
