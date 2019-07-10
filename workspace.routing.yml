@@ -108,21 +108,20 @@ workspace.update.form:
   options:
     _admin_route: TRUE
 
-workspace.reset_replication_blocker:
-  path: '/admin/reports/status/reset-replication-blocker/{key}'
-  defaults:
-    _controller: '\Drupal\workspace\Controller\ReplicationBlockerController::resetBlocker'
-  options:
-    no_cache: TRUE
-    _admin_route: TRUE
-  requirements:
-    _access_replication_blocker: 'TRUE'
-
 workspace.config.form:
   path: 'admin/structure/workspace/settings'
   defaults:
     _form: '\Drupal\workspace\Form\WorkspaceConfigForm'
     _title: 'Workspace settings'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE
+
+workspace.confirm_clear_replication_queue:
+  path: '/admin/config/workspace/clear-queue'
+  defaults:
+    _form: '\Drupal\workspace\Form\ConfirmClearReplicationQueueForm'
   requirements:
     _permission: 'access administration pages'
   options:

@@ -8,6 +8,7 @@ use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Entity\WorkspacePointer;
 use Drupal\workspace\Event\ReplicationEvent;
 use Drupal\workspace\Event\ReplicationEvents;
@@ -417,30 +418,31 @@ class ReplicatorTest extends BrowserTestBase {
 
 
   function testReplicationBlocker() {
-    $test_user = $this->drupalCreateUser(['administer site configuration']);
+    $test_user = $this->drupalCreateUser(['access administration pages']);
     $this->drupalLogin($test_user);
+
+    $this->drupalGet('admin/config/replication/settings');
+    // Ensure Unblock replication button for
+    // Drupal\workspace\Form\UnblockReplicationForm is disabled.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
+
     $state = \Drupal::state();
     $state->set('workspace.last_replication_failed', TRUE);
-    $key = $state->get('workspace.replication_blocker_key');
-    if(!$key) {
-      $this->drupalGet('/admin/reports/status/reset-replication-blocker');
-      $session = $this->getSession();
-      $this->assertEquals(403, $session->getStatusCode());
-      $key = Crypt::randomBytesBase64(55);
-      $state->set('workspace.replication_blocker_key', $key);
-    }
-    // Request blocker reset with the wrong key.
-    $this->drupalGet('/admin/reports/status/reset-replication-blocker/' . $key . 'foo');
-    $session = $this->getSession();
-    $this->assertEquals(403, $session->getStatusCode());
-
-    $this->assertTrue($state->get('workspace.last_replication_failed'));
-
-    // Request blocker reset with the correct key.
-    $this->drupalGet('/admin/reports/status/reset-replication-blocker/' . $key);
+    $this->drupalGet('admin/config/replication/settings');
+    // Now the Unblock replication button for
+    // Drupal\workspace\Form\UnblockReplicationForm should be enabled.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 0, 'The Unblock replication button is disabled.');
+    $this->assertSession()->buttonExists('Unblock replication');
+    $this->drupalPostForm(NULL, [], 'Unblock replication');
     $session = $this->getSession();
     $this->assertEquals(200, $session->getStatusCode());
     $this->assertFalse($state->get('workspace.last_replication_failed'));
+    // Ensure Unblock replication button for
+    // Drupal\workspace\Form\UnblockReplicationForm is disabled again.
+    $submit_is_disabled = $this->cssSelect('form.unblock-replication-form input[type="submit"]:disabled');
+    $this->assertTrue(count($submit_is_disabled) === 1, 'The Unblock replication button is disabled.');
   }
 
 }

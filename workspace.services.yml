@@ -43,6 +43,10 @@ services:
     arguments: ['@entity_type.manager', '@workspace.manager', '@?plugin.manager.alias_type', '@?pathauto.generator']
     tags:
       - { name: event_subscriber }
+  workspace.replication_config_route_subscriber:
+    class: Drupal\workspace\EventSubscriber\ReplicationConfigRouteSubscriber
+    tags:
+      - { name: event_subscriber }
   workspace.entity_access:
     class: Drupal\workspace\EntityAccess
     arguments: ['@entity_type.manager', '@workspace.manager', '%workspace.default%']
@@ -50,7 +54,3 @@ services:
     class: Drupal\workspace\Access\WorkspaceViewCheck
     tags:
       - { name: access_check, applies_to: _workspace_view }
-  access_check.replication_blocker:
-    class: Drupal\workspace\Access\ReplicationBlockerAccessCheck
-    tags:
-      - { name: access_check, applies_to: _access_replication_blocker }

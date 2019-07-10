@@ -17,14 +17,13 @@ function workspace_requirements($phase) {
   if ($phase === 'runtime') {
     $requirements = [];
     $state = \Drupal::state();
-    $replication_blocker_key = $state->get('workspace.replication_blocker_key') ?: '';
-    $replication_blocker_url = '/admin/reports/status/reset-replication-blocker/' . $replication_blocker_key;
+    $replication_settings_url = Url::fromRoute('replication.settings_form')->toString();
     $last_replication_failed = $state->get('workspace.last_replication_failed', NULL);
     if ($last_replication_failed === TRUE) {
       $requirements['last_replication_status'] = [
         'title' => t('Last replication status'),
         'value' => t('Failed'),
-        'description' => t('Last replication failed, creating and running deployments is not allowed now. After you fix the problem that caused the last replication fail, click <strong><a href=":url">this</a></strong> link to reset the replication blocker.', [':url' => $replication_blocker_url]),
+        'description' => t('Last replication failed, creating and running deployments is not allowed now. After you fix the problem that caused the last replication fail, access <strong><a href=":url">this</a></strong> link to reset the replication blocker.', [':url' => $replication_settings_url]),
         'severity' => REQUIREMENT_ERROR,
       ];
     }

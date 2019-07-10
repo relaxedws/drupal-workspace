@@ -3,6 +3,7 @@
 namespace Drupal\workspace\Plugin\QueueWorker;
 
 use Drupal\Component\Datetime\Time;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerTrait;
@@ -99,6 +100,11 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
   protected $eventDispatcher;
 
   /**
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $replicationConfig;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
@@ -114,14 +120,29 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $container->get('entity_type.manager'),
       $container->get('workspace.manager'),
       $container->getParameter('workspace.default'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('config.factory')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ReplicatorManager $replicator_manager, Time $time, AccountSwitcherInterface $account_switcher, StateInterface $state, LoggerChannelFactoryInterface $logger, EntityTypeManagerInterface $entity_type_manager, WorkspaceManagerInterface $workspace_manager, $workspace_default, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ReplicatorManager $replicator_manager,
+    Time $time,
+    AccountSwitcherInterface $account_switcher,
+    StateInterface $state,
+    LoggerChannelFactoryInterface $logger,
+    EntityTypeManagerInterface $entity_type_manager,
+    WorkspaceManagerInterface $workspace_manager,
+    $workspace_default,
+    EventDispatcherInterface $event_dispatcher,
+    ConfigFactoryInterface $config_factory
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->replicatorManager = $replicator_manager;
     $this->time = $time;
@@ -132,6 +153,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
     $this->workspaceManager = $workspace_manager;
     $this->workspaceDefault = $workspace_default;
     $this->eventDispatcher = $event_dispatcher;
+    $this->replicationConfig = $config_factory->get('replication.settings');
   }
 
   /**
@@ -151,7 +173,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication = $replication_new;
     }
 
-    $replication_status = $replication->get('replication_status')->value;
+    $replication_status = $replication->getReplicationStatus();
     if ($replication_status == Replication::QUEUED) {
       $account = User::load(1);
       $this->accountSwitcher->switchTo($account);
@@ -167,18 +189,20 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       catch (PeerNotReachableException $e) {
         $this->logger->error('The deployment could not start. Reason: ' . $e->getMessage());
-        $replication->set('fail_info', $e->getMessage());
-        $replication->setReplicationStatusQueued();
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($e->getMessage())
+          ->setReplicationStatusQueued()
+          ->save();
         throw new SuspendQueueException('Peer not reachable. Reason: ' . $e->getMessage());
       }
       catch (\Exception $e) {
         // When exception is thrown during replication process we want
         // replication to be marked as failed and removed from queue.
         $this->logger->error('%type: @message in %function (line %line of %file).', $variables = Error::decodeException($e));
-        $replication->set('fail_info', $e->getMessage());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($e->getMessage())
+          ->setArchiveSource(FALSE)
+          ->save();
       }
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
@@ -210,12 +234,13 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       }
       else {
         if (($response instanceof ReplicationLogInterface) && !empty($response->history->fail_info)) {
-          $replication->set('fail_info', $response->history->fail_info);
+          $replication->setReplicationFailInfo($response->history->fail_info);
         }
-        $replication->setReplicationStatusFailed();
-        $replication->set('replicated', $this->time->getRequestTime());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationStatusFailed()
+          ->set('replicated', $this->time->getRequestTime())
+          ->setArchiveSource(FALSE)
+          ->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);
       }
@@ -225,25 +250,33 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $this->accountSwitcher->switchBack();
     }
     elseif ($replication_status == Replication::FAILED) {
-      $this->state->set('workspace.last_replication_failed', TRUE);
+      // If the replication has been marked as failed before it started to be
+      // processed, do nothing, the item will just be removed from the queue.
     }
     elseif ($replication_status == Replication::REPLICATING) {
-      // In case replication takes more than twenty-four hours,
-      // we suppose the replication is failed.
-      // @TODO Add the ability to customize this period
-      $limit = 24;
+      $limit = $this->replicationConfig->get('replication_execution_limit');
+      $limit = $limit ?: 1;
       $request_time = $this->time->getRequestTime();
       if ($request_time - $replication->getChangedTime() > 60 * 60 * $limit) {
-        $replication->set('fail_info', $this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]));
-        $replication->setReplicationStatusFailed();
-        $replication->set('replicated', $this->time->getRequestTime());
-        $replication->setArchiveSource(FALSE);
-        $replication->save();
+        $replication
+          ->setReplicationFailInfo($this->t('Replication "@replication" took too much time', ['@replication' => $replication->label()]))
+          ->setReplicationStatusFailed()
+          ->set('replicated', $this->time->getRequestTime())
+          ->setArchiveSource(FALSE)
+          ->save();
         $this->state->set('workspace.last_replication_failed', TRUE);
         $this->logger->info('Replication "@replication" exceeded the running time of @limit hours, because of that it is considered as FAILED.', ['@replication' => $replication->label(), '@limit' => $limit]);
       }
       else {
-        $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
+        // Log this only when the verbose logging is enabled because in some
+        // rare cases a replication can fail in a way when we can't handle to
+        // set the correct failed status, but it will stay in the queue as in
+        // progress until it exceeds the replication_execution_limit limit.
+        // This will avoid spamming watchdog with lots of replication in
+        // progress messages when they are not wanted.
+        if ($this->replicationConfig->get('verbose_logging')) {
+          $this->logger->info('Replication "@replication" is already in progress.', ['@replication' => $replication->label()]);
+        }
         throw new SuspendQueueException('Replication is already in progress!');
       }
     }

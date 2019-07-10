@@ -74,7 +74,7 @@ class ReplicationFinished implements EventSubscriberInterface {
    */
   public function onInternalReplicationFinished(ReplicationEvent $event) {
     $replication = $event->getReplication();
-    if ($replication->get('replication_status')->value == Replication::REPLICATED && $this->aliasTypeManager && $this->pathAutoGenerator) {
+    if ($replication->getReplicationStatus() == Replication::REPLICATED && $this->aliasTypeManager && $this->pathAutoGenerator) {
       $source_workspace_pointer = $replication->get('source')->entity;
       $target_workspace_pointer = $replication->get('target')->entity;
 
