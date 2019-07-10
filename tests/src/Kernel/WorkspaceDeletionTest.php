@@ -52,6 +52,7 @@ class WorkspaceDeletionTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
     $this->installEntitySchema('workspace');
+    $this->installEntitySchema('replication');
     $this->installEntitySchema('workspace_pointer');
     $this->installEntitySchema('replication_log');
     $this->installSchema('key_value', 'key_value_sorted');

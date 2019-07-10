@@ -9,6 +9,8 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 
 /**
  * Implements hook_requirements().
@@ -215,5 +217,41 @@ function workspace_queue_info_alter(&$queues) {
     // Let's spend 60 seconds instead of 600 seconds when the replication is
     // blocked.
     $queues['workspace_replication']['cron']['time'] = 60;
+  }
+}
+
+/**
+ * Implements hook_multiversion_workspace_predelete().
+ *
+ * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function workspace_multiversion_workspace_predelete(WorkspaceInterface $workspace) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $workspace_pointer = WorkspacePointer::loadFromWorkspace($workspace);
+  if (!empty($workspace_pointer)) {
+    // Also mark as failed all deployments that have as source or target
+    // the deleted workspace.
+    $deployments = $entity_type_manager
+      ->getStorage('replication')
+      ->loadByProperties(['source' => $workspace_pointer->id()]);
+    $deployments += $entity_type_manager
+      ->getStorage('replication')
+      ->loadByProperties(['target' => $workspace_pointer->id()]);
+    /** @var Replication $deployment */
+    foreach ($deployments as $deployment) {
+      $replication_status = $deployment->getReplicationStatus();
+      if (!in_array($replication_status, [Replication::QUEUED, Replication::REPLICATING])) {
+        continue;
+      }
+      $deployment
+        ->setReplicationStatusFailed()
+        ->setReplicationFailInfo(t('This deployment has been automatically marked as failed because source or target workspace has been deleted.'))
+        ->save();
+    }
+    $workspace_pointer->delete();
   }
 }
