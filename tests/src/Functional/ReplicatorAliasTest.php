@@ -2,11 +2,11 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\pathauto\Tests\PathautoTestHelperTrait;
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\replication\ReplicationTask\ReplicationTask;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\Tests\pathauto\Functional\PathautoTestHelperTrait;
 
 /**
  * Test the workspace entity with EventSubscriber alias change.
